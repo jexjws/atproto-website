@@ -10,7 +10,7 @@ import { Navigation } from '@/components/Navigation'
 import { SectionProvider } from './SectionProvider'
 import { SyncedTabs } from '@/components/mdx'
 
-const localeHomePaths = ['/', '/pt', '/ja', '/ko']
+const localeHomePaths = ['/', '/pt', '/ja', '/ko', '/zh-CN']
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

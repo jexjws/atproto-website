@@ -1,4 +1,4 @@
-const LOCALES = ['en', 'pt', 'ja', 'ko']
+const LOCALES = ['en', 'pt', 'ja', 'ko', 'zh-CN']
 
 /**
  * Translation dictionary keyed by locale, then by lookup key.
@@ -128,6 +128,62 @@ const navTranslations: Record<string, Record<string, string>> = {
 
     // UI strings
     'Pages:': 'Páginas:',
+  },
+  'zh-CN': {
+    // Group titles
+    'Get Started': '入门',
+    'Docs': '文档',
+    'Deploy': '部署',
+    'Specs': '规范',
+
+    // UI strings
+    'Pages:': '页面:',
+
+    // Link titles (from zh-CN.mdx header.title exports)
+    '/guides/tutorials': '教程',
+    '/guides/bot-tutorial': '创建一个 Agent',
+    '/guides/custom-feed-tutorial': '创建一个自定义 Feed',
+    '/guides/oauth-tutorial': 'Next.JS 与 OAuth',
+    '/guides/oauth-cli-tutorial': 'Node.js 与 OAuth',
+    '/guides/go-oauth-cli-tutorial': 'Go 与 OAuth',
+    '/guides/statusphere-tutorial': '创建一个社交应用',
+    '/guides/understanding-atproto': '了解 AT 协议',
+    '/articles/atproto-for-distsys-engineers': '分布式系统工程师视角的 atproto',
+    '/articles/atproto-ethos': 'atproto 的核心理念',
+    '/guides/faq': '常见问题',
+    '/guides/auth': '认证',
+    '/guides/sdk-auth': 'SDK 认证',
+    '/guides/about-oauth': '关于 OAuth',
+    '/guides/permission-requests': '权限请求',
+    '/guides/permission-sets': '权限集',
+    '/guides/oauth-patterns': 'OAuth 模式',
+    '/guides/reads-and-writes': '读写操作',
+    '/guides/reading-data': '读取数据',
+    '/guides/writing-data': '写入数据',
+    '/guides/account-lifecycle': '账号生命周期',
+    '/guides/social-graph': '社交图谱',
+    '/guides/sync': '同步',
+    '/guides/streaming-data': '流式数据',
+    '/guides/backfilling': '历史数据回填',
+    '/guides/feeds': 'Feeds',
+    '/guides/lexicon': 'Lexicon',
+    '/guides/installing-lexicons': '开发 Lexicons',
+    '/guides/publishing-lexicons': '发布 Lexicons',
+    '/guides/lexicon-style-guide': 'Lexicon 样式指南',
+    '/guides/images-and-video': '图片和视频',
+    '/guides/blob-lifecycle': 'Blob 生命周期',
+    '/guides/blob-security': 'Blob 安全',
+    '/guides/video-handling': '视频处理',
+    '/guides/moderation': '内容审核',
+    '/guides/labels': '标签',
+    '/guides/creating-a-labeler': '创建标签服务',
+    '/guides/subscriptions': '订阅',
+    '/guides/using-ozone': '使用 Ozone',
+    '/guides/the-at-stack': 'AT 技术栈',
+    '/guides/self-hosting': '私有化部署',
+    '/guides/going-to-production': '推向生产环境',
+    '/guides/account-migration': '账号迁移',
+    '/guides/glossary': '词汇表',
   },
 }
 
