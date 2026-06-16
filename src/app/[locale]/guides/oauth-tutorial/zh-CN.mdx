@@ -1,0 +1,259 @@
+import {Container} from "@/components/Container"
+import workingauth from "./authentication-working.png"
+import starter from "./nextjs-starter.png"
+import metadata from "./client-metadata.png"
+import S01 from './_snippets/01-install-brew.mdx'
+import S02 from './_snippets/02-create-next-app.mdx'
+import S03 from './_snippets/03-pnpm-add-oauth-client.mdx'
+import S04 from './_snippets/04-pnpm-dev.mdx'
+import S05 from './_snippets/05-lib-auth-client.mdx'
+import S06 from './_snippets/06-lib-auth-session.mdx'
+import S07 from './_snippets/07-oauth-login-route.mdx'
+import S08 from './_snippets/08-oauth-callback-route.mdx'
+import S09 from './_snippets/09-oauth-logout-route.mdx'
+import S10 from './_snippets/10-oauth-client-metadata-route.mdx'
+import S11 from './_snippets/11-login-form.mdx'
+import S12 from './_snippets/12-logout-button.mdx'
+import S13 from './_snippets/13-app-page.mdx'
+import S14 from './_snippets/14-pnpm-workspace-yaml.mdx'
+import S15 from './_snippets/15-pnpm-add-sqlite.mdx'
+import S16 from './_snippets/16-next-config.mdx'
+import S17 from './_snippets/17-lib-db-index.mdx'
+import S18 from './_snippets/18-lib-db-migrations.mdx'
+import S19 from './_snippets/19-scripts-migrate.mdx'
+import S20 from './_snippets/20-package-json-migrate.mdx'
+import S21 from './_snippets/21-client-ts-db-stores.mdx'
+import S22 from './_snippets/22-jwks-route.mdx'
+import S23 from './_snippets/23-client-ts-production.mdx'
+import S24 from './_snippets/24-scripts-gen-key.mdx'
+import S25 from './_snippets/25-package-json-gen-key.mdx'
+import S26 from './_snippets/26-env-vars.mdx'
+import S27 from './_snippets/27-scope-constant.mdx'
+
+export const header = {
+  title: 'OAuth with NextJS Tutorial',
+  description: 'Build a Next.js app supporting OAuth with atproto identity.',
+}
+
+In this tutorial, you'll build a Next.js app where users can log in with their AT Protocol identity using OAuth. If you [host your own PDS](/guides/self-hosting), that means you can provide your own auth source for any apps in the Atmosphere.
+
+You can find the source code for this tutorial, along with other example projects, in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository, under `nextjs-oauth`.
+
+See a demo version running at: [https://nextjs-oauth-tutorial.up.railway.app/](https://nextjs-oauth-tutorial.up.railway.app/).
+
+## Prerequisites
+
+This OAuth tutorial does not use many atproto concepts or dependencies. You should have a working understanding of Next.js and TypeScript.
+
+You should have installed:
+- Node.js 20+
+- The pnpm package manager
+
+On platforms supported by [homebrew](https://brew.sh/), you can install these with:
+
+<S01 />
+
+## Part 1: Project Setup
+
+You'll start by creating a new Next.js project using the `create-next-app` command.
+
+<S02 />
+
+Next, add the `oauth-client-node` package from the atproto ecosystem, which provides OAuth client functionality.
+
+<S03 />
+
+That's all you need to get started! You can now run the development server with:
+
+<S04 />
+
+Navigate to your app in a browser at [http://127.0.0.1:3000](http://127.0.0.1:3000).
+
+<Note>
+In general, when working with OAuth, you should use `127.0.0.1` URLs instead of `localhost`. This will be important for the OAuth redirect flow to work correctly.
+</Note>
+
+You should receive the Next.js starter page:
+
+<Container>
+  <Image src={starter} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+Next, you'll implement baseline OAuth functionality.
+
+## Part 2: Implementing OAuth
+
+You'll start out implementing OAuth using a local *loopback* client with in-memory storage.
+
+OAuth loopback works by using a special redirect URI (like http://127.0.0.1:PORT/callback) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+
+To do this, you'll implement a [confidential client](/specs/oauth#types-of-clients). Your Next.js server will hold credentials for talking to a user's PDS. The server will verify incoming requests from the browser using cookies for session auth.
+
+First, create `lib/auth/client.ts`:
+
+<S05 />
+
+`stateStore` is temporary storage using during the OAuth flow; `sessionStore` is persistent storage keyed by a user's DID. The `globalThis` pattern is a standard Next.js technique for persisting data across hot module reloads in development. Without this, the in-memory stores would be wiped every time you edit a file.
+
+AT Protocol OAuth has a special carveout for local development. The `client_id` must be `localhost` and the `redirect_uri` must be on host 127.0.0.1. Read more in the [Localhost Client Development specs](/specs/oauth#localhost-client-development).
+
+<Note>
+There's no way around it — this section of the tutorial is pretty dry! You'll be implementing standard OAuth flows, which are inherently boilerplate-heavy. But once you have this baseline working, you'll be able to build on top of it!
+</Note>
+
+Next, create `lib/auth/session.ts` to manage user sessions:
+
+<S06 />
+
+Then, create `app/oauth/login/route.ts`. This route initiates the login flow. You only need the user's handle — with it, you can resolve the user's Authorization Server (their PDS) and redirect them there:
+
+<S07 />
+
+After a user approves the authorization consent screen, they'll be redirected to a callback route. Here, you'll exchange the code from the redirect for actual credentials, then set a cookie for the user's DID. Create `app/oauth/callback/route.ts`:
+
+<S08 />
+
+`PUBLIC_URL` falls back to `127.0.0.1:3000` to ensure you always redirect to the correct host. This avoids cookie issues that arise from `localhost` vs `127.0.0.1` mismatches.
+
+Next, you should also create a logout route at `app/oauth/logout/route.ts` to clear the user's session:
+
+<S09 />
+
+Finally, you'll make one last route, to expose the `oauth-client-metadata.json` at a well-known URL. This is [used in atproto OAuth](/specs/oauth#clients) to discover client configuration. Create `app/oauth-client-metadata.json/route.ts`:
+
+<S10 />
+
+You can visit http://127.0.0.1:3000/oauth-client-metadata.json to see your client configuration.
+
+<Container>
+  <Image src={metadata} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+Now you just need to add a few forms. Create `components/LoginForm.tsx`:
+
+<S11 />
+
+Do the same for `components/LogoutButton.tsx`:
+
+<S12 />
+
+And, finally, replace the starter `app/page.tsx` to use these components and show the user's DID when logged in:
+
+<S13 />
+
+At this point, you should be able to test the OAuth flow!
+
+If your app isn't already running from Part 1, start it with:
+
+<S04 />
+
+Then:
+1. Navigate to your app in a browser at [http://127.0.0.1:3000](http://127.0.0.1:3000).
+2. Enter your handle
+3. Authorize the app
+4. You should see "Authentication working!" with your DID:
+
+<Container>
+  <Image src={workingauth} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+Congratulations — you've now implemented working OAuth as a baseline, and can move on to more exciting features.
+
+## Part 3: Adding Database Persistence
+
+The in-memory approach used so far works for local development, but for production you'll want a proper database. Let's add SQLite and some other dependencies to manage this:
+
+<Note>
+If you're using `pnpm` as a package manager as suggeseted here, you should create a file called `pnpm-workspace.yaml` in the root of your project with the following content to ensure `better-sqlite3` is built correctly in the next step:
+
+<S14 />
+</Note>
+
+<S15 />
+
+Next, replace the contents of `next.config.ts` to use `better-sqlite3` server-side:
+
+<S16 />
+
+Then, add the actual database connection in `lib/db/index.ts`:
+
+<S17 />
+
+Next, create the "migrations" that you'll run to populate the database schema. Create `lib/db/migrations.ts`:
+
+<S18 />
+
+Next, create `scripts/migrate.ts` so the migrations can be run from the command line:
+
+<S19 />
+
+Add those command line scrips to `package.json`:
+
+<S20 />
+
+And finally, update the `stateStore:` and `sessionStore` code blocks in `lib/auth/client.ts` to use the database. You'll need to import `getDb` at the top too:
+
+<S21 />
+
+All set! You can Ctrl+C the dev server if it's running, then start it again with:
+
+<S04 />
+
+You should see "Migrations complete." and an `app.db` file created. Now this app will persist state and sessions across restarts.
+
+## Part 4: Deploying to Production
+
+For production, you need a "confidential client" instead of the loopback client you used. This requires:
+- a public URL
+- a private key for signing
+- public endpoints for client metadata and JWKS
+
+You don't need your own domain name to test the app at a public URL. You can host it on [Railway](https://railway.app/) by following our [deployment guide](https://github.com/bluesky-social/nextjs-oauth-tutorial/blob/main/RAILWAY_DEPLOY.md). First, follow these steps.
+
+Create a `well-known` JWKS endpoint that advertises your client's public key at `app/.well-known/jwks.json/route.ts`:
+
+<S22 />
+
+Next, update `lib/auth/client.ts` once more to use the confidential client configuration when in production:
+
+<S23 />
+
+This will serve a [client metadata document](/specs/oauth#client-id-metadata-document).
+
+<Note>
+The `dpop_bound_access_tokens: true` setting enables [DPoP (Demonstrating Proof of Possession)](/specs/oauth#demonstrating-proof-of-possession-d-po-p), which cryptographically binds access tokens to a specific client. This protects long-lived sessions from token theft. The SDK handles all DPoP operations automatically — generating proofs, managing server-provided nonces, and retrying requests when nonces rotate. If you're implementing OAuth without an SDK (e.g., for a sidecar service), see the [OAuth Patterns guide](/guides/oauth-patterns#understanding-d-po-p) for implementation details.
+</Note>
+
+Finally, you'll need to generate a private key for signing. Create a script for that in `scripts/gen-key.ts`:
+
+<S24 />
+
+Add this script to `package.json`:
+
+<S25 />
+
+Run the script as `pnpm gen-key` and save the output. This will be `PRIVATE_KEY`, one of two environment variables needed for your deployment:
+
+<S26 />
+
+You can provide these as part of our Railway [deployment guide](https://github.com/bluesky-social/nextjs-oauth-tutorial/blob/main/RAILWAY_DEPLOY.md). Follow those steps, and this app should then work from a public URL just like our [demo instance](https://nextjs-oauth-tutorial.up.railway.app/).
+
+## Conclusion
+
+You now have a complete, production-deployed app with persistent storage. However, it doesn't actually do anything with the AT Protocol yet! As you add features from here, you'll need to request additional permission scopes during the OAuth flow.
+
+By default, the app requests only the `atproto` scope. The `atproto` scope is required and offers basic authentication for an `atproto` identity, but it does not authorize the client to access any privileged information or perform any actions on behalf of the user. Refer to the [Permission Sets guide](/guides/permission-sets) for more information.
+
+To change the requested scope, update the SCOPE constant in `lib/auth/client.ts`. It should be a space-delimited string:
+
+<S27 />
+
+This constant is used in three places:
+
+- The loopback client metadata (for local development)
+- The production client metadata
+- The login route's authorize call
+
+By centralizing it in one constant, you only need to change it in one place. Now, when you log in to your app again, you'll be prompted to approve the additional scopes.
+
+Congratulations on completing this tutorial! You now have a solid Next.js foundation for building atproto apps with OAuth. From here, you can move on to our [**Statusphere Example App Tutorial**](/guides/statusphere-tutorial).

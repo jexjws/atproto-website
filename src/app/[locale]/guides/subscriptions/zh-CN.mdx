@@ -1,0 +1,45 @@
+import {Container} from "@/components/Container"
+import AcceptLabelersCurl from './_snippets/accept-labelers-curl.mdx'
+import LabelerConfigTs from './_snippets/labeler-config-ts.mdx'
+import CreateReportTs from './_snippets/create-report-ts.mdx'
+
+export const header = {
+  title: 'Subscriptions',
+  description: 'Subscribing to a labeler service',
+}
+
+## 贴标机订阅
+
+每个贴标服务都有一个服务标识，即一个 DID 文档。这是出现在标签源 (**`src`**) 字段中的 DID。
+
+要包含来自给定标记器的标签，请将 XRPC 请求上的“atproto-accept-labelers”标头设置为要包含的标记器的 DID 的逗号分隔列表，如下所示：
+
+<AcceptLabelersCurl />
+
+您还可以使用 TypeScript SDK 添加标签器：
+
+<LabelerConfigTs />
+
+## 在您的应用程序中使用标签
+
+标签可以贴在账户或记录上。应用程序可以通过不同的方式解释目标：
+
+- 在帐户上：具有帐户范围内的影响
+- 在个人资料上：仅影响个人资料记录（例如用户头像），并且从不隐藏任何内容，包括列表中的帐户。
+- 内容：具体影响内容（帖子记录、列表、提要等）
+
+## 报告
+
+要将报告发送给贴标机，请使用“com.atproto.moderation.createReport”过程。用户可以将报告发送给他们的任何贴标机。
+
+要指定哪个贴标机应接收报告，请使用贴标机的 DID 和“atproto_labeler”的服务密钥设置“atproto-proxy”标头。在 TypeScript SDK 中，它看起来像这样：
+
+<CreateReportTs />
+
+## 进一步阅读和资源
+
+- [审核](/指南/审核)
+- [标签](/指南/标签)
+- [创建标签机](/guides/creating-a-labeler)
+- [标签规格](/规格/标签)
+- [使用臭氧](/guides/using-ozone)

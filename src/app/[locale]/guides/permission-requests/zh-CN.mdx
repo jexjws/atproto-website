@@ -1,0 +1,155 @@
+import {Container} from "@/components/Container"
+import {ResponsiveTable} from '@/components/ResponsiveTable'
+import oauth from "./oauth-only.png"
+import skyblur from "./skyblur-oauth.png"
+import granular from "./skyblur-granular.png"
+import lexicon from "./skyblur-lexicon.png"
+import OauthScopeMetadata from './_snippets/oauth-scope-metadata.mdx'
+import OauthAuthUrl from './_snippets/oauth-auth-url.mdx'
+import oauthdomain from "./oauth-domain.jpg"
+
+export const header = {
+  title: 'Permission Requests',
+  description:
+    'A permissions guide for app developers and Lexicon designers',
+}
+
+本页介绍如何在 OAuth 流程中**使用**权限范围。如果您正在使用自定义词典构建应用程序并想要**定义和发布**您自己的权限集，请参阅[权限集](/guides/permission-sets)。
+
+＃＃ 概述
+
+本指南介绍如何为您的 atproto 应用程序请求和定义权限。 [OAuth](/guides/auth) 处理授权，此页面介绍如何指定您的应用可以访问的“内容”。
+
+使用 [permissions](/specs/permission) 授予对 atproto 资源的控制权。诸如“repo:com.example.post”之类的个人权限授予写入特定记录类型或 API 端点的访问权限。相关权限可以捆绑到具有人类可读标题和描述的**权限集**中 - 这些是用户在授权对话框中看到的内容。
+
+如果您正在使用**自定义词典**构建应用程序，则应该为它们定义权限集。这为用户提供了应用程序功能的清晰描述，而不是不透明的命名空间 ID 列表。结构请参见[权限集设计](/guides/permission-sets#permission-set-design)。
+
+如果您正在构建仅使用**现有词典**的应用程序（例如 Bluesky 的“app.bsky.*”），则可以引用其已发布的权限集，或请求单独的细化权限。请参阅 [OAuth 流程示例](#o-auth-flow-examples) 部分，了解这些内容对用户的显示方式。
+
+## 请求权限
+
+当您的应用程序使用 atproto 身份提供商启动 OAuth 流程时，它可以通过将特定权限集包含在授权请求的“scope”参数中来请求特定权限集。注册 OAuth 客户端时，应在 [`oauth-client-metadata.json` 文件](specs/oauth#client-id-metadata-document) 中以*空格分隔的列表*形式提供：
+
+<OauthScopeMetadata />
+
+AT 中的 OAuth 使用 [推送授权请求](https://auth0.com/blog/what-are-oauth-push-authorization-requests-par/) (PAR)。客户端元数据文件将在会话生命周期中动态获取，并且“oauth-client-metadata.json”中的“scope”参数*需要匹配*您的应用程序发出的实际授权 HTTP 请求：
+
+<OauthAuthUrl />
+
+您应该尝试仅请求足够的权限来涵盖您的应用程序所需的功能。我们提供[转换范围](/specs/oauth#transitional-scopes)，授予广泛的权限来创建、更新或删除任何用户的 AT 记录，包括来自其他应用程序的帖子 - 但一般来说，应避免这些广泛的权限请求。精细的权限有助于与用户建立信任并最大限度地减少授权过程中的摩擦。
+
+从用户体验的角度来看，最好保持较低的请求权限集数量。每个附加权限集都会向授权对话框添加更多信息，这可能会导致决策疲劳。可以允许用户仅授予所请求权限的子集，但这可能会导致边缘情况。
+
+## 权限类型
+
+权限与 PDS 实例上用户拥有的资源相关，由五种类型表示：
+
+<ResponsiveTable
+  columns={[{label: 'Type'}, {label: 'Description'}, {label: 'Examples'}]}
+  rows={[
+    [{label: 'repo'}, {label: 'Write access to records in the user\'s repository'}, {label: 'repo:com.example.post, repo:com.example.post?action=create'}],
+    [{label: 'rpc'}, {label: 'Authenticated calls to remote API endpoints'}, {label: 'rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview, rpc:app.example.moderation.createReport?aud=*'}],
+    [{label: 'blob'}, {label: 'Media file uploads to the PDS. Cannot be included in permission sets.'}, {label: 'blob:*/* (any type), blob:image/* (images only)'}],
+    [{label: 'identity'}, {label: 'DID document and handle'}, {label: 'identity:handle, identity:*'}],
+    [{label: 'account'}, {label: 'Account hosting details. Cannot be included in permission sets.'}, {label: 'account:email, account:email?action=manage'}],
+  ]}
+/>
+
+范围字符串语法中允许使用通配符 (*)，并授予对所有记录的访问权限 - 最常见的示例是“blob:*/*”，用于处理图像和视频。 *不*支持部分通配符 - 例如，“repo: app.bsky.*”不是有效的范围字符串。如果您想从特定名称空间或词典请求多个权限，则需要单独列出它们，或使用[权限集](/guides/permission-sets)。这是有意为之，以避免过于宽泛的权限请求。
+
+权限集本身就是词典模式，并且像其他词典一样具有命名空间。权限集在范围字符串中以“include:”为前缀。与其他词典不同，它们可以在[大多数上下文](#rolling-out-changes)中更新。
+
+## 权限集
+
+回想一下，OAuth 的要点是让应用程序代表用户执行操作，而不要求用户交出其用户名和密码。对于 atproto 应用程序，这意味着 OAuth 请求将请求许可将记录写入用户的 PDS、代表用户调用 API 端点、上传媒体 - 上述权限类型中概述的所有内容。
+
+即使相对简单的应用程序最终也可能会请求多个权限，而单独列出所有权限的 OAuth 授权对话框可能会让使用应用程序的人感到困惑。为了解决这个问题，权限集允许您将权限逻辑地分组在一起，并以人类可读的标题和描述来呈现它们。
+
+Bluesky 已经针对人们可能想要构建 Bluesky 特定应用程序的各种方式发布了许多权限集。例如，如果您正在构建功能齐全的微博客户端，您可能需要请求 [`app.bsky.authFullApp` 权限集](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.authFullApp)，该权限集授予涵盖帖子、设置和订阅的全面权限集。
+
+但是，如果您只想构建一个发布到某人时间线的应用程序，则可以请求范围更窄的 [`app.bsky.authCreatePosts` 权限集](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.authCreatePosts)。
+
+请求 OAuth 权限时，请记住以下经验规则：
+
+1. 如果您正在为现有服务构建客户端应用程序，请使用该服务发布的权限集（如果可用）。例如，Stream.place 的流视频客户端将请求 [`place.stream.authFull` 权限集](https://lexicon.garden/lexicon/did:plc:gqtagsooi75obldmytuow57q/place.stream.authFull)，该权限集代表用户授予对 Stream.place 的完全访问权限。
+
+2. 如果您正在构建自己的词典，请创建一个权限集，该权限集捆绑了您的应用程序公开的相关记录类型和 API 端点。请参阅[权限集](/guides/permission-sets) 了解设计指南。
+
+3. 当您的应用程序只需要一些权限时，或者当您需要 `blob`、`account` 或 `identity` 范围时，直接请求单独的范围 - 这些范围永远不能包含在权限集中，并且必须始终单独请求。
+
+这些方法组成：应用程序通常会在同一 OAuth 流程中请求一个或多个权限集以及少量单独的范围。
+
+如果您需要帮助构建自己的权限集或请求 Bluesky 权限，我们构建了一个 [scope builder](/guides/scope-builder) 页面来提供帮助。
+
+## 客户
+
+OAuth 客户端软件由全局唯一的“client_id”标识。客户端软件的不同变体可能具有不同的“client_id”值；例如，同一软件的浏览器应用程序和 Android（移动操作系统）变体可能具有不同的“client_id”值。 `client_id` 必须是完全限定的 Web URL，可以从中获取客户端元数据 JSON 文档。例如，“https://app.example.com/oauth-client-metadata.json”。有关“client_id”的更多信息：
+
+- 它必须是格式良好的 URL，遵循 W3C URL 规范
+- 架构必须是“https://”，并且不得包含端口号。请注意，用于开发的“http://localhost”“client_id”值有一个[特殊例外](/specs/oauth#localhost-client-development)。
+- 路径不需要包含`oauth-client-metadata.json`，但这是有用的约定。
+
+<Note>
+If you have been using `client-metadata.json` rather than `oauth-client-metadata.json`, you can make this change to have your domain display on the auth flow page, rather than a URL string.
+</Note>
+
+<Container>
+  <Image src={oauthdomain} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+授权流程页面将显示所有被授予的相关权限。对于使用[细粒度权限](/specs/permission) 的应用程序和使用[过渡](/specs/oauth#authorization-scopes) OAuth 范围的应用程序都是如此。
+
+客户端应用程序应确保检查在身份验证流程中实际批准了哪些身份验证范围。特别是，当请求读取帐户电子邮件地址（“帐户：电子邮件”）的权限时，用户可能会拒绝该权限，同时授予其他权限。理论上，当整体请求被授予时，任何单独的许可都可能被拒绝。
+
+## 推出变更
+
+当您更新应用程序以使用新的权限集时，协调软件版本与权限集更新非常重要。如果您添加需要用户批准的新权限集，用户将需要重新授权您的应用程序才能授予这些新权限。
+
+[客户端元数据文档](/specs/oauth#clients) 的发布和部署过程可能与应用程序的代码部署过程分开。请确保做出相应的计划 - 请求新权限的更新后的“oauth-client-metadata.json”必须在需要这些权限的应用程序版本之前上线。
+
+权限集可以修改，但删除它们或进行破坏性更改可能会破坏现有应用程序。一般来说，权限集应该与其设计的应用程序紧密相关，但不一定是 1:1。请记住，atproto 应用程序可以利用多个不同的词典。
+
+## OAuth 流程示例
+
+*仅*使用 atproto 身份提供商进行身份验证的应用程序 [仅需要请求 `atproto` 权限](/guides/permission-sets)。这提供了与您可能期望从其他身份提供商获得的相同的 OAuth 流程；不使用 Atmosphere 社交图谱的任何功能，也不需要额外的权限：
+
+<Container>
+  <Image src={oauth} alt="" className="w-full max-w-md mx-auto"/>
+</Container>
+
+这是一个完全可用的 Atmosphere 集成，许多应用程序将使用它作为起点。请注意，它会生成一个简单易读的“授权”流程。发出请求的应用程序的 URL 清晰可见，并且权限对话框指出该应用程序“想要唯一地识别您的身份”，但除此之外别无其他。
+
+接下来，考虑一个更复杂的集成，它需要额外的权限。默认情况下，这些将显示在汇总视图中：
+
+<Container>
+  <Image src={skyblur} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+在此图中，请注意有两个不同的 Lexicon 分组：*Bluesky* 权限和 *Skyblur* 权限。每个词典定义自己的权限集，以及这些权限的自己的分组和表示。
+
+您可以单击 **?** 图标来查看每个权限集的详细信息：
+
+<Container>
+  <Image src={granular} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+从扩展的 atproto 和 Bluesky 权限中，您可能会认识到“atproto”（用于 OAuth 登录）、“blob:*/*”（用于图像和视频处理）以及用于个人资料和社交图交互的其他几个“app.bsky.*”权限。
+
+*Skyblur* Lexicon 权限的定义和总结不同：
+
+<Container>
+  <Image src={lexicon} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+这一切都由应用程序开发人员和 L​​exicon 设计人员自行决定。我们提供了一个模型，用于并排使用不同的词典，并为每个词典定义自己的权限集和表示形式。
+
+## 进一步阅读和资源
+
+- [授权](/guides/auth)
+- [SDK认证](/guides/sdk-auth)
+- [关于 OAuth](/guides/about-oauth)
+- [权限集](/guides/permission-sets)
+- [OAuth 模式](/guides/oauth-patterns)
+- [出版词典](/guides/publishing-lexicons)
+- [OAuth 规范](/specs/oauth)
+- [权限规范](/specs/permission)

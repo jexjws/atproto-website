@@ -1,0 +1,92 @@
+export const header = {
+  title: 'Namespaced Identifiers (NSIDs)',
+  description:
+    'A specification for global semantic IDs.',
+}
+
+# 命名空间标识符 (NSID)
+
+命名空间标识符 (NSID) 用于引用记录、XRPC 端点等的 Lexicon 模式。例如，“com.atproto.sync.getRecord”。 {{ className: '领导' }}
+
+NSID 的基本结构和语义是按反向域名顺序的完全限定主机名，后跟附加名称段。主机名部分是**域权限**，最后一段是**名称**。 {{ className: '领导' }}
+
+### NSID 语法
+
+词典字符串类型：`nsid`
+
+NSID 的域权限部分必须是有效的 [handle](/specs/handle)（主机名），并且段的顺序相反。后面跟着一个名称段，该名称段必须是 ASCII 驼峰式字符串。
+
+例如，“com.example.fooBar”是语法上有效的 NSID，其中“com.example”是域权限，“fooBar”是名称段。
+
+语法规则的完整列表是：
+
+- 总体 NSID：
+    - 必须仅包含 ASCII 字符
+    - 用 ASCII 句点字符 (`.`) 分隔域权限和名称
+    - 必须至少有 3 个段
+    - 最大总长度为 317 个字符
+- 域名权限：
+    - 由句点 (`.`) 分隔的段组成
+    - 最多 253 个字符（包括句点），并且必须至少包含两个段
+    - 每个段必须至少有 1 个且最多 63 个字符（不包括任何句点）
+    - 允许的字符为 ASCII 字母 (`a-z`)、数字 (`0-9`) 和连字符 (`-`)
+    - 段不能以连字符开头或结尾
+    - 第一段（顶级域）不能以数字开头
+    - 域权限不区分大小写，应标准化为小写（即将 ASCII `A-Z` 标准化为 `a-z`）
+- 姓名：
+    - 必须至少有 1 个且最多 63 个字符
+    - 允许的字符仅为 ASCII 字母和数字（`A-Z`、`a-z`、`0-9`）
+    - 不允许使用连字符
+    - 第一个字符不能是数字
+    - 区分大小写，不应标准化
+
+NSID 的参考正则表达式是：
+
+````
+/^[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA -Z0-9-]{0,61}[a-zA-Z0-9])?)+(\.[a-zA-Z]([a-zA-Z0-9]{0,62})?)$/
+````
+
+### NSID 语法变体
+
+当引用 NSID 组或模式时，尾随 ASCII 星号字符 (`*`) 可以用作“glob”字符。例如，“com.atproto.*”将引用“atproto.com”域权限下的任何 NSID，包括嵌套子域（子权限）。独立的“*”将匹配所有权威机构的所有 NSID。目前，可能只有一个明星角色；它必须是最后一个字符；并且它必须位于段边界（段名称没有部分匹配）。这意味着起始字符必须以句点开头，或者是与所有 NSID 匹配的裸星。
+
+### 示例
+
+语法上有效的 NSID：
+
+````
+com.example.fooBar
+net.users.bob.ping
+a-0.b-1.c
+a、b、c
+com.example.fooBarV2
+cn.8.lex.stuff
+````
+
+无效的 NSID：
+
+````
+com.exa💩ple.thing
+com.example
+com.example.3
+````
+
+### 使用和实施指南
+
+**强烈鼓励**的最佳实践是使用仅包含 ASCII 字母字符（即没有数字或连字符）的权限域。这使得用大多数编程语言生成客户端库变得更加容易。
+
+整个 NSID 在显示、存储和验证时区分大小写。但是，不允许拥有仅大小写不同的多个 NSID。命名空间当局有责任防止重复和混淆。实现不应强制 NSID 小写。
+
+通常使用“子域”作为“域权限”的一部分来组织相关的 NSID。例如，NSID“com.atproto.sync.getRecord”使用“sync”段。请注意，除了域“atproto.com”之外，这还需要控制整个域“sync.atproto.com”。
+
+Lexicon 语言文档将提供有关为记录类型和 XRPC 方法选择和组织 NSID 的风格指南。简而言之，记录通常是单个名词，而不是复数。 XRPC 方法通常采用“verbNoun”形式。
+
+互操作测试向量可从 [atproto-interop-tests](https://github.com/bluesky-social/atproto-interop-tests) 存储库中获取。
+
+### 未来可能的变化
+
+可以想象，NSID 语法会放宽，以允许最终段中使用 Unicode 字符。
+
+“glob”语法变体可以修改为扩展，以使单级匹配和嵌套匹配之间的区别更加明确。
+
+当前不存在用于验证“域权限”控制的自动化机制。此外，不存在用于获取给定 NSID 的词典模式或枚举基本域的所有 NSID 的自动化机制。

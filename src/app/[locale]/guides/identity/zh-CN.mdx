@@ -1,0 +1,105 @@
+import {DescriptionList, Description} from '@/components/DescriptionList'
+import ValidIdentifiers from './_snippets/valid-identifiers.mdx'
+import DidResolutionDiagram from './_snippets/did-resolution-diagram.mdx'
+import ResolvePlcTs from './_snippets/resolve-plc-ts.mdx'
+import ResolveWebTs from './_snippets/resolve-web-ts.mdx'
+
+export const header = {
+  title: 'Identity',
+  description:
+    'How the AT Protocol handles user identity.',
+}
+
+atproto 身份系统有许多要求：
+
+* **ID 提供。** 用户应该能够创建跨服务稳定的全局 ID。这些 ID 不应更改，以确保其内容的链接稳定。
+* **公钥分发。** 分布式系统依靠密码学来证明数据的真实性。身份系统必须以高度安全的方式发布其公钥。
+* **密钥轮换。** 用户必须能够在不破坏其身份的情况下轮换其密钥材料。
+* **服务发现。** 应用程序必须能够发现给定用户正在使用的服务。
+* **可用性。** 用户应该拥有人类可读且容易记住的名称。
+* **可移植性。** 身份应该可以跨服务移植。更改提供商不应导致用户丢失其身份、社交图或内容。
+
+使用 atproto 身份系统为应用程序提供了用于端到端加密、签名用户数据、服务登录和一般互操作的工具。
+
+## 标识符
+
+我们使用两种相互关联的标识符形式：_handles_ 和 _DIDs_。句柄是 DNS 名称，而 DID 是 [W3C 标准](https://www.w3.org/TR/did-core/)，具有多种实现方式，可提供安全且稳定的 ID。 AT 协议支持 DID PLC 和 DID Web 变体。
+
+以下是所有有效的用户标识符：
+
+<ValidIdentifiers />
+
+它们之间的关系可以形象地表示为：
+
+<DidResolutionDiagram />
+
+DNS 句柄是面向用户的标识符 - 它应该显示在用户界面中并作为查找用户的方式进行推广。应用程序将句柄解析为 DID，然后使用 DID 作为帐户的规范标识符。任何DID都可以快速解析为包含公钥和用户服务的DID文档。
+
+<DescriptionList>
+  <Description title="Handles">Handles are DNS names. They are resolved using DNS TXT records or an HTTP well-known endpoint, and must be confirmed by a matching entry in the DID document. Details in the <a href="/specs/handle">Handle specification</a>.</Description>
+  <Description title="DIDs">DIDs are a <a href="https://www.w3.org/TR/did-core/">W3C standard</a> for providing stable & secure IDs. They are used as stable, canonical IDs of users. Details of how they are used in AT Protocol in the <a href="/specs/did">DID specification</a>.</Description>
+  <Description title="DID Documents">
+    DID Documents are standardized JSON objects which are returned by the DID resolution process. They include the following information:
+    <ul>
+      <li>The handle associated with the DID.</li>
+      <li>The signing key.</li>
+      <li>The URL of the user's PDS.</li>
+    </ul>
+  </Description>
+</DescriptionList>
+
+## DID 方法
+
+[DID 标准](https://www.w3.org/TR/did-core/) 描述了将 DID 发布和解析为 [DID 文档](https://www.w3.org/TR/did-core/#core-properties) 的不同“方法”的框架，而不是指定单一机制。多种现有方法[已注册](https://w3c.github.io/did-spec-registries/#did-methods)，具有不同的功能和属性。我们制定了以下与 atproto 一起使用的标准：
+
+- **强一致性。** 对于给定的 DID，解析查询在任何时候都应该只生成一个有效文档。 （在某些网络中，这可能会受到概率交易最终性的影响。）
+- **高可用性**。解析查询必须可靠地成功。
+- **在线API**。客户必须能够通过标准 API 发布新的 DID 文档。
+- **安全的**。网络必须防止来自运营商、中间人和其他用户的攻击。
+- **低成本**。服务和用户必须能够负担得起创建和更新 DID 文档的费用。
+- **密钥轮换**。用户必须能够轮换密钥对而不丢失其身份。
+- **去中心化治理**。网络不应由单一利益相关者管理；它必须是一个开放网络或提供商联盟。
+
+当我们开始该项目时，现有的 DID 方法都不满足所有这些标准。因此，我们选择支持现有的 [did-web](https://w3c-ccg.github.io/did-method-web/) 方法（很简单），以及我们创建的名为 [DID PLC](https://github.com/bluesky-social/did-method-plc) 的新颖方法。
+
+## 处理分辨率
+
+atproto 中的句柄是解析为 DID 的域名，DID 又解析为包含用户签名密钥和托管服务的 DID 文档。
+
+句柄解析使用 DNS TXT 记录或 HTTPS 众所周知的端点。详细信息可以在[手柄规范](/specs/handle)中找到。
+
+### 示例：托管服务
+
+考虑这样一个场景：托管服务使用 PLC 并为用户提供句柄作为子域：
+
+- 句柄：`alice.pds.com`
+- DID：`did:plc:12345`
+- 托管服务：`https://pds.com`
+
+首先，我们只知道“alice.pds.com”，因此我们查找 DNS TXT 记录“_atproto.alice.pds.com”。这告诉我们 DID：`did:plc:12345`。
+
+接下来，我们查询 PLC 目录中的 DID，以便我们可以了解托管服务的端点和用户的密钥材料。
+
+<ResolvePlcTs />
+
+我们现在可以与“https://pds.com”进行通信以访问 Alice 的数据。
+
+### 示例：自托管
+
+让我们考虑一个自托管场景。如果它使用 `did:plc`，它看起来像：
+
+- 句柄：`alice.com`
+- DID：`did:plc:12345`
+- 托管服务：`https://alice.com`
+
+但是，**如果自托管主机确信他们将保留域名的所有权**，他们可以使用 `did:web` 而不是 `did:plc`：
+
+- 句柄：`alice.com`
+- DID：`did:web:alice.com`
+- 托管服务：`https://alice.com`
+
+我们可以用同样的方式解析句柄，解析 `_atproto.alice.com`，它返回 DID：`did:web:alice.com`
+
+然后我们解决：
+
+<ResolveWebTs/>

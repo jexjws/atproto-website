@@ -1,0 +1,56 @@
+import AtUriExample from './_snippets/at-uri-example.mdx'
+import WriteResponse from './_snippets/write-response.mdx'
+
+export const header = {
+  title: 'Sync',
+  description: 'Synchronizing AT Protocol data',
+}
+
+## 句柄和 DID
+
+在AT中，句柄通过[DID](/specs/did)解析，也称为[去中心化标识符](https://en.wikipedia.org/wiki/Decentralized_identifier)。目前支持两种不同的DID前缀：
+- `did:web`，基于 W3C DID 标准。
+- `did:plc`，这是 Bluesky 开发和实现的 DID 方法。有关详细信息，请参阅 [did-method-plc](https://github.com/did-method-plc/did-method-plc) 存储库。
+
+当您使用 Atmosphere 应用程序注册新帐户时，该应用程序将与 PDS 通信，使用其域名（例如“*.bsky.social”）为您注册新的用户名。
+
+## 数据存储库
+
+数据存储库是单个用户发布的数据的集合。存储库是自我验证的数据结构，这意味着每个更新都经过签名并且可以由任何人验证。
+
+数据存储库中使用多种类型的标识符：
+
+- [**去中心化 ID (DID)**](https://w3c.github.io/did/) 识别数据存储库。它们被广泛用作用户 ID，但由于每个用户都有一个数据存储库，因此 DID 可以被视为对数据存储库的引用。
+- [**命名空间标识符 (NSID)**](/specs/nsid) 标识存储库中记录组的词典类型。
+- [**记录密钥**](/specs/record-key) ("rkeys") 标识给定存储库中集合中的各个记录。格式由集合 Lexicon 指定。
+- [**内容 ID (CID)**](https://github.com/multiformats/cid) 使用指纹哈希来识别内容。它们在整个存储库中用于引用其中的对象（节点）。
+
+以单个 AT 记录为例：
+
+<AtUriExample />
+
+这可以细分为“at://DID/NSID/rkey”或“at://repository/collection/record”。它的相应 CID 为“bafyreidgbehqwweghrrddfu6jgj7lyr6fwhzgazhirnszdb5lvr7iynkiy”。
+
+当向 AT API 端点发出写入请求时（例如创建新帖子时），此完整存储库路径将作为响应返回：
+
+<WriteResponse />
+
+这就是在 AT 数据存储库中唯一标识和存储各个记录的方式。
+
+## PDS
+
+PDS（即个人数据服务器）是托管用户个人数据存储库（例如帖子、关注者和个人资料信息）的服务器。 PDS 处理托管用户帐户的帐户生命周期功能、身份管理和密钥解析。
+
+您可以[托管自己的 PDS](/guides/self-hosting)，以及[将个人帐户](/guides/account-migration) 从一个 PDS 迁移到另一个 PDS。请参阅 [AT 堆栈](/guides/the-at-stack#pds) 了解更多信息。
+
+## 进一步阅读和资源
+
+同步和传输 AT 数据的方法有很多种。您可以使用 [Jetstream](/guides/streaming-data) 流式传输实时更新，或在本地 [Backfill](/guides/backfilling) 网络上已存在的数据。
+
+- [流数据](/guides/streaming-data)
+- [回填](/guides/回填)
+- [提要](/指南/提要)
+- [存储库规范](/specs/repository)
+- [事件流规范](/specs/event-stream)
+- [同步规范](/specs/sync)
+- [Microcosm](https://www.microcosm.blue/) 社区项目维护了无需本地镜像即可大规模处理 AT 记录的工具。

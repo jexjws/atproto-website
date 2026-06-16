@@ -1,0 +1,154 @@
+import {Container} from "@/components/Container"
+import S01 from './_snippets/01-env-vars.mdx'
+import S02 from './_snippets/02-scope-update.mdx'
+import S03 from './_snippets/03-lex-install.mdx'
+import S04 from './_snippets/04-lib-labels.mdx'
+import S05 from './_snippets/05-schema-cid.mdx'
+import S06 from './_snippets/06-migration-cid.mdx'
+import S07 from './_snippets/07-webhook-cid.mdx'
+import S08 from './_snippets/08-report-route.mdx'
+import S09 from './_snippets/09-report-button.mdx'
+import S10 from './_snippets/10-page-with-labels.mdx'
+import reportbutton from './report-button.png'
+import ozonereport from './ozone-report.png'
+import labelapplied from './label-applied.png'
+
+export const header = {
+  title: 'Add Labels to Your App',
+  description: 'Wire your Statusphere app to an Ozone labeler service to display and create labels.',
+}
+
+在本教程中，您将把上一教程中的 Statusphere 应用连接到运行 [Ozone](https://github.com/bluesky-social/ozone) 的标签服务。用户将在摘要中看到审核者发布的标签以及状态，并且能够向贴标签者报告状态以供审核。
+
+## 先决条件
+
+本教程以已完成的[创建社交应用程序](/guides/statusphere-tutorial) 教程为基础。在开始之前您应该先运行它。
+
+您还需要一个可以管理的正在运行的 Ozone 实例。按照 [Ozone HOSTING 指南](https://github.com/bluesky-social/ozone/blob/main/HOSTING.md) 进行操作。在该设置结束时，您应该拥有：
+
+- **贴标机 DID**（`did:web:...` 或 `did:plc:...`），其 DID 文档中包含 `#atproto_labeler` 和 `#atproto_label` 条目。当您[将帐户配置为贴标机](/guides/using-ozone#configuring-ozone) 时，会发生这种情况。
+- 响应“GET /xrpc/com.atproto.label.queryLabels?uriPatterns=*”的 **公共服务 URL**。 Ozone 实现了这个端点。
+- Ozone UI 的**管理员登录**
+
+确认贴标机是否可达的快速方法：
+
+````bash
+卷曲“https://<your-ozone-host>/xrpc/com.atproto.label.queryLabels?uriPatterns=*&limit=1”
+````
+
+在新安装的 Ozone 上，这应该返回 `{"labels":[]}`。
+
+## 第 1 部分：将贴标机连接到您的应用程序中
+
+将贴标机的 DID 添加到您的环境中：
+
+<S01 />
+
+然后更新 `lib/auth/client.ts` 中的 OAuth `SCOPE` 常量，以便您的应用程序可以通过用户的 PDS 提交报告：
+
+<S02 />
+
+<Note>
+The `rpc:` scope authorizes XRPC method calls. The `?aud=<labeler-did>#atproto_labeler` suffix is what binds the scope to your specific labeler — the PDS will reject the proxied report without it.
+</Note>
+
+您需要注销并重新登录，新范围才能对现有会话生效。
+
+## 第 2 部分：查询标签
+
+标签存在于贴标机服务中，而不存在于任何用户的存储库中。每次呈现提要时，您都将直接查询贴标机。
+
+您将对贴标机（以读取标签）和用户的 PDS（以提交报告）进行类型化的 XRPC 调用，因此请预先安装这两个词典：
+
+<S03 />
+
+现在创建 `lib/labels.ts`：
+
+<S04 />
+
+有几点值得指出：
+
+- 端点 URL 来自贴标签者的 DID 文档。 DID 是信任锚 - 它的文档经过签名并告诉您“#atproto_labeler”服务实际位于何处。 Tap 缓存底层 DID 分辨率。
+- lex `Client` 是根据解析的 URL 构建的，并且未经身份验证即可使用 — `queryLabels` 是公共端点。
+- 每个标签的“src”是发布它的贴标者的 DID。这些被解析为句柄（每次调用都会进行重复数据删除）并作为“srcHandle”附加到每个“Label”，因此 UI 可以显示标记为状态的*who*，而不仅仅是不透明的 DID。
+
+三个助手（“isHidden”、“isWarned”、“displayLabels”）解释这些值。 `!hide` 和 `!warn` 是具有规定 UI 行为的系统级标签；其他任何内容都是描述性标签，例如“垃圾邮件”或“笑话”，您可以根据需要呈现它们。
+
+## 第 3 部分：捕获记录 CID
+
+报告主题需要所报告记录的 URI 和 CID。 Tap webhook 事件已经将 CID 与其他所有内容一起携带，但现有架构将其删除。您将扩展“status”表来保留它。
+
+将“cid”列添加到“lib/db/index.ts”中的“StatusTable”接口：
+
+<S05 />
+
+在 `lib/db/migrations.ts` 中添加新的迁移：
+
+<S06 />
+
+运行“pnpm migrate”来应用它。默认的空字符串适用于任何预先存在的行 - 新状态将从 Webhook 获取真实的 CID。
+
+更新 `app/api/webhook/route.ts` 中的 `insertStatus` 调用以传递 CID：
+
+<S07 />
+
+<Note>
+If you started from the [statusphere-example-app](https://github.com/bluesky-social/statusphere-example-app) clone (rather than building up the previous tutorial by hand), `app/api/status/route.ts` also does an optimistic local insert after writing to the user's PDS. Pass `cid: res.cid` through that `insertStatus` call too — otherwise the user's own posts will sit in the DB with an empty `cid` until the Tap webhook catches up.
+</Note>
+
+`getRecentStatuses` 已经使用了 `selectAll()`，因此新列会流出到 feed 页面，无需进一步更改。
+
+## 第 4 部分：报告状态
+
+创建`app/api/report/route.ts`：
+
+<S08 />
+
+该路由从请求正文中读取“uri”和“cid”，因此在报告时不需要查找记录。 `service: '${LABELER_DID}#atproto_labeler'` 选项告诉 lex 客户端在传出请求上设置 `atproto-proxy` 标头，以便用户的 PDS 将报告转发到您的 Ozone 实例。
+
+然后添加`components/ReportButton.tsx`：
+
+<S09 />
+
+## 第 5 部分：在 Feed 中显示标签
+
+现在将所有东西连接在一起。更新“app/page.tsx”以获取可见状态的标签，删除所有隐藏的标签，调暗所有警告的标签，将其余标签值呈现为徽章，并在每行上显示“ReportButton”。下面仅显示更改的部分 - 上一教程中的标题、会话块和顶部状态块未更改：
+
+<S10 />
+
+在测试之前，您应该仍然运行上一教程中的“tap”：
+
+````bash
+点击运行\
+  --webhook-url=http://localhost:3000/api/webhook \
+  --collection-filters=xyz.statusphere.status \
+  --signal-collection=xyz.statusphere.status
+````
+
+重新启动`pnpm dev`。登录的用户应该会在其他用户的状态旁边看到一个小的“报告”提示。提交报告会将其通过 PDS 发送给您的贴标商。
+
+<Container>
+  <Image src={reportbutton} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+打开 Ozone UI，在队列中找到报告，然后应用标签 - 可以是“spam”等自定义值，也可以是系统值“!warn”或“!hide”之一。
+
+<Container>
+  <Image src={ozonereport} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+刷新应用程序中的提要，标签应该会出现（或完全隐藏状态）。
+
+<Container>
+  <Image src={labelapplied} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+竖起大拇指的表情符号可以说是非常形象了！
+
+＃＃ 结论
+
+您现在拥有一个 atproto 应用程序，它使用来自贴标机服务的签名标签并允许用户向其提交报告。对每个渲染进行查询适用于小型应用程序，但生产型消费应使用“com.atproto.label.subscribeLabels”处的 WebSocket 流来保持本地缓存最新 - 这是这里的下一步。
+
+此设置也不假设任何 Bluesky 特定的内容：相同的 Ozone 实例、相同的协议端点和相同的客户端模式适用于任何需要社区审核的 atproto 应用程序。
+
+接下来，阅读有关[标签](/guides/labels) 的更多信息。

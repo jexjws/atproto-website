@@ -1,0 +1,107 @@
+import S01 from './_snippets/01-install-go.mdx'
+import S02 from './_snippets/02-project-setup.mdx'
+import S03 from './_snippets/03-package-main.mdx'
+import S04 from './_snippets/04-run-part1-callback-client.mdx'
+import S05 from './_snippets/05-run-part2-login-flow.mdx'
+import S06 from './_snippets/06-run-part3-use-session.mdx'
+import S07 from './_snippets/07-helper-functions.mdx'
+import S08 from './_snippets/08-run-command.mdx'
+import S09 from './_snippets/09-output-example.mdx'
+
+export const header = {
+  title: 'OAuth with Go Tutorial',
+  description: 'Authenticate with atproto OAuth from a Go app',
+}
+
+In this tutorial, you'll build a minimal Go tool that authenticates a user with [atproto OAuth](/guides/auth) and fetches their session info. The entire app fits in a single file.
+
+This is a good starting point for understanding how OAuth works in AT Protocol. For a TypeScript version, see the [OAuth with Node Tutorial](/guides/oauth-cli-tutorial). For building production web apps, see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
+
+## Prerequisites
+
+You should have a working understanding of Go.
+
+You should have installed:
+- Go 1.24+
+
+On platforms supported by [homebrew](https://brew.sh/), you can install it with:
+
+<S01 />
+
+You should also have an atproto handle to test with.
+
+## Part 1: Project Setup
+
+Create a new Go module and install the [Go SDK](https://github.com/bluesky-social/indigo):
+
+<S02 />
+
+That's it — the Go SDK includes everything you need for OAuth, including an in-memory session store for development.
+
+## Part 2: Build the OAuth Client
+
+Create `main.go`. Start with the imports and the OAuth client setup:
+
+<S03 />
+
+Now add the `run` function. First, set up a callback server on a random port, then configure the OAuth client:
+
+<S04 />
+
+`NewLocalhostConfig` sets up a loopback client.
+
+<Note>
+OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:PORT/callback`) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+</Note>
+
+`NewMemStore` provides in-memory session storage for development.
+
+## Part 3: Login Flow
+
+Continue the `run` function with the login flow. This resolves the handle, opens the browser, and waits for the callback:
+
+<S05 />
+
+The flow works like this:
+
+1. `StartAuthFlow` resolves the user's handle, discovers their PDS, sends a [Pushed Authorization Request (PAR)](/guides/permission-sets#requesting-permissions), and returns an authorization URL.
+2. The user's browser opens to a consent screen.
+3. After the user approves, their PDS redirects back to `http://127.0.0.1:<port>/callback` with an authorization code.
+
+## Part 4: Use the Session
+
+Complete the `run` function by exchanging the callback for a session and making an authenticated API call:
+
+<S06 />
+
+`ProcessCallback` exchanges the authorization code for tokens. `ResumeSession` wraps those tokens in a session that handles DPoP signing and token refresh automatically. `APIClient()` returns an HTTP client pre-configured with the user's credentials — you can use it to make any [XRPC](/specs/xrpc) call.
+
+## Part 5: Helper Functions
+
+Add the callback server and browser-opening helpers:
+
+<S07 />
+
+The callback server listens on `127.0.0.1:0`, which tells the OS to assign any available port. When the callback arrives, it sends the query parameters through a channel back to the main flow and shuts itself down.
+
+## Part 6: Run It
+
+Run your CLI tool, passing your handle as an argument:
+
+<S08 />
+
+Your browser should open to a consent screen. After you approve, the CLI will print your session info:
+
+<S09 />
+
+## Conclusion
+
+You've built a minimal OAuth CLI tool in Go that authenticates with the AT Protocol. The full source is about 120 lines of code.
+
+A few things to keep in mind:
+
+- **This is for local development.** The localhost client won't work in production. For a production-ready Go example with SQLite persistence and multiple commands, see the [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app) in the Cookbook.
+- **Sessions are in-memory.** Every run requires re-authorization. The Cookbook example shows how to persist sessions with SQLite.
+- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/permission-sets).
+
+You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!

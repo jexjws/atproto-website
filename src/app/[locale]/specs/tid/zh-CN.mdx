@@ -1,0 +1,80 @@
+export const header = {
+  title: 'Timestamp Identifiers (TIDs)',
+  description:
+    'A compact timestamp-based identifier for revisions and records.',
+}
+
+# 时间戳标识符 (TID)
+
+时间戳标识符（TID）是一个基于 64 位整数的紧凑字符串标识符，也可以解释为时间戳。 TID 的一个示例是“3jzfcijpj2z2a”。它们是可排序的，适合在 Web URL 中使用，并且可用作网络系统中的“逻辑时钟”。 TID 目前在 atproto 中用作记录键和存储库提交“修订”号。 {{ className: '领导' }}
+
+TID 与[“雪花标识符”](https://en.wikipedia.org/wiki/Snowflake_ID) 有一些相似之处，它们都是为全球唯一性而设计的。但由于atproto是一个开放网络，无法保证TID的唯一性。对手可以轻松地重复使用已知的 TID 创建新记录。
+
+## TID结构
+
+TID 的高级语义是：
+
+- 64 位整数
+- 大端字节顺序
+- 编码为“base32-sortable”。也就是说，用字符“234567abcdefghijklmnopqrstuvwxyz”编码
+- 不使用特殊的填充字符（如“=”），但所有数字始终进行编码，因此长度始终为 13 个 ASCII 字符。与整数零对应的TID是“2222222222222”。
+
+64位整数的布局是：
+
+- 最高位始终为 0
+- 接下来的 53 位表示自 UNIX 纪元以来的微秒。选择 53 位作为 64 位浮点数的最大安全整数精度，如 Javascript 使用的那样。
+- 最后 10 位是随机“时钟标识符”。
+
+TID 生成器应生成一个随机时钟标识符号，选择该编号是为了尽可能避免冲突（例如，PDS 服务集群的多个工作实例之间）。本地时钟可用于生成时间戳本身。应注意确保 TID 输出流单调递增且永不重复，即使在同一微秒内或在“时钟拖尾”或时钟同步事件期间生成多个 TID 也是如此。如果本地时钟只有毫秒精度，则应填充时间戳。 （您可以通过乘以 1000 来完成此操作。）
+
+## TID 语法
+
+词典字符串类型：`tid`
+
+TID字符串语法解析规则：
+
+- 长度始终为 13 个 ASCII 字符
+- 使用base32可排序字符集，意思是`234567abcdefghijklmnopqrstuvwxyz`
+- 第一个字符必须是“234567abcdefghij”之一
+
+早期版本的 TID 语法允许使用连字符，但现在不再允许使用连字符，在解析时应将其拒绝。
+
+TID 的参考正则表达式是：
+
+````
+/^[234567abcdefghij][234567abcdefghijklmnopqrstuvwxyz]{12}$/
+````
+
+### 示例
+
+语法上有效的 TID：
+
+````
+3jzfcijpj2z2a
+7777777777777
+3zzzzzzzzzzzz
+2222222222222
+````
+
+无效的 TID：
+
+````
+# 不是base32
+3jzfcijpj2z21
+0000000000000
+
+# 区分大小写
+3JZFCIJPJ2Z2A
+
+# 太长/太短
+3jzfcijpj2z2aa
+3jzfcijpj2z2
+222
+
+# 旧破折号语法 *不* 支持 (TTTT-TTT-TTTT-CC)
+3jzf-cij-pj2z-2a
+
+# 高位不能设置
+呜呜呜呜呜
+kjzfcijpj2z2a
+````

@@ -1,0 +1,90 @@
+import {Container} from "@/components/Container"
+import PermissionSetLexicon from '../permission-requests/_snippets/permission-set-lexicon.mdx'
+
+export const header = {
+  title: 'Permission Sets',
+  description: 'OAuth permission scopes and sets',
+}
+
+本页介绍如何**定义和发布**自定义词典的权限集。如果您只想在 OAuth 流程中**使用**现有权限范围，请参阅[权限请求](/guides/permission-requests)。
+
+## 了解权限集
+
+OAuth 流程使用权限“范围”来描述会话授予的访问级别。 atproto 应用程序不应请求对用户帐户的广泛访问权限，而应请求特定记录类型或 API 端点的精细权限。
+
+核心模式很简单：**仅请求访问您的应用程序需要的集合**。例如，如果您的应用程序使用您自己的词典创建帖子和点赞：
+
+````
+回购：com.example.post 回购：com.example.like blob：*/*
+````
+
+这使您的应用程序有权在“com.example.post”和“com.example.like”集合中创建/更新/删除记录，以及上传媒体的权限。用户的授权对话框将清楚地显示这些特定权限，而不是像“transition:generic”这样广泛的范围产生不祥的“几乎所有内容的访问权限”。
+
+为了获得更清晰的授权 UI，您可以将相关权限捆绑到具有人类可读描述的**权限集**中 - 请参阅下面的[权限集设计](#permission-set-design)。
+
+### 快速开始
+
+这是创建自己的记录类型的应用程序的最小“oauth-client-metadata.json”：
+
+```json
+{
+  “client_id”：“https://example.com/oauth-client-metadata.json”，
+  "client_name": "我的示例应用程序",
+  "client_uri": "https://example.com",
+  “redirect_uris”：[“https://example.com/oauth/callback”]，
+  "grant_types": ["authorization_code", "refresh_token"],
+  “响应类型”：[“代码”]，
+  "scope": "atproto 仓库:com.example.post 仓库:com.example.like blob:*/*",
+  "token_endpoint_auth_method": "无",
+  “dpop_bound_access_tokens”：true
+}
+````
+
+这会请求身份（`atproto`）、对两个记录集合的写入权限以及媒体上传。有关完整的设置指南，请参阅[关于 OAuth](/guides/about-oauth)。
+
+### 最小权限
+
+使用 atproto OAuth 的应用程序的绝对最小值（仅身份，无数据访问）：
+- `atproto`
+
+如果您还需要请求 Bluesky 个人资料数据：
+- `rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview`
+
+如果您需要上传图片或视频：
+- `斑点：*/*`
+
+虽然仍然支持像“transition:generic”这样的粗粒度“转换范围”，但我们鼓励采用细粒度权限。有关转换范围的概述，请参阅[授权范围](/specs/oauth#authorization-scopes)。有关完整的权限规范，请参阅[权限](/specs/permission)。
+
+## 权限集设计
+
+全功能的客户端应用程序需要大量细化权限才能运行：数十甚至数百个单独的权限。为了简化权限管理，Lexicon 设计者可以将权限“集”定义为他们发布的架构的一部分。这些权限集本身就是 Lexicon 模式，并通过命名空间 ID 引用，例如“com.example.authBasicFeatures”。
+
+例如，您的应用程序可以请求类似“include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview”的权限集。这将解析为定义应用程序运行所需的一组权限的词典：
+
+<PermissionSetLexicon />
+
+请注意“app.example.feed.authOnlyPost”和“com.example.authBasicFeatures”示例中的“auth”前缀。这是一个命名约定，表明词典被设计为用作权限集。
+
+权限集仅限于表达引用与集本身相同的 NSID 命名空间下的资源的权限。例如，设置“app.example.feed.authOnlyPost”可以包括对“app.example.feed.post”记录的权限以及向远程服务发出“app.example.feed.getPostThread”API端点请求的权限。但它无法向“app.example.actor.profile”授予权限。权限集“app.example.authFull”是层次结构中的上一级，可以包含对所有这些资源的权限。
+
+“title”和“details”字段是描述性的，并将作为 OAuth 流程的一部分显示。支持这些描述性字段的国际化 - 请参阅[权限集规范](/specs/permission#permission-sets)。
+
+在“rpc”权限中使用“inheritAud”允许您[控制继承行为](/specs/permission#rpc)。
+
+用于图像/视频处理的“blob:*/*”权限不能包含在权限集中，并且必须始终单独请求。
+
+权限集也是词典，并且使用相同的工具发布。有关使用“goat”创建、检查和发布词典的说明，请参阅[发布词典](/guides/publishing-lexicons)。
+
+## 渐进范围请求
+
+您的应用不需要在登录时请求所有权限。您可以从最小范围开始，并在用户选择使用功能时请求更多范围。有关包括动态范围选择和升级现有会话在内的实现模式，请参阅 [OAuth 模式](/guides/oauth-patterns#progressive-scope-requests)。
+
+## 进一步阅读和资源
+
+- [授权](/guides/auth)
+- [SDK认证](/guides/sdk-auth)
+- [关于 OAuth](/guides/about-oauth)
+- [权限请求](/guides/permission-requests)
+- [OAuth 模式](/guides/oauth-patterns)
+- [OAuth 规范](/specs/oauth)
+- [权限规范](/specs/permission)

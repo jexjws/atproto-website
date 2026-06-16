@@ -1,0 +1,48 @@
+import {Container} from "@/components/Container"
+import ozone from "./ozone.png"
+import LabelerServiceRecord from './_snippets/labeler-service-record.mdx'
+
+export const header = {
+  title: 'Creating a Labeler',
+  description: 'Run your own modular moderation service',
+}
+
+## 声明一个贴标机
+
+贴标者发布一条“/app.bsky.labeler.service/self”记录来声明他们是贴标者并发布他们的策略。该记录如下所示：
+
+<LabelerServiceRecord />
+
+如果您使用 [Ozone](/guides/using-ozone) 作为标签服务，在设置过程中关联您的帐户时，它会自动为您发布此记录。
+
+`labelValues` 声明了对贴标机的期望。它可能包括全局和自定义标签值。
+
+`labelValueDefinitions` 定义自定义标签。它包括“locales”字段，用于指定各种语言的人类可读副本。如果未找到用户的语言，它将使用数组中的第一组字符串。
+
+`subjectTypes`、`subjectCollections` 和 `reasonTypes` 声明贴标者审查什么类型的审核报告。 “subjectTypes”可以包括针对各个内容的“record”，以及针对整个帐户的“account”。 `subjectCollections` 是记录类型的 NSID 列表；如果未定义，则允许任何记录类型。 `reasonTypes` 是报告原因代码的列表（词典参考）。
+
+## 更新您的贴标机
+
+在为“reasonType”中的新“knownValues”添加支持之前创建的贴标机服务记录可能需要手动更新。如果没有更新，您的贴标机可能会收到其无法识别的原因类型的报告 - 这很可能会影响添加了自定义报告原因的长期维护人员。您可以检查[当前 `reasonType` 定义](https://lexicon.garden/lexicon/did:plc:6msi3pj7krzih5qxqtryxlzw/com.atproto.moderation.defs#reasonType) 以查看您的记录是否已过期。
+
+您可以像[任何其他记录](/guides/writing-data#updating-records)一样手动更新记录。或者，您可以从记录中完全删除“reasonType”字段，这将使您的贴标机接受所有报告原因类型，包括将来添加的任何类型。
+
+## 臭氧
+
+[Ozone](https://github.com/bluesky-social/ozone) 是我们针对 Atmosphere 应用程序的参考标签服务，包括一个用于分类和操作审核报告的 Web 界面。
+
+<Container>
+  <Image src={ozone} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+自托管 Ozone 使您能够作为贴标者参与 AT 可堆叠审核架构。 Ozone 服务由 Web UI、后端和 Postgres 数据库组成。
+
+在设置 Ozone 服务之前，您应该在网络上创建一个“新”帐户，与您的主帐户分开。这是贴标机订阅者将与之交互的帐户：贴标机帐户在应用程序界面中的显示方式与普通帐户不同。要开始使用 Ozone，请阅读 [使用 Ozone](/guides/using-ozone)。
+
+## 进一步阅读和资源
+
+- [审核](/指南/审核)
+- [标签](/指南/标签)
+- [订阅](/指南/订阅)
+- [使用臭氧](/guides/using-ozone)
+- [标签规格](/规格/标签)

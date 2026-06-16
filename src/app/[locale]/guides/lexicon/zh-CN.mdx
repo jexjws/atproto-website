@@ -1,0 +1,74 @@
+import NsidApiExamples from './_snippets/nsid-api-examples.mdx'
+import NsidRecordExamples from './_snippets/nsid-record-examples.mdx'
+import SdkCallTs from './_snippets/sdk-call-ts.mdx'
+import HttpGetExample from './_snippets/http-get-example.mdx'
+import SchemaQueryExample from './_snippets/schema-query-example.mdx'
+import FollowRecordExample from './_snippets/follow-record-example.mdx'
+import FollowUrlExample from './_snippets/follow-url-example.mdx'
+import FollowSchemaExample from './_snippets/follow-schema-example.mdx'
+
+export const header = {
+  title: 'Lexicons',
+  description: 'A schema-driven interoperability framework',
+}
+
+## 关于词典
+
+Lexicon 是一个用于定义 RPC 方法和记录类型的模式系统。每个 Lexicon 模式都是用 JSON 编写的，其格式类似于用于定义约束的 [JSON-Schema](https://json-schema.org/)。
+
+**词典提供互操作性。** AT 应用程序需要一种方法来声明自己的行为和语义。 Lexicon 解决了这个问题，同时使开发人员可以轻松地引入新模式。
+
+这些架构使用 [NSID](/specs/nsid)（一种反向 DNS 格式）进行标识。以下是一些 API 端点示例：
+
+<NsidApiExamples />
+
+以下是一些记录类型示例：
+
+<NsidRecordExamples />
+
+模式类型、定义语言和验证约束在 [Lexicon 规范](/specs/lexicon) 中描述，JSON 和 CBOR 中的表示在 [数据模型规范](/specs/data-model) 中描述。
+
+## HTTP API 方法
+
+Atproto HTTP API 方法的每个范围和实现一组特定的词典。 AT 协议的 API 系统 [XRPC](/specs/xrpc) 本质上是 HTTPS 的薄包装。例如，调用：
+
+<SdkCallTs />
+
+实际上只是一个 HTTP 请求：
+
+<HttpGetExample />
+
+该模式建立有效的查询参数、请求主体和响应主体。
+
+<SchemaQueryExample />
+
+## 记录类型
+
+模式定义记录的可能值。每条记录都有一个“类型”，它映射到模式并建立记录的 URL。
+
+例如，这个“关注”记录：
+
+<FollowRecordExample />
+
+…将有一个类似以下的 URL：
+
+<FollowUrlExample />
+
+…以及类似的模式：
+
+<FollowSchemaExample />
+
+## 版本控制
+
+词典一旦发布，就永远不能改变其约束。放松约束（添加可能的值）将导致旧软件无法验证新数据，而收紧约束（删除可能的值）将导致新软件无法验证旧数据。因此，词典只能向以前不受约束的字段添加可选约束。
+
+如果词典必须更改先前发布的约束，则应将其发布为新 NSID 下的新词典。
+
+## 进一步阅读和资源
+
+可以从我们的 Lexicon 注册表为我们的每个 SDK 进行[本地安装](/guides/installing-lexicons)。您还可以按照我们的[风格指南](/guides/lexicon-style-guide)[发布您自己的词典](/guides/publishing-lexicons)。
+
+- [安装词典](/guides/installing-lexicons)
+- [出版词典](/guides/publishing-lexicons)
+- [词典风格指南](/guides/lexicon-style-guide)
+- [词典规格](/specs/lexicon)

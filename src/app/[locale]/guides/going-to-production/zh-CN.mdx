@@ -1,0 +1,75 @@
+export const header = {
+  title: 'Going to production',
+  description:
+    'Improving your Atmosphere stack deployment for production use at scale',
+}
+
+Atmosphere 是为了分布式而构建的，这意味着任何人都可以而且应该随意托管自己的 AT 协议基础设施。如果您进行大规模自托管，即为数千名用户提供服务，您可能需要对托管服务进行一些额外的“强化”，并就配置基础设施做出更复杂的决策。
+
+为完全分布式 Atmosphere 提供支持的[代码](https://github.com/bluesky-social/atproto) 正在不断改进。以下指南包含一些管理您自己的服务的经验教训和最佳实践。
+
+## PDS
+
+我们提供了一个 [PDS 安装脚本](https://github.com/bluesky-social/pds)，旨在让您在资源有限的 VPS 上启动并运行您自己的 PDS。这将使您能够托管自己的数据存储库、创建和管理帐户，并在更广泛的 Atmosphere 网络或任何其他 Atmosphere 应用程序中提供自托管数据。文档的这一部分将帮助您将该 PDS 投入生产。
+
+## 强化
+
+[PDS Gatekeeper](https://tangled.org/pds.dad/pds-gatekeeper) 是一个社区项目，它将 2FA 和其他安全功能添加到自托管的 PDS 中。
+
+## 域名
+
+如果您除了 PDS 部署之外还运行非 Bluesky 应用程序，**您的 PDS 托管和应用程序将需要单独的域名**。这是因为图像和视频 blob 将从与 OAuth 和会话管理页面相同的域名提供服务。这可能会导致凭证盗窃等安全问题，并且意味着使用子域并不是一个实用的解决方案。
+
+换句话说，如果您在“https://greensky.app”上有一个应用程序，则不应使用“https://pds.greensky.app”作为 PDS 主机名，而应该使用“https://greensky-pds.net”之类的名称。如果您使用“https://pds.greensky.social”（这是有意义的），则将来可能会排除“https://chat.greensky.social”上的 OAuth 客户端应用程序。但你可以做类似“https://chat.greensky.app”的事情。
+
+默认情况下，PDS 具有限制性 CORS 标头。
+
+一旦拥有活动帐户，就很难更改 PDS 主机名 - 每个帐户都需要单独迁移。使用 [PLC 旋转密钥](https://web.plc.directory/spec/v0.1/did-plc) 绝对可以做到这一点，但迁移并不是交钥匙工程。另请注意，PDS 是用户将在其中输入密码的域（因此会在密码管理器中记住）。
+
+## 备份和恢复
+
+我们的[官方 PDS 安装脚本](https://github.com/bluesky-social/pds) 将 SQLite 配置为数据库后端。具体来说，它为每个用户的[数据存储库](https://atproto.com/guides/data-repos) 使用一个 SQLite DB，并为 PDS 范围的数据使用其他一些数据库。这可能会令人惊讶，因为 SQLite 没有任何开箱即用的处理备份或复制的机制，但越来越多的人发现 SQLite 通过一些额外的工具可以[扩展得很好](https://fly.io/blog/sqlite-internals-rollback-journal/)。
+
+这里的秘密武器是 [Litestream](https://fly.io/blog/litestream-v050-is-here/)，它正是这样做的 - [SQLite 的备份和恢复](https://github.com/benbjohnson/litestream)。要使用 Litestream 获得可恢复、可扩展的 PDS SQLite 部署，我们建议：
+
+- 设置 `PDS_SQLITE_DISABLE_WAL_AUTO_CHECKPOINT` = `true` 。这位于 PDS 的 [环境变量配置](https://github.com/bluesky-social/atproto/blob/f8e56b387fcd3bc8405225c1bbdef66ca5dc1591/packages/pds/src/config/env.ts#L48) 中。这样做的目的是强制 PDS SQLite 客户端保持预写日志记录打开并将实际检查点留给 Litestream。
+- 使用 [Litestream with systemd](https://litestream.io/guides/systemd/) 或其他调度程序来查找最近更新的数据库并备份它们。默认情况下，各个用户数据库位于“/pds/actors/”中。 Litestream 会自动清理预写日志和检查点，因此不存在 WAL 增长失控的风险。
+- 如果需要，请确保在从部署中清理容器或 Pod 时此脚本也在 SIGTERM 上运行。
+
+在灾难恢复场景中，您将拉取所有最新的帐户数据库文件（可能会丢失几个小时的数据）和 PDS 范围的数据库文件（应该大致完整）。然后，运行恢复脚本，该脚本应用来自 PDS 级别 Firehose 输出的任何存储库操作。这包括身份和帐户更新。然后，启动 PDS 备份。
+
+## PLC密钥管理
+
+保护托管帐户的额外 PLC 身份轮换密钥非常重要 - 例如，在 [密钥管理系统](https://developer.hashicorp.com/vault/docs/secrets/key-management) 或 [硬件安全模块](https://csrc.nist.gov/glossary/term/hardware_security_module_hsm) 中。注意这两个环境变量：
+
+- `PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX`：由 PDS 服务用来在 PLC 上执行操作，包括恢复用户帐户。如果您使用的是 AWS，则可以使用“PDS_PLC_ROTATION_KEY_KMS_KEY_ID”通过 [AWS Key Management Service](https://aws.amazon.com/kms/) 进行配置。
+- `PDS_RECOVERY_DID_KEY`：添加到用户 DID 的公钥。相应的私钥**必须**存储在安全的地方，并且可用于在发生灾难性数据丢失（包括“PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX”）的情况下恢复用户帐户。
+
+## 对象存储
+
+默认情况下，PDS 安装脚本为 blob（图像、视频等）配置本地磁盘存储。这对于小型部署来说很好，但不建议用于生产部署。
+
+存储需求会有所不同，但我们强烈建议使用 S3 兼容存储（例如 [Minio](https://github.com/minio/minio) 或 VPS 提供商提供的块存储），而不是将图像和视频存储在本地磁盘上。
+
+## 速率限制
+
+默认情况下，PDS 实现包括[repo 操作限制](https://docs.bsky.app/docs/advanced-guides/rate-limits)。
+
+如果您删除这些限制，那么整个 PDS 可能会在 [Relay](https://github.com/bluesky-social/indigo/tree/main/cmd/relay) 上受到限制（它本身对每个 PDS 主机都有默认的事件速率限制），因此如果您没有运行自己的 Relay，请注意这一点。
+
+默认情况下，我们的 PDS 安装脚本将设置单个节点应用程序进程。这些是在 SQLite 之上运行的无状态后端应用程序。如果您水平扩展以运行多个 Node 进程，您还需要使用 [Redis](https://redis.io/) 来允许它们共享状态。有两个环境变量用于配置Redis：
+
+- `PDS_REDIS_SCRATCH_ADDRESS` — 您的 Redis 实例（例如 localhost:6379）
+- `PDS_REDIS_SCRATCH_PASSWORD` — 您的 Redis 凭据。
+
+这使您的速率限制能够优雅地扩展。
+
+如果您并行运行多个进程，您可能还想为 SQLite 数据库利用 [sidecar 容器](https://litestream.io/guides/docker/#why-sidecar-containers-work)。
+
+## 适度
+
+审核操作可以应用于 AppView 和 PDS 级别。但是，如果您还运行 Relay，则应注意 Relay 管理 Web 界面具有用于执行帐户级别和 PDS 级别操作（如果需要）的表单。还有一些与审核相关的 PDS 端点未通过 XRPC 公开，我们的 [goat](https://github.com/bluesky-social/goat) CLI 工具可以与之交互。有关示例，请参阅 [goat/pds_admin.go](https://github.com/bluesky-social/goat/blob/main/pds_admin.go)。
+
+[Ozone](https://github.com/bluesky-social/ozone) 是我们的标签服务和审核界面。如果您正在构建自己的 AppView，AppView 可以使用 Ozone `subscribeLabel` “firehose”来接收更新。 Ozone 还可以被授予读取其他 PDS 级别私人信息的权限，例如帐户电子邮件。这对于帐户恢复等事情很有帮助。
+
+您通常应该运行单独的 Ozone 实例来审核 PDS（因为它们可以看到私人帐户信息）和独立的 AppView，除非实际上有一个管理组织对两者进行审核。
