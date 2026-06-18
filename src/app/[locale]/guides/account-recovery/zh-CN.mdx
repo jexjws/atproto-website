@@ -20,9 +20,9 @@ export const header = {
 
 ## 身份如何运作
 
-AT 协议帐户有两个标识符：人类可读的**句柄**（如“@alice.bsky.social”）和永久的**DID**（如“did:plc:ewvi7nxzyoun6zhxrhs64oiz”）。 DID 是你的真实身份——句柄可以更改，但你的 DID 保持不变。
+AT 协议帐户有两个标识符：人类可读的**句柄** （如“@alice.bsky.social”）和永久的**DID** （如“did:plc:ewvi7nxzyoun6zhxrhs64oiz”）。 DID 是你的真实身份——句柄可以更改，但你的 DID 保持不变。
 
-大多数 atproto 帐户使用“did:plc”，这是一种依赖**轮换密钥**来授权身份更新的 DID 方法。这些键按优先级顺序排列：列表中较早的键可以覆盖较晚的键所做的更改。默认情况下，你的 PDS 持有你身份的唯一轮换密钥。
+大多数 atproto 帐户使用“did:plc”，这是一种依赖**轮换密钥** 来授权身份更新的 DID 方法。这些键按优先级顺序排列：列表中较早的键可以覆盖较晚的键所做的更改。默认情况下，你的 PDS 持有你身份的唯一轮换密钥。
 
 通过添加比 PDS 密钥更高优先级的你自己的轮换密钥，你可以独立更新你的身份，包括在需要时将其指向新的 PDS。
 
@@ -30,8 +30,8 @@ AT 协议帐户有两个标识符：人类可读的**句柄**（如“@alice.bsk
 
 每个 DID 文档都会发布两个公钥：签名密钥和恢复密钥。
 
-- **签名密钥**：断言对 DID 文档和用户数据存储库的更改。
-- **恢复密钥**：断言对 DID 文档的更改；可能会在 **72 小时窗口**内覆盖签名密钥。
+- **签名密钥** ：断言对 DID 文档和用户数据存储库的更改。
+- **恢复密钥** ：断言对 DID 文档的更改；可能会在 **72 小时窗口** 内覆盖签名密钥。
 
 签名密钥委托给PDS，以便它可以管理用户的数据，但恢复密钥由用户保存，例如作为纸钥匙。这使得用户无需原始主机的帮助即可将其帐户更新到新的 PDS。
 
@@ -44,16 +44,16 @@ AT 协议帐户有两个标识符：人类可读的**句柄**（如“@alice.bsk
 - [`goat`](https://github.com/bluesky-social/indigo/tree/main/cmd/goat) 命令行工具：
 
 ````bash
-酿造安装山羊
+brew install goat
 ````
 
 使用“goat”生成新的加密密钥对：
 
 ````bash
-山羊钥匙生成
+goat key generate
 ````
 
-这会输出**秘密密钥**（私有）和**公钥**。输出看起来像：
+这会输出**秘密密钥** （私有）和**公钥** 。输出看起来像：
 
 ````
 秘钥：...
@@ -112,13 +112,13 @@ https://plc.directory/{your-did}/log/audit
 
 此过程详细记录在 [Adversarial PDS Migration](https://www.da.vidbuchanan.co.uk/blog/adversarial-pds-migration.html) 中。一般步骤是：
 
-1. [**准备一个新的 PDS**](/guides/self-hosting#pds) 并包含邀请码
-2. **使用“goat”和轮换密钥来更新你的 DID 文档**，以指向新的 PDS 并添加临时签名密钥
+1. [**准备一个新的 PDS** ](/guides/self-hosting#pds) 并包含邀请码
+2. **使用“goat”和轮换密钥来更新你的 DID 文档** ，以指向新的 PDS 并添加临时签名密钥
 3. 使用服务身份验证令牌在新 PDS 上**创建帐户**
-4. **从备份导入数据**（存储库 CAR 文件、blob、首选项）
+4. **从备份导入数据** （存储库 CAR 文件、blob、首选项）
 5. **通过更新凭据并激活帐户来完成**
 
-为此，你还需要**数据备份**。考虑定期导出你的存储库：
+为此，你还需要**数据备份** 。考虑定期导出你的存储库：
 
 ````bash
 goat repo export $ACCOUNT_DID # 导出你的公共数据（bluesky 帖子等）

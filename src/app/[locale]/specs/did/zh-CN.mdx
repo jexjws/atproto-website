@@ -58,8 +58,8 @@ atproto 上下文中 DID 的合理起始点正则表达式是：
 在 atproto 中使用的有效 DID（正确的语法和支持的方法）：
 
 ````
-做了：plc：ewvi7nxzyoun6zhxrhs64oiz
-做了：网站：user.example.com
+did:plc:ewvi7nxzyoun6zhxrhs64oiz
+did:web:user.example.com
 ````
 
 有效的 DID 语法（将通过 Lexicon 语法验证），但不支持的 DID 方法：
@@ -96,7 +96,7 @@ DID 声明的 [handle](/specs/handle) 可在 `alsoKnownAs` 数组中找到。该
 
 DID 是 atproto 中的主要账户标识符，DID 文档不包含有效且确认的句柄的账户仍然可以参与 atproto 生态系统。软件应小心，要么不显示此类帐户的任何句柄，要么明显指示与其关联的任何句柄无效。
 
-帐户的公共 **atproto 签名密钥**位于“verificationMethod”数组下，位于“id”以“#atproto”结尾的对象中，“controller”与 DID 本身匹配，“type”与固定字符串“Multikey”匹配。应使用数组中第一个有效的 atproto 签名密钥，并忽略任何其他密钥。 “publicKeyMultibase”字段将是多基编码中的公钥。存在一种遗留格式，其要求略有不同。有关两种格式的解析字段的详细信息，请参阅下文。
+帐户的公共 **atproto 签名密钥** 位于“verificationMethod”数组下，位于“id”以“#atproto”结尾的对象中，“controller”与 DID 本身匹配，“type”与固定字符串“Multikey”匹配。应使用数组中第一个有效的 atproto 签名密钥，并忽略任何其他密钥。 “publicKeyMultibase”字段将是多基编码中的公钥。存在一种遗留格式，其要求略有不同。有关两种格式的解析字段的详细信息，请参阅下文。
 
 大多数 atproto 功能都需要有效的签名密钥。 DID 文档中没有有效密钥的帐户可能已损坏。
 

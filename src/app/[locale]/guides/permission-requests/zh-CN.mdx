@@ -14,17 +14,17 @@ export const header = {
     'A permissions guide for app developers and Lexicon designers',
 }
 
-本页介绍如何在 OAuth 流程中**使用**权限范围。如果你正在使用自定义词典构建应用程序并想要**定义和发布**你自己的权限集，请参阅[权限集](/guides/permission-sets)。
+本页介绍如何在 OAuth 流程中**使用** 权限范围。如果你正在使用自定义词典构建应用程序并想要**定义和发布** 你自己的权限集，请参阅[权限集](/guides/permission-sets)。
 
 ## 概述
 
 本指南介绍如何为你的 atproto 应用程序请求和定义权限。 [OAuth](/guides/auth) 处理授权，此页面介绍如何指定你的应用可以访问的“内容”。
 
-使用 [permissions](/specs/permission) 授予对 atproto 资源的控制权。诸如“repo:com.example.post”之类的个人权限授予写入特定记录类型或 API 端点的访问权限。相关权限可以捆绑到具有人类可读标题和描述的**权限集**中 - 这些是用户在授权对话框中看到的内容。
+使用 [permissions](/specs/permission) 授予对 atproto 资源的控制权。诸如“repo:com.example.post”之类的个人权限授予写入特定记录类型或 API 端点的访问权限。相关权限可以捆绑到具有人类可读标题和描述的**权限集** 中 - 这些是用户在授权对话框中看到的内容。
 
-如果你正在使用**自定义词典**构建应用程序，则应该为它们定义权限集。这为用户提供了应用程序功能的清晰描述，而不是不透明的命名空间 ID 列表。结构请参见[权限集设计](/guides/permission-sets#permission-set-design)。
+如果你正在使用**自定义词典** 构建应用程序，则应该为它们定义权限集。这为用户提供了应用程序功能的清晰描述，而不是不透明的命名空间 ID 列表。结构请参见[权限集设计](/guides/permission-sets#permission-set-design)。
 
-如果你正在构建仅使用**现有词典**的应用程序（例如 Bluesky 的“app.bsky.*”），则可以引用其已发布的权限集，或请求单独的细化权限。请参阅 [OAuth 流程示例](#o-auth-flow-examples) 部分，了解这些内容对用户的显示方式。
+如果你正在构建仅使用**现有词典** 的应用程序（例如 Bluesky 的“app.bsky.*”），则可以引用其已发布的权限集，或请求单独的细化权限。请参阅 [OAuth 流程示例](#o-auth-flow-examples) 部分，了解这些内容对用户的显示方式。
 
 ## 请求权限
 

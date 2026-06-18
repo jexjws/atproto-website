@@ -36,7 +36,7 @@ export const header = {
 - PDS 发出“#account”事件，“active”为 false，状态为“deleted”。
 - 中继更新存储库的本地帐户状态，并传递“#account”事件。如果 Relay 是完整镜像，它会立即停止为该帐户提供“getRepo”、“getRecord”和类似 API 请求，并在响应错误中指出原因。 Relay可以根据本地策略在本地完全删除repo内容。只要回填窗口有时间限制，就不需要立即清除回填窗口的提交事件。
 - PDS 不应为非“活动”帐户发出“#commit”事件。如果为存储库发出任何进一步的“#commit”消息（例如，由于意外或无序处理或交付），所有下游服务都应忽略该事件并且不传递该事件
-- 下游服务（例如，AppView）**应**立即停止为该帐户提供/分发内容。他们“可能”根据当地政策推迟永久数据删除。根据策略和实现，更新聚合（例如，记录计数）也可以被推迟或在后台队列中处理。错误状态消息可能指示内容“消失”（存在，但不再可用），或者内容“未找到”（不显示内容以前存在）
+- 下游服务（例如，AppView）**应** 立即停止为该帐户提供/分发内容。他们“可能”根据当地政策推迟永久数据删除。根据策略和实现，更新聚合（例如，记录计数）也可以被推迟或在后台队列中处理。错误状态消息可能指示内容“消失”（存在，但不再可用），或者内容“未找到”（不显示内容以前存在）
 
 <Note>
 The behavior of downstream services is a recurring theme throughout this guide. Due to the nature of the AT Protocol, downstream services may go out of sync with [firehose events](/guides/streaming-data), and may fail to process requests such as deletion requests. Records that have been requested to be deleted, or have been removed from a self-hosted PDS, may still exist elsewhere if they were processed by a Relay and ingested into another application or data model that does not follow the atproto spec — i.e., doesn't resolve record requests back to the origin PDS. Full records are [deliberately not included](https://github.com/bluesky-social/indigo/issues/927) with delete events on the firehose to further mitigate this. As a rule, the PDS *should* be considered the source of truth for hosted accounts.

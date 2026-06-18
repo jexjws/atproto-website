@@ -4,7 +4,7 @@ export const header = {
     'Specification for the Authenticated Transfer Protocol (AT Protocol)',
 }
 
-#AT协议
+# AT协议
 
 身份验证传输协议（“AT 协议”或“atproto”）是用于构建开放社交网络应用程序的网络协议。 {{ className: '领导' }}
 
@@ -17,9 +17,9 @@ export const header = {
 
 ## 协议结构
 
-**身份：**帐户控制植根于持久的 [DID](/specs/did) 标识符（如 `did:plc:ewvi7nxzyoun6zhxrhs64oiz`）。这些可以被普遍解析以确定当前服务提供商位置和与帐户关联的[加密密钥](/specs/cryptography)。 [Handles](/specs/handle) 补充了 DID，并以 DNS 主机名的形式提供可变且具有人类意义的用户名（例如“user.example.com”）。
+**身份：** 帐户控制植根于持久的 [DID](/specs/did) 标识符（如 `did:plc:ewvi7nxzyoun6zhxrhs64oiz`）。这些可以被普遍解析以确定当前服务提供商位置和与帐户关联的[加密密钥](/specs/cryptography)。 [Handles](/specs/handle) 补充了 DID，并以 DNS 主机名的形式提供可变且具有人类意义的用户名（例如“user.example.com”）。
 
-**数据：**公共内容存储在内容寻址且可加密验证的[存储库](/specs/repository)中。数据记录和网络消息都符合统一的[数据模型](/specs/data-model)，具有[CBOR](https://en.wikipedia.org/wiki/CBOR)和JSON表示形式。 [标签](/specs/label) 是一种单独形式的轻量级元数据，单独签名并分发到存储库之外，可用于审核和标记。
+**数据：** 公共内容存储在内容寻址且可加密验证的[存储库](/specs/repository)中。数据记录和网络消息都符合统一的[数据模型](/specs/data-model)，具有[CBOR](https://en.wikipedia.org/wiki/CBOR)和JSON表示形式。 [标签](/specs/label) 是一种单独形式的轻量级元数据，单独签名并分发到存储库之外，可用于审核和标记。
 
 **网络：** 客户端-服务器和服务器-服务器 HTTP API 使用词典模式 ([XRPC](/specs/xrpc)) 进行描述，WebSocket [事件流](/specs/event-stream) 也是如此。可以使用 [AT-URI](/specs/at-uri-scheme) 全局引用各个记录。 [个人数据服务器 (PDS)](/specs/account) 托管帐户、处理密钥管理、管理存储库、提供身份验证并代理客户端 HTTP 请求。中继从许多 PDS 主机聚合并输出统一的全网络 [firehose](/specs/sync)。
 

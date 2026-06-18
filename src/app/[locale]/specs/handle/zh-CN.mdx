@@ -6,7 +6,7 @@ export const header = {
 
 # 句柄
 
-DID 是 atproto 中帐户的长期持久标识符，但它们可能不透明且不适合人类使用。 **句柄**是可变且人性化的帐户用户名，采用 DNS 主机名的形式。例如，“user.example.com”。句柄必须双向链接到 DID：DID 文档必须声明句柄，并且句柄必须解析为 DID 标识符。支持两种解析 DID 句柄的方法：一种使用 TXT DNS 记录，另一种使用 HTTPS `/.well-known/` URL 路径。 {{ className: '领导' }}
+DID 是 atproto 中帐户的长期持久标识符，但它们可能不透明且不适合人类使用。 **句柄** 是可变且人性化的帐户用户名，采用 DNS 主机名的形式。例如，“user.example.com”。句柄必须双向链接到 DID：DID 文档必须声明句柄，并且句柄必须解析为 DID 标识符。支持两种解析 DID 句柄的方法：一种使用 TXT DNS 记录，另一种使用 HTTPS `/.well-known/` URL 路径。 {{ className: '领导' }}
 
 “主机名”的定义（作为所有可能的“DNS 名称”的子集）随着时间的推移并在多个 IETF RFC 中不断演变。一些相关文档是 [RFC-1035](https://www.rfc-editor.org/rfc/rfc1035)、[RFC-3696](https://www.rfc-editor.org/rfc/rfc3696) 第 2 部分和 [RFC-3986](https://www.rfc-editor.org/rfc/rfc3986) 部分3. 几乎每个有效的“主机名”也是有效的句柄，但也有少数例外（如下所述）。 {{ className: '领导' }}
 
@@ -131,7 +131,7 @@ HTTP/1.1 200 好
 内容类型：文本/纯文本
 日期：2023 年 6 月 14 日星期三 00:47:21 GMT
 
-做了：plc：ewvi7nxzyoun6zhxrhs64oiz
+did:plc:ewvi7nxzyoun6zhxrhs64oiz
 ````
 
 响应“Content-Type”标头不需要严格验证。

@@ -12,7 +12,7 @@ atproto 中的记录和消息以一致的方式存储、传输、编码和验证
 
 atproto 的模式定义语言是 [Lexicon](/specs/lexicon)。其他较低级别的数据结构，例如 [repository](/specs/repository) 内部结构，未使用 Lexicons 指定，但使用相同的数据模型和编码。
 
-不同的数据块称为**节点**，当以二进制 (DRISL-CBOR) 编码时会生成 **块。** 节点可能具有内部嵌套结构（映射或列表）。节点可以通过字符串 URL 或 URI 相互引用，就像 Web 上的常规 JSON 一样。它们还可以通过哈希相互强引用，称为 **链接。** 一组链接的节点可以形成更高级别的数据结构，例如 [Merkle 树](https://en.wikipedia.org/wiki/Merkle_tree) 或 [有向非循环图 (DAG)](https://en.wikipedia.org/wiki/Directed_acircy_graph)。链接还可以引用任意二进制数据（blob）。
+不同的数据块称为**节点** ，当以二进制 (DRISL-CBOR) 编码时会生成 **块。** 节点可能具有内部嵌套结构（映射或列表）。节点可以通过字符串 URL 或 URI 相互引用，就像 Web 上的常规 JSON 一样。它们还可以通过哈希相互强引用，称为 ** 链接。** 一组链接的节点可以形成更高级别的数据结构，例如 [Merkle 树](https://en.wikipedia.org/wiki/Merkle_tree) 或 [有向非循环图 (DAG)](https://en.wikipedia.org/wiki/Directed_acircy_graph)。链接还可以引用任意二进制数据（blob）。
 
 与 URL 不同，哈希引用（链接）不会对可以找到内容的特定网络位置进行编码。位置和访问机制必须通过协议级上下文来推断。哈希引用确实具有“自认证”属性，这意味着可以根据链接哈希来验证返回的数据。这使得重新分发内容和信任副本成为可能，即使来自不受信任的一方也是如此。
 

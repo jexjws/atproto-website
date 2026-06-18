@@ -18,7 +18,7 @@ Atmosphere 是为了分布式而构建的，这意味着任何人都可以而且
 
 ## 域名
 
-如果你除了 PDS 部署之外还运行非 Bluesky 应用程序，**你的 PDS 托管和应用程序将需要单独的域名**。这是因为图像和视频 blob 将从与 OAuth 和会话管理页面相同的域名提供服务。这可能会导致凭证盗窃等安全问题，并且意味着使用子域并不是一个实用的解决方案。
+如果你除了 PDS 部署之外还运行非 Bluesky 应用程序，**你的 PDS 托管和应用程序将需要单独的域名** 。这是因为图像和视频 blob 将从与 OAuth 和会话管理页面相同的域名提供服务。这可能会导致凭证盗窃等安全问题，并且意味着使用子域并不是一个实用的解决方案。
 
 换句话说，如果你在“https://greensky.app”上有一个应用程序，则不应使用“https://pds.greensky.app”作为 PDS 主机名，而应该使用“https://greensky-pds.net”之类的名称。如果你使用“https://pds.greensky.social”（这是有意义的），则将来可能会排除“https://chat.greensky.social”上的 OAuth 客户端应用程序。但你可以做类似“https://chat.greensky.app”的事情。
 
@@ -43,7 +43,7 @@ Atmosphere 是为了分布式而构建的，这意味着任何人都可以而且
 保护托管帐户的额外 PLC 身份轮换密钥非常重要 - 例如，在 [密钥管理系统](https://developer.hashicorp.com/vault/docs/secrets/key-management) 或 [硬件安全模块](https://csrc.nist.gov/glossary/term/hardware_security_module_hsm) 中。注意这两个环境变量：
 
 - `PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX`：由 PDS 服务用来在 PLC 上执行操作，包括恢复用户帐户。如果你使用的是 AWS，则可以使用“PDS_PLC_ROTATION_KEY_KMS_KEY_ID”通过 [AWS Key Management Service](https://aws.amazon.com/kms/) 进行配置。
-- `PDS_RECOVERY_DID_KEY`：添加到用户 DID 的公钥。相应的私钥**必须**存储在安全的地方，并且可用于在发生灾难性数据丢失（包括“PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX”）的情况下恢复用户帐户。
+- `PDS_RECOVERY_DID_KEY`：添加到用户 DID 的公钥。相应的私钥**必须** 存储在安全的地方，并且可用于在发生灾难性数据丢失（包括“PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX”）的情况下恢复用户帐户。
 
 ## 对象存储
 

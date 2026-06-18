@@ -9,13 +9,13 @@ export const header = {
 
 必须先将 Blob 上传到 PDS，然后才能创建引用该 Blob 的记录。请注意，服务器在接收上传时并不知道预期的 Lexicon，因此只能在初始上传时应用通用 blob 限制和限制，然后在创建记录时强制执行 Lexicon 定义的限制。
 
-客户端在其 PDS 上使用 **`com.atproto.repo.uploadBlob`** 端点，该端点将以 Lexicon blob 对象的形式返回经过验证的元数据。客户端应设置 HTTP **`Content-Type`** 标头，并应在上传请求上设置 **`Content-Length`** 标头。 SDK 可以自动处理这个问题：
+客户端在其 PDS 上使用 **`com.atproto.repo.uploadBlob`** 端点，该端点将以 Lexicon blob 对象的形式返回经过验证的元数据。客户端应设置 HTTP ** `Content-Type`** 标头，并应在上传请求上设置 ** `Content-Length`** 标头。 SDK 可以自动处理这个问题：
 
 <UploadBlobTs />
 
 然后可以在另一个记录中引用这个“数据”对象，例如作为“嵌入”。
 
-上传也可以允许分块传输编码。服务器*可能*嗅探 blob mimetype 以根据声明的 **`Content-Type`** 标头进行验证，并在响应中返回修改后的 mimetype，或拒绝上传。请参阅[“安全注意事项”](/specs/blob#security-considerations)。如果实际的 blob 上传大小与 **`Content-Length`** 标头不同，服务器应拒绝上传。
+上传也可以允许分块传输编码。服务器*可能*嗅探 blob mimetype 以根据声明的 **`Content-Type`** 标头进行验证，并在响应中返回修改后的 mimetype，或拒绝上传。请参阅[“安全注意事项”](/specs/blob#security-considerations)。如果实际的 blob 上传大小与 ** `Content-Length`** 标头不同，服务器应拒绝上传。
 
 ## 垃圾收集
 
@@ -39,7 +39,7 @@ export const header = {
 
 ## 网络可访问性
 
-可以使用 **`com.atproto.sync.getBlob`** 端点从 PDS 获取原始 blob。服务器应返回适当的 **`Content-Type`** 和 **`Content-Length`** HTTP 标头。直接从 PDS 向最终用户浏览器提供媒体不是推荐或必需的模式，并且服务器不需要支持或促进此用例。有关详细信息，请参阅“安全注意事项”。
+可以使用 **`com.atproto.sync.getBlob`** 端点从 PDS 获取原始 blob。服务器应返回适当的 ** `Content-Type`** 和 ** `Content-Length`** HTTP 标头。直接从 PDS 向最终用户浏览器提供媒体不是推荐或必需的模式，并且服务器不需要支持或促进此用例。有关详细信息，请参阅“安全注意事项”。
 
 服务器可能有自己的通用限制和 blob 策略，与 Lexicon 定义的任何约束分开。他们可能会对数据存储实施帐户范围的配额；最大斑点尺寸；内容政策；等等。任何这些限制都可能在初始上传时强制执行。服务器操作员应该意识到限制和其他限制可能会影响现有和未来应用程序的功能。为了最大限度地提高互操作性，建议运营商优先考虑对总体帐户资源消耗进行限制（例如，“总 blob 大小”配额，而不是“每个 blob”大小限制）。
 

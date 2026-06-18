@@ -26,14 +26,14 @@ export const header = {
 
 你还需要一个可以管理的正在运行的 Ozone 实例。按照 [Ozone HOSTING 指南](https://github.com/bluesky-social/ozone/blob/main/HOSTING.md) 进行操作。在该设置结束时，你应该拥有：
 
-- **贴标机 DID**（`did:web:...` 或 `did:plc:...`），其 DID 文档中包含 `#atproto_labeler` 和 `#atproto_label` 条目。当你[将帐户配置为贴标机](/guides/using-ozone#configuring-ozone) 时，会发生这种情况。
-- 响应“GET /xrpc/com.atproto.label.queryLabels?uriPatterns=*”的 **公共服务 URL**。 Ozone 实现了这个端点。
+- **贴标机 DID** （`did:web:...` 或 `did:plc:...`），其 DID 文档中包含 `#atproto_labeler` 和 `#atproto_label` 条目。当你[将帐户配置为贴标机](/guides/using-ozone#configuring-ozone) 时，会发生这种情况。
+- 响应“GET /xrpc/com.atproto.label.queryLabels?uriPatterns=*”的 **公共服务 URL** 。 Ozone 实现了这个端点。
 - Ozone UI 的**管理员登录**
 
 确认贴标机是否可达的快速方法：
 
 ````bash
-卷曲“https://<your-ozone-host>/xrpc/com.atproto.label.queryLabels?uriPatterns=*&limit=1”
+curl“https://<your-ozone-host>/xrpc/com.atproto.label.queryLabels?uriPatterns=*&limit=1”
 ````
 
 在新安装的 Ozone 上，这应该返回 `{"labels":[]}`。
@@ -119,7 +119,7 @@ If you started from the [statusphere-example-app](https://github.com/bluesky-soc
 在测试之前，你应该仍然运行上一教程中的“tap”：
 
 ````bash
-点击运行\
+tap run\
   --webhook-url=http://localhost:3000/api/webhook \
   --collection-filters=xyz.statusphere.status \
   --signal-collection=xyz.statusphere.status
