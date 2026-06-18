@@ -12,22 +12,22 @@ export const header = {
   description: 'Authenticate with atproto OAuth from Node.js',
 }
 
-在本教程中，您将构建一个最小的 Node.js 工具，该工具使用 [atproto OAuth](/guides/auth) 对用户进行身份验证并获取他们的个人资料。整个应用程序适合单个 TypeScript 文件。
+在本教程中，你将构建一个最小的 Node.js 工具，该工具使用 [atproto OAuth](/guides/auth) 对用户进行身份验证并获取他们的个人资料。整个应用程序适合单个 TypeScript 文件。
 
 这是了解 OAuth 在 AT 协议中如何工作的一个很好的起点。要构建生产 Web 应用程序，请参阅完整的 [OAuth with NextJS 教程](/guides/oauth-tutorial)。
 
 ## 先决条件
 
-本教程涉及从头开始构建 TypeScript 应用程序。您应该对 TypeScript 和 Node.js 有一定的了解。
+本教程涉及从头开始构建 TypeScript 应用程序。你应该对 TypeScript 和 Node.js 有一定的了解。
 
-您应该已经安装：
+你应该已经安装：
 - Node.js 18+
 
-在 [homebrew](https://brew.sh/) 支持的平台上，您可以使用以下命令安装它：
+在 [homebrew](https://brew.sh/) 支持的平台上，你可以使用以下命令安装它：
 
 <S01 />
 
-您还应该有一个 atproto 句柄来进行测试。
+你还应该有一个 atproto 句柄来进行测试。
 
 ## 第 1 部分：项目设置
 
@@ -35,17 +35,17 @@ export const header = {
 
 <S02 />
 
-您还需要全局安装“lex” CLI 工具和“tsx”，以及在此项目中安装的“app.bsky.actor.profile” Lexicon 来获取用户的配置文件：
+你还需要全局安装“lex” CLI 工具和“tsx”，以及在此项目中安装的“app.bsky.actor.profile” Lexicon 来获取用户的配置文件：
 
 <S03 />
 
-这会为项目中的 Lexicon 生成 TypeScript 类型，稍后您将使用它来读取经过身份验证的用户的个人资料。
+这会为项目中的 Lexicon 生成 TypeScript 类型，稍后你将使用它来读取经过身份验证的用户的个人资料。
 
 ## 第 2 部分：构建 OAuth 客户端
 
 在 `src/index.ts` 创建一个新文件。该文件将包含 CLI 工具的所有代码。
 
-首先导入您需要的包，并设置 OAuth 客户端：
+首先导入你需要的包，并设置 OAuth 客户端：
 
 <S04 />
 
@@ -55,11 +55,11 @@ export const header = {
 OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:PORT/callback`) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
 </Note>
 
-`stateStore` 和 `sessionStore` 是内存中的映射。状态存储在 OAuth 握手期间保存临时数据；会话存储保存由 DID 加密的经过身份验证的会话。在生产应用程序中，您将使用数据库来实现这些。
+`stateStore` 和 `sessionStore` 是内存中的映射。状态存储在 OAuth 握手期间保存临时数据；会话存储保存由 DID 加密的经过身份验证的会话。在生产应用程序中，你将使用数据库来实现这些。
 
 ## 第 3 部分：登录流程
 
-现在添加登录流程。您将启动一个临时 HTTP 服务器来接收 OAuth 回调，然后打开用户的浏览器来授权应用程序：
+现在添加登录流程。你将启动一个临时 HTTP 服务器来接收 OAuth 回调，然后打开用户的浏览器来授权应用程序：
 
 <S05 />
 
@@ -72,11 +72,11 @@ OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:POR
 
 ## 第 4 部分：使用会话
 
-有了会话，您就可以创建一个 lex `Client` 来与 AT 协议交互。添加一个将它们连接在一起的“main()”函数：
+有了会话，你就可以创建一个 lex `Client` 来与 AT 协议交互。添加一个将它们连接在一起的“main()”函数：
 
 <S06 />
 
-来自“@atproto/lex”的“Client”直接接受 OAuth 会话 - 与[构建代理教程](/guides/bot-tutorial)中接受“PasswordSession”的方式相同。从这里您可以使用“.get()”、“.list()”、“.create()”和“.call()”任何已安装的 Lexicon。
+来自“@atproto/lex”的“Client”直接接受 OAuth 会话 - 与[构建代理教程](/guides/bot-tutorial)中接受“PasswordSession”的方式相同。从这里你可以使用“.get()”、“.list()”、“.create()”和“.call()”任何已安装的 Lexicon。
 
 ## 第 5 部分：运行它
 
@@ -84,18 +84,18 @@ OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:POR
 
 <S07 />
 
-您的浏览器应该打开一个同意屏幕。批准后，CLI 将打印您的个人资料：
+你的浏览器应该打开一个同意屏幕。批准后，CLI 将打印你的个人资料：
 
 <S08 />
 
 ＃＃ 结论
 
-您已经构建了一个最小的 OAuth CLI 工具，可以使用 AT 协议进行身份验证。完整源代码大约有 80 行代码。
+你已经构建了一个最小的 OAuth CLI 工具，可以使用 AT 协议进行身份验证。完整源代码大约有 80 行代码。
 
 需要记住以下几点：
 
 - **这适用于本地开发。** 环回客户端无法在生产中工作 - 请参阅 [OAuth with NextJS 教程](/guides/oauth-tutorial) 以部署真实的应用程序。
 - **会话位于内存中。** 每次运行都需要重新授权。对于持久会话，请使用[NextJS 教程](/guides/oauth-tutorial#part-3-adding-database-persistence) 中所示的数据库。
-- **范围。** 本教程仅请求基本“atproto”范围。要代表用户读取或写入数据，您需要额外的[范围](/guides/permission-sets)。
+- **范围。** 本教程仅请求基本“atproto”范围。要代表用户读取或写入数据，你需要额外的[范围](/guides/permission-sets)。
 
-您可以在我们的 [Docs](/guides) 中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！
+你可以在我们的 [Docs](/guides) 中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

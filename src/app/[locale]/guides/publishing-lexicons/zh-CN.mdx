@@ -12,7 +12,7 @@ export const header = {
 
 Lexicons are designed to be machine-readable and network-accessible.虽然当前“不需要”网络上有可用的词典，但强烈建议发布词典，以便该方法的使用者可以使用单一规范和权威的表示形式。
 
-词典像任何其他 AT 记录一样发布到 PDS。它们是使用 DNS TXT 记录将 [NSID 命名空间](/specs/nsid) 链接到 PDS 存储库来解析的，这样当您寻址像“com.atproto.example”这样的 Lexicon 时，atproto SDK 就会知道[在以下位置查找身份] `atproto.com`](https://pds.ls/at://did:plc:6msi3pj7krzih5qxqtryxlzw/com.atproto.lexicon.schema) 并从那里检索词典。
+词典像任何其他 AT 记录一样发布到 PDS。它们是使用 DNS TXT 记录将 [NSID 命名空间](/specs/nsid) 链接到 PDS 存储库来解析的，这样当你寻址像“com.atproto.example”这样的 Lexicon 时，atproto SDK 就会知道[在以下位置查找身份] `atproto.com`](https://pds.ls/at://did:plc:6msi3pj7krzih5qxqtryxlzw/com.atproto.lexicon.schema) 并从那里检索词典。
 
 对于像 `app.toy.record` 这样的 NSID：
 
@@ -20,7 +20,7 @@ Lexicons are designed to be machine-readable and network-accessible.虽然当前
 - 权限为`app.toy`；反过来，这将成为域“toy.app”
 - DNS TXT 记录位于“_lexicon.toy.app”
 
-每个唯一的命名空间前缀都需要有自己的 DNS TXT 记录，指向您的 DID。例如：
+每个唯一的命名空间前缀都需要有自己的 DNS TXT 记录，指向你的 DID。例如：
 
 ````
 _lexicon.toy.app TXT“did=did:plc:abc123...”
@@ -38,11 +38,11 @@ You can use [`goat`](https://github.com/bluesky-social/goat), our command line t
 
 <BrewInstallGoat />
 
-在项目目录中，您可以下载一些现有的词典，这些词典将在“./lexicons/”中保存为 JSON 文件：
+在项目目录中，你可以下载一些现有的词典，这些词典将在“./lexicons/”中保存为 JSON 文件：
 
 <GoatLexPull />
 
-您还可以使用“goat lex new record”创建新的 Lexicon 记录：
+你还可以使用“goat lex new record”创建新的 Lexicon 记录：
 
 <GoatLexNew />
 

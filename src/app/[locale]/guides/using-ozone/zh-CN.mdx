@@ -20,7 +20,7 @@ export const header = {
 
 ＃＃ 入门
 
-Ozone 是一个基于 Web 的审核界面，允许您运行自己的贴标机服务，并高效地审查和内容报告。本指南将引导您安装和使用 Ozone。
+Ozone 是一个基于 Web 的审核界面，允许你运行自己的贴标机服务，并高效地审查和内容报告。本指南将引导你安装和使用 Ozone。
 
 ## 安装臭氧
 
@@ -32,37 +32,37 @@ Ozone 应在专用 VPS 上运行，该 VPS 由 [OVHcloud](https://us.ovhcloud.co
 Before setting up your Ozone service you should create a new account on the network, separate from your main account. This is the account that subscribers to your labeler will interact with: accounts for labelers appear differently in Bluesky than normal accounts.
 </Note>
 
-完成服务器端安装后，您可以通过在 Web 浏览器中导航到服务器的 IP 地址或域名来访问 Ozone Web 界面：
+完成服务器端安装后，你可以通过在 Web 浏览器中导航到服务器的 IP 地址或域名来访问 Ozone Web 界面：
 
 <Container>
   <Image src={login} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-从这里，您可以开始配置贴标机服务。
+从这里，你可以开始配置贴标机服务。
 
 ## 配置臭氧
 
-首先，提供您为标签服务创建的帐户的凭据：
+首先，提供你为标签服务创建的帐户的凭据：
 
 <Container>
   <Image src={credentials} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-请务必提供您的完整句柄，包括“.bsky.social”后缀（或您的自定义域，如果适用）。
+请务必提供你的完整句柄，包括“.bsky.social”后缀（或你的自定义域，如果适用）。
 
-接下来，系统将提示您更新 [PLC](https://web.plc.directory/) 的帐户注册，以将此帐户标记为审核服务。这将触发电子邮件验证。验证您使用的帐户和域名是否正确，然后提供验证码：
+接下来，系统将提示你更新 [PLC](https://web.plc.directory/) 的帐户注册，以将此帐户标记为审核服务。这将触发电子邮件验证。验证你使用的帐户和域名是否正确，然后提供验证码：
 
 <Container>
   <Image src={plc} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-最后，确认您将使用此帐户作为标签服务。这会将“app.bsky.labeler.service”类型的 [AT 记录](https://atproto.at/viewer?uri=did:plc:wwjhjtgw5ksxrzdswtvnsnjs/app.bsky.labeler.service/self) 发布到您的帐户。
+最后，确认你将使用此帐户作为标签服务。这会将“app.bsky.labeler.service”类型的 [AT 记录](https://atproto.at/viewer?uri=did:plc:wwjhjtgw5ksxrzdswtvnsnjs/app.bsky.labeler.service/self) 发布到你的帐户。
 
 <Container>
   <Image src={confirm} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-现在您的 Ozone 实例已设置完毕并可以使用！
+现在你的 Ozone 实例已设置完毕并可以使用！
 
 <Container>
   <Image src={welcome} alt="" className="w-full max-w-md mx-auto" />
@@ -70,15 +70,15 @@ Before setting up your Ozone service you should create a new account on the netw
 
 ## 提交和管理报告
 
-现在，您将创建并操作示例审核报告。在 Bluesky 或其他应用程序中，重新登录常规（非贴标签者）帐户。然后，导航至贴标机服务的帐户页面。
+现在，你将创建并操作示例审核报告。在 Bluesky 或其他应用程序中，重新登录常规（非贴标签者）帐户。然后，导航至贴标机服务的帐户页面。
 
 <Container>
   <Image src={labeler} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-单击“订阅贴标机”按钮，为您的帐户订阅贴标机服务。这允许您的帐户向该贴标机提交报告并从中接收标签。
+单击“订阅贴标机”按钮，为你的帐户订阅贴标机服务。这允许你的帐户向该贴标机提交报告并从中接收标签。
 
-接下来，导航到您想要举报的帖子，然后选择“举报帖子”：
+接下来，导航到你想要举报的帖子，然后选择“举报帖子”：
 
 <Container>
   <Image src={report} alt="" className="w-full max-w-md mx-auto" />
@@ -90,29 +90,29 @@ Before setting up your Ozone service you should create a new account on the netw
   <Image src={reporting} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-根据需要填写报告界面。确保选择您的贴标机作为要将报告发送到的审核服务。然后，提交报告。
+根据需要填写报告界面。确保选择你的贴标机作为要将报告发送到的审核服务。然后，提交报告。
 
-现在，返回到臭氧界面。您应该会看到*报告*部分中列出的新报告：
+现在，返回到臭氧界面。你应该会看到*报告*部分中列出的新报告：
 
 <Container>
   <Image src={reported} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-单击报告可查看其详细信息。从这里，您可以查看报告的内容并采取适当的审核措施。
+单击报告可查看其详细信息。从这里，你可以查看报告的内容并采取适当的审核措施。
 
 <Container>
   <Image src={actions} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-在这种情况下，最直接的行动是承认该报告而不采取进一步行动。从下拉列表中选择“确认”，提供注释，然后提交操作。您可以使用键盘快捷键来加快审核操作 - 例如，“S”代表提交。
+在这种情况下，最直接的行动是承认该报告而不采取进一步行动。从下拉列表中选择“确认”，提供注释，然后提交操作。你可以使用键盘快捷键来加快审核操作 - 例如，“S”代表提交。
 
 <Container>
   <Image src={acknowledged} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-如果您想将标签机订阅者的用户静音，您可以从操作下拉列表中选择“静音”。请参阅 [臭氧概念](https://github.com/bluesky-social/ozone/blob/main/docs/userguide.md#concepts) 了解每个操作的说明。
+如果你想将标签机订阅者的用户静音，你可以从操作下拉列表中选择“静音”。请参阅 [臭氧概念](https://github.com/bluesky-social/ozone/blob/main/docs/userguide.md#concepts) 了解每个操作的说明。
 
-您可以在*事件*部分查看报告和操作的事件流：
+你可以在*事件*部分查看报告和操作的事件流：
 
 <Container>
   <Image src={eventstream} alt="" className="w-full max-w-md mx-auto" />
@@ -124,11 +124,11 @@ Before setting up your Ozone service you should create a new account on the netw
   <Image src={repositories} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-从这里，您可以参考[Ozone用户指南](https://github.com/bluesky-social/ozone/blob/main/docs/userguide.md)了解更多信息。
+从这里，你可以参考[Ozone用户指南](https://github.com/bluesky-social/ozone/blob/main/docs/userguide.md)了解更多信息。
 
 ## 后续步骤
 
-您现在已经了解了臭氧调节流程。 Ozone 还允许您创建具有不同权限的其他用户帐户，以帮助管理您的审核工作量。要聚合 Ozone 实例中的数据，请参阅 [#OzoneInsights](https://bsky.app/search?q=%23ozoneinsights) Feed 以获取解决方案。
+你现在已经了解了臭氧调节流程。 Ozone 还允许你创建具有不同权限的其他用户帐户，以帮助管理你的审核工作量。要聚合 Ozone 实例中的数据，请参阅 [#OzoneInsights](https://bsky.app/search?q=%23ozoneinsights) Feed 以获取解决方案。
 
 ## 进一步阅读和资源
 

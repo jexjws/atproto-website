@@ -11,7 +11,7 @@ OAuth 范围是应用程序请求权限以从存储库创建、更新和删除�
 
 然而，请求许多单独的范围往往会令人困惑，并且请求对 PDS 的一揽子权限过于宽松，因此应用程序可以将权限捆绑在一起到[权限集](/guides/permission-sets)。自 2025 年底推出以来，权限集一直是应用程序管理 OAuth 权限的推荐方式。请注意，某些范围（例如上传文件或管理帐户的电子邮件）无法捆绑到一个集合中，必须单独请求。
 
-此工具可让您以交互方式选择应用程序所需的范围并生成适当的[范围字符串](specs/permission#scope-string-syntax)。我们已经为 Bluesky 以及 atproto 生态系统中的许多流行应用程序提供了权限集；如果您希望包含应用程序的权限集，请[让我们知道](https://github.com/bluesky-social/atproto-website/issues/676)。如果您正在构建自己的权限集，您甚至可以提供指向特定权限集的链接（“at://” URL 或来自 [lexicon.garden](https://lexicon.garden) 的链接）。
+此工具可让你以交互方式选择应用程序所需的范围并生成适当的[范围字符串](specs/permission#scope-string-syntax)。我们已经为 Bluesky 以及 atproto 生态系统中的许多流行应用程序提供了权限集；如果你希望包含应用程序的权限集，请[让我们知道](https://github.com/bluesky-social/atproto-website/issues/676)。如果你正在构建自己的权限集，你甚至可以提供指向特定权限集的链接（“at://” URL 或来自 [lexicon.garden](https://lexicon.garden) 的链接）。
 
 关于安全性的说明：OAuth 范围是来自应用程序的请求，而不是显式授予。生成的范围字符串供开发人员粘贴到他们自己的 OAuth 请求中，并且权限仍然必须由使用该应用程序的人授予。生成的范围已经过测试，可以与 atproto OAuth 一起使用，开发人员仍然负责[仅请求其应用程序所需的访问级别](/guides/permission-requests#requesting-permissions)。
 

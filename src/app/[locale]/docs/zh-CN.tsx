@@ -84,7 +84,7 @@ export default function DocsHome() {
           </li>
           <li>
             <Link href="https://overreacted.io/where-its-at/">
-              <strong>Where it&apos;s at:// (它的位置)</strong>
+              <strong>Where it&apos;s at://</strong>
             </Link>{' '}
             - 从 Handle（句柄）到托管。
           </li>
@@ -96,7 +96,7 @@ export default function DocsHome() {
           </li>
         </ul>
         <p>
-          或者，您也可以<Link href="/guides/understanding-atproto">在我们的简介文档中</Link>了解更多信息。
+          或者，你也可以<Link href="/guides/understanding-atproto">在我们的简介文档中</Link>了解更多信息。
         </p>
       </div>
     </div>

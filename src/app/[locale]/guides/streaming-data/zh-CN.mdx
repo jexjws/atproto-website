@@ -18,7 +18,7 @@ AT 协议的核心原语之一是“firehose”。它是经过身份验证的事
 
 <FirehoseConnect />
 
-从这里，您需要读取每条传入的消息，并解码关联的数据。我们的 [Go](https://github.com/bluesky-social/indigo) SDK 是目前功能最齐全的直接与 firehose 交互的 SDK。
+从这里，你需要读取每条传入的消息，并解码关联的数据。我们的 [Go](https://github.com/bluesky-social/indigo) SDK 是目前功能最齐全的直接与 firehose 交互的 SDK。
 
 请记住，firehose 输出格式是 atproto 中较复杂的部分之一，涉及解码二进制 [CBOR](/specs/data-model) 数据和 [CAR](/specs/repository#car-file-serialization) 文件。此外，随着网络的发展，数据量也迅速增加。完全同步 Firehose 是核心网络基础设施，但对于 [feed 开发人员](/guides/feeds) 等最终用户，我们提供了一种名为 **Jetstream** 的替代流媒体解决方案。
 
@@ -32,7 +32,7 @@ Jetstream 有几个关键优势：
 
 Jetstream 服务器从 Firehose 中进行消耗并扇出到许多订阅者。它是[开源](https://github.com/bluesky-social/jetstream)，用Go实现，易于自托管。 （Go 中）包含一个官方客户端库，并且已经开发了[社区客户端库](https://skyware.js.org/guides/jetstream/introduction/getting-started/)。
 
-您可以像使用任何其他 Websocket 一样使用 Jetstream。只需提供一个 Jetstream 端点（例如“wss://jetstream2.us-east.bsky.network/subscribe”）和一个“wantedCollections”参数（例如“?wantedCollections=app.bsky.feed.post”）。
+你可以像使用任何其他 Websocket 一样使用 Jetstream。只需提供一个 Jetstream 端点（例如“wss://jetstream2.us-east.bsky.network/subscribe”）和一个“wantedCollections”参数（例如“?wantedCollections=app.bsky.feed.post”）。
 
 这是一个 Python 示例：
 

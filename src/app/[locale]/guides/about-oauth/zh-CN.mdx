@@ -6,7 +6,7 @@ export const header = {
   description: 'OAuth implementation patterns for atproto applications',
 }
 
-本页介绍了适用于 atproto 应用程序的 OAuth 库和实现模式。如果您是 atproto OAuth 的新手，我们建议您从我们的实践教程之一开始：
+本页介绍了适用于 atproto 应用程序的 OAuth 库和实现模式。如果你是 atproto OAuth 的新手，我们建议你从我们的实践教程之一开始：
 
 - [OAuth with Node.js](/guides/oauth-cli-tutorial) - 一个最小的 CLI 应用程序，有助于理解 atproto OAuth 的工作原理
 - [OAuth with Go](/guides/go-oauth-cli-tutorial) - 来自 Go CLI 应用程序的 OAuth
@@ -53,19 +53,19 @@ The Python example does not use an SDK! It may be useful as reference when build
 
 ## OAuth 流程如何工作
 
-1. 您的应用程序[将用户](/guides/permission-requests)重定向到其 PDS 的授权端点（具有您请求的范围）
+1. 你的应用程序[将用户](/guides/permission-requests)重定向到其 PDS 的授权端点（具有你请求的范围）
 2. 用户审核权限并批准（或拒绝）访问
-3. PDS 使用授权代码重定向回您的“redirect_uri”
-4.您的应用程序（或SDK）交换访问和刷新令牌的代码
-5. 您使用访问令牌发出经过身份验证的 API 请求
+3. PDS 使用授权代码重定向回你的“redirect_uri”
+4.你的应用程序（或SDK）交换访问和刷新令牌的代码
+5. 你使用访问令牌发出经过身份验证的 API 请求
 
-SDK 自动处理步骤 3-5。您的回调端点只需调用 SDK 的回调处理程序，该处理程序即可完成令牌交换并返回经过身份验证的会话。从那里，您可以进行 API 调用 - 请参阅[读取和写入](/guides/reads-and-writes)。
+SDK 自动处理步骤 3-5。你的回调端点只需调用 SDK 的回调处理程序，该处理程序即可完成令牌交换并返回经过身份验证的会话。从那里，你可以进行 API 调用 - 请参阅[读取和写入](/guides/reads-and-writes)。
 
 ## 应用程序类型
 
 最简单的应用程序类型是直接在用户设备和 PDS 之间建立 OAuth 会话的应用程序类型，如 [cookbook/vanillajs-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme) 示例中所示。它很简单，因为它不需要专用的后端服务，只托管静态资源。
 
-如果您的应用程序不需要长期会话，那么这种方法完全没问题。但对于其他用例，会话生命周期将受到限制，因为应用程序是“公共客户端”，而不是“机密客户端”。成为机密客户端需要建立与客户端 ID 绑定的密钥。如果客户端是公开可用的并且在用户自己的设备上运行，则它无法保护客户端机密。因此，实现机密客户端需要托管一些后端基础设施，[cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) 和 [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) 示例演示了这一点（两者都使用“BFF”模式，见下文）。
+如果你的应用程序不需要长期会话，那么这种方法完全没问题。但对于其他用例，会话生命周期将受到限制，因为应用程序是“公共客户端”，而不是“机密客户端”。成为机密客户端需要建立与客户端 ID 绑定的密钥。如果客户端是公开可用的并且在用户自己的设备上运行，则它无法保护客户端机密。因此，实现机密客户端需要托管一些后端基础设施，[cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) 和 [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) 示例演示了这一点（两者都使用“BFF”模式，见下文）。
 
 有关机密客户端与公共客户端的更多技术详细信息，请参阅[客户端类型](/specs/oauth#types-of-clients)。
 
