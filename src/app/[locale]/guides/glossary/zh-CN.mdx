@@ -8,7 +8,7 @@ export const header = {
 
 AT 协议使用了许多可能不太熟悉的术语。此页面提供了这些术语的快速参考，并包含一些指向更多信息的链接。 {{className: '领导'}}
 
-＃＃ 气氛
+## 气氛
 
 “氛围”是我们用来描述 [AT 协议](#at-protocol) 周围生态系统的术语。
 
@@ -54,11 +54,11 @@ Lexicon 的唯一目的是帮助开发人员构建兼容的软件。
 - [数据存储库简介](/guides/data-repos)
 - [存储库规范](/specs/repository)
 
-＃＃ 收藏
+## 收藏
 
 “集合”是 [数据存储库](#data-repo) 中的 JSON [记录](#record) 存储桶。它们支持有序列表操作。每个集合都由 [NSID](#nsid-namespaced-id) 标识，预计映射到 [Lexicon](#lexicon) 模式。
 
-＃＃ 记录
+## 记录
 
 “记录”是 [repo](#data-repo) [collection](#collection) 内的 JSON 文档。记录的类型由“$type”字段标识，该字段预计映射到 [Lexicon](#lexicon) 模式。该类型还应该与包含它的 [collection](#collection) 相匹配。
 
@@ -68,13 +68,13 @@ Lexicon 的唯一目的是帮助开发人员构建兼容的软件。
 
 Blob 是存储在 [repo](#data-repo) 内的非结构化数据。它们最常用于存储图像和视频等媒体。
 
-＃＃ 标签
+## 标签
 
 标签是附加到帐户 ([DIDs](#did-decentralized-id)) 和 [records](#record) 的元数据对象。它们通常通过其值来引用，例如“裸体”或“图形媒体”，这些值标识了标签的含义。标签主要由应用程序用于审核，但它们也可以用于其他目的。
 
 - [标签规格](/规格/标签)
 
-＃＃ 处理
+## 处理
 
 句柄是用于识别[数据存储库](#data-repo)的域名。可以将多个句柄分配给一个存储库。句柄可以用在域段中的“at://”URI 中。
 
