@@ -1,0 +1,140 @@
+import S01 from './_snippets/01-install-node.mdx'
+import S02 from './_snippets/02-install-lex.mdx'
+import S03 from './_snippets/03-init-project.mdx'
+import S04 from './_snippets/04-lex-install-post.mdx'
+import S05 from './_snippets/05-lex-build.mdx'
+import S06 from './_snippets/06-login-function.mdx'
+import S07 from './_snippets/07-make-post.mdx'
+import S08 from './_snippets/08-cron-main.mdx'
+import S08a from './_snippets/08a-label-bot-profile.mdx'
+import S09 from './_snippets/09-env-file.mdx'
+import S10 from './_snippets/10-run-bot.mdx'
+import S11 from './_snippets/11-install-ai.mdx'
+import S12 from './_snippets/12-env-with-ai-key.mdx'
+import S13 from './_snippets/13-lex-install-notifications.mdx'
+import S14 from './_snippets/14-import-generate-text.mdx'
+import S15 from './_snippets/15-full-agent-code.mdx'
+
+export const header = {
+  title: '建立代理',
+  description: '创建一个自动在 Bluesky 上发帖的机器人',
+}
+
+机器人是网络上自动发帖的帐户。受欢迎的包括发布最近地震震级的机器人、定期存档的照片等。
+
+在本教程中，你将创建一个使用[应用程序密码](/guides/sdk-auth) 进行身份验证的机器人，以与网络交互。
+
+## 先决条件
+
+本教程涉及从头开始构建 TypeScript 应用程序。你应该对 TypeScript 和 Node.js 有一定的了解。
+
+你应该已经安装：
+- Node.js 18+
+
+在 [homebrew](https://brew.sh/) 支持的平台上，你可以使用以下命令安装它：
+
+<S01 />
+
+你还应该全局安装我们的 `lex` CLI 工具和 `tsx`：
+
+<S02 />
+
+现在，创建一个新的 TypeScript 项目目录并初始化你的项目：
+
+<S03 />
+
+如果你不使用现有帐户发帖，则应该为你的机器人[创建一个新帐户](https://bsky.app/)。你还应该为该帐户生成一个[应用程序密码](/guides/sdk-auth)。
+
+## 第 1 部分：词典
+
+[Lexicons](/guides/lexicon) 定义 atproto 记录。你的机器人将使用 [app.bsky.feed.post](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post) Lexicon 创建 Bluesky 帖子。你可以使用“lex”下载此词典并将其构建到你的项目中：
+
+<S04 />
+
+如果需要，你可以在“lib/lexicons/app.bsky.post.json”查看下载的 Lexicon 文件。从这里，你可以运行“lex build”来为所有已安装的词典生成 TypeScript 类型：
+
+<S05 />
+
+生成的代码将位于“src/lexicons”中。现在你可以创建机器人脚本。
+
+## 第 2 部分：创建机器人
+
+在 `src/index.ts` 创建一个新文件。该文件将包含你的机器人的代码。
+
+首先，添加你需要的导入，并调用“PasswordSession.create()”以使用应用程序密码对你的机器人进行身份验证：
+
+<S06 />
+
+接下来，添加一个发布功能。这将使用经过身份验证的会话实例化一个新的“Client”，并使用它来创建帖子。 `app.bsky.feed.post` 词典需要两个参数：帖子的文本（你将使用“🙂”）和时间戳。
+
+<S07 />
+
+最后，使用“cron”包在“main()”中添加另一个代码块，以安排你的机器人每三个小时发布一次：
+
+<S08 />
+
+这就是你的机器人所需的全部代码！接下来，你将其标记为机器人。
+
+## 第 3 部分：标记为机器人
+
+作为最佳实践，机器人帐户应通过在其个人资料中添加自我标签来标识自己。这有助于用户和审核工具识别自动帐户。将此函数添加到你的`src/index.ts`中：
+
+<S08a />
+
+当你第一次设置机器人时，调用一次“labelAsBot(session)”。你只需执行一次此操作 - 该标签将保留在你的个人资料中。你可以在启动 cron 作业之前从 `main()` 调用它，然后在第一次运行后删除该调用。
+
+## 第 4 部分：运行机器人
+
+将机器人的主机 (PDS)、用户名和密码保存到“.env”文件中。
+
+<S09 />
+
+现在你可以使用“tsx”测试机器人。
+
+<S10 />
+
+你可以在自己的计算机上运行此机器人，或将其部署在 [Fly.io](http://fly.io/) 等平台上。
+
+请记住，机器人应遵守网络的速率限制。例如，[Bluesky 有自己的一组速率限制](https://docs.bsky.app/docs/advanced-guides/rate-limits)。
+
+## 第 5 部分：从机器人到代理
+
+到目前为止，你已经创建了一个定期发布帖子的机器人。现在，你可以将机器人扩展为更复杂的代理，与其他用户交互！
+
+在本部分中，你将使用 [Vercel AI SDK](https://www.npmjs.com/package/ai)。该库提供了统一的 API，可通过 Vercel AI Gateway 与 Anthropic 等模型提供商进行交互。你需要注册免费的 [爱好项目](https://vercel.com/) 才能获取 API 密钥。
+
+获得 API 密钥后，将 AI SDK 添加到你的项目中：
+
+<S11 />
+
+然后，将另一个环境变量添加到“.env”文件中：
+
+<S12 />
+
+最后，你需要安装一些额外的词典才能获得提及。运行以下命令来安装和构建必要的词典：
+
+<S13 />
+
+快到了。将 `ai` 导入添加到你的 `src/index.ts` 文件中：
+
+<S14 />
+
+现在，你可以将脚本中“login”函数之后的所有内容替换为使用 AI SDK 生成回复的新逻辑：
+
+<S15 />
+
+这里有一些新概念。你将认识“app.bsky.feed.post”逻辑，现在你还将实现“app.bsky.notification.listNotifications”和“app.bsky.feed.getPostThread”。第一个 Lexicon 用于获取通知列表，第二个 Lexicon 用于获取给定帖子 URI 的完整线程。
+
+...并随意更改我们愚蠢的示例提示。
+
+重新部署你的机器人，它现在将回复提及！
+
+<Note>
+Automated bots that post to an account on an regular interval are welcome on the network. If your bot interacts with other users, please only interact (like, repost, reply, etc.) if the user has tagged the bot account. It should be an opt-in interaction, or your bot may be flagged for spam.
+</Note>
+
+## 结论
+
+你现在已经构建了一个自动化的 atproto 应用程序，可以在网络上创建记录！
+
+你可以在我们的 [指南](/guides) 部分中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

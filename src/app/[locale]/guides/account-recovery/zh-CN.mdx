@@ -1,0 +1,135 @@
+export const header = {
+  title: '帐户恢复',
+  description: '使用轮换密钥自行保管您的 AT 协议身份',
+}
+
+本指南介绍了如何使用你的“did:plc”身份预先注册你自己的加密轮换密钥，使你即使在你的 PDS 不合作或离线时也能恢复你的帐户。
+
+## 你需要这个吗？
+
+**大多数用户不需要这样做。** 如果你使用的是信誉良好的 PDS 提供商（例如 Bluesky 的官方托管），你的帐户已受到安全措施（包括基于电子邮件的恢复）的保护。
+
+如果出现以下情况，请考虑自行保管轮换密钥：
+
+- 你希望最大限度地控制你的身份，独立于任何服务提供商
+- 你在技术上能够轻松安全地管理加密密钥
+- 你了解丢失密钥意味着失去此恢复选项
+
+如果你的 PDS 离线并且你*没有*拥有自行保管的轮换密钥，你仍然可以通过 PDS 操作员或在 [72 小时恢复窗口](#recovery-keys) 期间使用 [PLC 目录](/guides/the-at-stack#did-plc) 来恢复你的帐户。预先注册轮换密钥是一种额外的保护措施，但不能替代对 PDS 提供商的信任。
+
+## 身份如何运作
+
+AT 协议帐户有两个标识符：人类可读的**句柄** （如“@alice.bsky.social”）和永久的**DID** （如“did:plc:ewvi7nxzyoun6zhxrhs64oiz”）。 DID 是你的真实身份——句柄可以更改，但你的 DID 保持不变。
+
+大多数 atproto 帐户使用“did:plc”，这是一种依赖**轮换密钥** 来授权身份更新的 DID 方法。这些键按优先级顺序排列：列表中较早的键可以覆盖较晚的键所做的更改。默认情况下，你的 PDS 持有你身份的唯一轮换密钥。
+
+通过添加比 PDS 密钥更高优先级的你自己的轮换密钥，你可以独立更新你的身份，包括在需要时将其指向新的 PDS。
+
+## 恢复密钥
+
+每个 DID 文档都会发布两个公钥：签名密钥和恢复密钥。
+
+- **签名密钥** ：断言对 DID 文档和用户数据存储库的更改。
+- **恢复密钥** ：断言对 DID 文档的更改；可能会在 **72 小时窗口** 内覆盖签名密钥。
+
+签名密钥委托给PDS，以便它可以管理用户的数据，但恢复密钥由用户保存，例如作为纸钥匙。这使得用户无需原始主机的帮助即可将其帐户更新到新的 PDS。
+
+## 预注册密钥
+
+你需要：
+
+- 存储私钥的安全位置（建议使用密码管理器）
+- 访问与你的帐户关联的电子邮件地址
+- [`goat`](https://github.com/bluesky-social/indigo/tree/main/cmd/goat) 命令行工具：
+
+````bash
+brew install goat
+````
+
+使用“goat”生成新的加密密钥对：
+
+````bash
+goat key generate
+````
+
+这会输出**秘密密钥** （私有）和**公钥** 。输出看起来像：
+
+````
+秘钥：...
+公钥：did:key:z...
+````
+
+**安全地存储密钥。** 将其放入密码管理器、加密文件或其他安全存储中。如果丢失此密钥，你将失去此恢复选项。如果其他人获得它，他们就可以控制你的身份。
+
+公钥（以“did:key:”开头）可以安全共享，并将在 PLC 目录中注册。
+
+接下来，使用“goat”对你的帐户进行身份验证：
+
+````bash
+山羊账户登录
+````
+
+按照提示输入你的 PDS 主机、句柄和应用程序密码。然后，请求一个令牌：
+
+````bash
+山羊帐户 plc 请求令牌
+````
+
+你将通过电子邮件收到验证码。最后，使用“goat account plc”将你的公钥添加到你的身份中：
+
+````bash
+山羊帐户 plc add-rotation-key --token YOUR_TOKEN did:key:YOUR_PUBLIC_KEY
+````
+
+将“YOUR_TOKEN”替换为电子邮件验证码，将“did:key:YOUR_PUBLIC_KEY”替换为“goat key generated”中的公钥。
+
+这会将你的密钥添加到轮换密钥列表中，其优先级高于 PDS 的密钥。
+
+## 验证你的设置
+
+确认你的轮换密钥已添加：
+
+````bash
+山羊帐户 PLC 当前
+````
+
+你应该会看到你的“did:key:...”列在旋转键中。
+
+你还可以在以下位置检查你的 DID 的公共 PLC 审核日志：
+
+````
+https://plc.directory/{your-did}/log/audit
+````
+
+## 使用你的密钥进行恢复
+
+如果你需要恢复帐户（因为你的 PDS 不合作或离线），你可以使用轮换密钥来：
+
+- 更新你的 DID 文档以指向新的 PDS
+- 添加新的 atproto 签名密钥
+- 删除旧 PDS 的旋转钥匙
+
+此过程详细记录在 [Adversarial PDS Migration](https://www.da.vidbuchanan.co.uk/blog/adversarial-pds-migration.html) 中。一般步骤是：
+
+1. [**准备一个新的 PDS** ](/guides/self-hosting#pds) 并包含邀请码
+2. **使用“goat”和轮换密钥来更新你的 DID 文档** ，以指向新的 PDS 并添加临时签名密钥
+3. 使用服务身份验证令牌在新 PDS 上**创建帐户**
+4. **从备份导入数据** （存储库 CAR 文件、blob、首选项）
+5. **通过更新凭据并激活帐户来完成**
+
+为此，你还需要**数据备份** 。考虑定期导出你的存储库：
+
+````bash
+goat repo export $ACCOUNT_DID # 导出你的公共数据（bluesky 帖子等）
+goat blob export $ACCOUNT_DID # 导出 blob（例如图像、视频）
+goat bsky prefs export > prefs.json # 导出你的私人 bluesky 首选项
+````
+
+你可以注册多个轮换密钥以实现冗余，并将它们存储在不同的安全位置。
+
+## 进一步阅读
+
+- [PLC 旋转钥匙的自助保管](https://whtwnd.com/bnewbold.net/3lj7jmt2ct72r) — 本文档源自原始指南
+- [对抗性 PDS 迁移](https://www.da.vidbuchanan.co.uk/blog/adversarial-pds-migration.html) — 最坏情况恢复的详细演练
+- [账户托管规范](/specs/account) — 账户管理技术规范
+- [DID 规范](/specs/did) — 有关 `did:plc` 和旋转密钥的详细信息

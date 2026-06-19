@@ -1,0 +1,88 @@
+import {Container} from "@/components/Container"
+import {ResponsiveTable} from '@/components/ResponsiveTable'
+
+export const header = {
+  title: '关于 OAuth',
+  description: 'atproto 应用程序的 OAuth 实现模式',
+}
+
+本页介绍了适用于 atproto 应用程序的 OAuth 库和实现模式。如果你是 atproto OAuth 的新手，我们建议你从我们的实践教程之一开始：
+
+- [OAuth with Node.js](/guides/oauth-cli-tutorial) - 一个最小的 CLI 应用程序，有助于理解 atproto OAuth 的工作原理
+- [OAuth with Go](/guides/go-oauth-cli-tutorial) - 来自 Go CLI 应用程序的 OAuth
+- [OAuth with Next.js](/guides/oauth-tutorial) - 使用 AT 协议登录构建 Web 应用程序
+
+有关 OAuth 在 atproto 中如何工作的概念性概述（包括它与其他 OAuth 系统的区别），请参阅 [Auth 概述](/guides/auth#what-is-o-auth)。
+
+## SDK 库
+
+以下库处理 OAuth 流程，包括 [DPoP](/guides/oauth-patterns#understanding-d-po-p)、令牌刷新和会话管理。
+
+### 打字稿
+
+- [@atproto/oauth-client-browser](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-browser#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-browser)) - 适用于仅前端应用程序（例如 SPA）。
+- [@atproto/oauth-client-node](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-node)) - 适用于 Electron 桌面应用程序或服务器端部署。
+- [@atproto/oauth-client-expo](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-expo#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-expo)) - 用于 React Native 项目（例如移动应用程序）
+- [@atproto/oauth-client](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client)) (这是上述三个库所依赖的核心实现)
+- [@fujocoded/authproto](https://github.com/FujoWebDev/fujocoded-plugins/tree/main/astro-authproto) ([npmx](https://www.npmx.dev/package/@fujocoded/authproto)) - Astro 应用程序的社区实现
+- [@atcute/oauth-browser-client](https://github.com/mary-ext/atcute/tree/HEAD/packages/oauth/browser-client) ([npmx](https://npmx.dev/package/@atcute/oauth-browser-client)) - 社区浏览器客户端实现
+
+### 去
+
+- [Indigo](https://github.com/bluesky-social/indigo/tree/main/atproto/auth/oauth) ([在线 API 文档](https://pkg.go.dev/github.com/bluesky-social/indigo/atproto/auth/oauth)) - 适用于本机应用程序或服务器端部署
+
+## Atproto OAuth 示例应用程序
+
+这些简单的示例应用程序演示了各自 SDK 的用法。
+
+<ResponsiveTable
+  columns={[{label: 'Example App'}, {label: 'Language'}, {label: 'SDK'}, {label: 'Architecture'}, {label: 'Confidential Client?'}, {label: 'Localhost development client ID?', href: '/specs/oauth#localhost-client-development'}]}
+  rows={[
+    [{label: 'cookbook/react-native-oauth', href:' https://github.com/bluesky-social/cookbook/tree/main/react-native-oauth#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-expo'}, {label: 'Mobile App (no backend)'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
+    [{label: 'cookbook/vanillajs-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme' }, {label: 'JavaScript'}, {label: '@atproto/oauth-client-browser'}, {label: 'Web SPA (no backend)'}, {label: 'No'}, {label: 'Optionally'},],
+    [{label: 'cookbook/nextjs-oauth', href:' https://github.com/bluesky-social/nextjs-oauth-tutorial/tree/129cf28b4146ae709e0dac43ce20154ab5237559#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-node'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
+    [{label: 'cookbook/go-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
+    [{label: 'cookbook/go-oauth-cli-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Native CLI'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
+    [{label: 'cookbook/python-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme' }, {label: 'Python'}, {label: 'None'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},]
+  ]}
+/>
+
+<Note>
+The Python example does not use an SDK! It may be useful as reference when building an OAuth SDK from scratch, alongside the advanced [OAuth client implementation guide](https://docs.bsky.app/docs/advanced-guides/oauth-client)
+</Note>
+
+## OAuth 流程如何工作
+
+1. 你的应用程序[将用户](/guides/permission-requests)重定向到其 PDS 的授权端点（具有你请求的范围）
+2. 用户审核权限并批准（或拒绝）访问
+3. PDS 使用授权代码重定向回你的“redirect_uri”
+4.你的应用程序（或SDK）交换访问和刷新令牌的代码
+5. 你使用访问令牌发出经过身份验证的 API 请求
+
+SDK 自动处理步骤 3-5。你的回调端点只需调用 SDK 的回调处理程序，该处理程序即可完成令牌交换并返回经过身份验证的会话。从那里，你可以进行 API 调用 - 请参阅[读取和写入](/guides/reads-and-writes)。
+
+## 应用程序类型
+
+最简单的应用程序类型是直接在用户设备和 PDS 之间建立 OAuth 会话的应用程序类型，如 [cookbook/vanillajs-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme) 示例中所示。它很简单，因为它不需要专用的后端服务，只托管静态资源。
+
+如果你的应用程序不需要长期会话，那么这种方法完全没问题。但对于其他用例，会话生命周期将受到限制，因为应用程序是“公共客户端”，而不是“机密客户端”。成为机密客户端需要建立与客户端 ID 绑定的密钥。如果客户端是公开可用的并且在用户自己的设备上运行，则它无法保护客户端机密。因此，实现机密客户端需要托管一些后端基础设施，[cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) 和 [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) 示例演示了这一点（两者都使用“BFF”模式，见下文）。
+
+有关机密客户端与公共客户端的更多技术详细信息，请参阅[客户端类型](/specs/oauth#types-of-clients)。
+
+有几种设计策略可用于将公共客户端“升级”为机密客户端：
+
+- [前端后端 (BFF)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-backend-for-frontend-bff)：OAuth 会话在应用后端服务器和 PDS 之间建立。该服务器端会话通过会话 cookie 等机制与用户的前端会话相关联。前端通过后端代理向 PDS 发出请求，后端处理 OAuth 授权。
+- [令牌中介后端 (TMB)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-token-mediating-backend)：与 BFF 模式类似，不同之处在于，一旦建立会话，后端就会将 OAuth 访问令牌传递给前端，从而允许前端直接向 PDS 发出请求。
+- [客户端断言后端](https://github.com/bluesky-social/proposals/tree/main/0010-client-assertion-backend)：提出的 TMB 模式替代方案，具有简化的服务器端逻辑。
+
+在这三种模式中，BFF 模式是当前推荐的用于构建机密客户端应用程序的方法。这在 [cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) 和 [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) 示例中进行了演示。
+
+## 进一步阅读和资源
+
+- [授权](/guides/auth)
+- [SDK认证](/guides/sdk-auth)
+- [权限请求](/guides/permission-requests)
+- [权限集](/guides/permission-sets)
+- [OAuth 模式](/guides/oauth-patterns)
+- [OAuth 规范](/specs/oauth)
+- [权限规范](/specs/permission)

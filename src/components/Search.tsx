@@ -320,7 +320,7 @@ const SearchInput = forwardRef<
   )
 })
 
-const locales = ['pt', 'ja', 'ko']
+const locales = ['pt', 'ja', 'ko', 'zh-CN']
 
 function getLocaleFromPathname(pathname: string): string {
   const firstSegment = pathname.split('/')[1]

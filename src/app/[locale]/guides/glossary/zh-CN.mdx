@@ -1,0 +1,117 @@
+export const header = {
+  title: '术语表',
+  description: 'AT 协议中使用的术语及其定义的集合。',
+}
+
+# 术语表
+
+AT 协议使用了许多可能不太熟悉的术语。此页面提供了这些术语的快速参考，并包含一些指向更多信息的链接。 {{className: 'lead'}}
+
+## 气氛
+
+“氛围”是我们用来描述 [AT 协议](#at-protocol) 周围生态系统的术语。
+
+## AT 协议
+
+AT 协议代表“身份验证传输协议”，通常缩写为“atproto”。该名称是指所有用户数据均由创作用户签名，这使得可以通过许多服务广播数据并证明其真实性，而无需直接与原始服务器对话。
+
+该名称也是“@”符号（又名“at”符号）的变体，因为 atproto 是为社交系统设计的。
+
+## PDS（个人数据服务器）
+
+PDS（即个人数据服务器）是托管用户的服务器。 PDS 将始终存储用户的[数据存储库](#data-repo) 和签名密钥。它还可以为用户分配一个 [handle](#handle) 和一个 [DID](#did-decentralized-id)。许多 PDS 将托管多个用户。
+
+PDS 与 [AppViews](#app-view) 通信以运行应用程序。 PDS 本身通常不运行任何应用程序，但它具有通用帐户管理界面，例如 OAuth 登录屏幕。 PDS 主动将其[数据存储库](#data-repo) 与[中继](#relay) 同步。
+
+## 应用程序视图
+
+AppView 是 [Atmosphere](#atmosphere) 中的应用程序。它被称为“AppView”，因为它只是网络的一种视图。规范数据位于由 [PDS](#pds-personal-data-server) 托管的 [data repos](#data-repo) 中，并且可以通过多种不同方式查看该数据。
+
+AppView 的功能有点像 Web 上的搜索引擎：它们聚合来自整个 Atmosphere 的数据以生成其 UI。不同之处在于 AppView 还与用户的 [PDS](#pds) 进行通信，以在其 [repos](#data-repo) 上发布信息，形成完整的应用程序模型。此通信是作为 OAuth 登录流程的一部分建立的。
+
+## 中继
+
+中继是来自 [Atmosphere](#atmosphere) 的 [数据存储库](#data-repo) 的聚合器。他们从 [PDSes](#pds) 同步存储库并生成一系列更改事件。 [AppViews](#app-view) 使用 Relay 来获取用户数据。
+
+中继是一种优化，并不是绝对必要的。 [AppView](#app-view) 可以直接与 [PDSes](#pds) 通信（在较小规模的应用程序中）。中继用于减少网络中所需的连接数量。
+
+## 词典
+
+Lexicon 是一种模式语言。它在[Atmosphere](#atmosphere) 中用于描述[数据记录](#record) 和HTTP API。从功能上来说，它与 [JSON-Schema](https://json-schema.org/) 和 [OpenAPI](https://www.openapis.org/) 非常相似。
+
+Lexicon 的唯一目的是帮助开发人员构建兼容的软件。
+
+- [词典简介](/guides/lexicon)
+- [词典规范](/specs/lexicon)
+
+## 数据仓库
+
+“数据存储库”或“存储库”是代表用户的公共数据集。它由 JSON [记录](#record) 的[集合](#collection) 和非结构化的[blob](#blob) 组成。每个存储库都被分配一个永久的 [DID](#did-decentralized-id) 来标识它。存储库还可能有一个作为人类可读名称的[域句柄](#handle)。
+
+数据存储库是签名的默克尔树。他们的签名可以根据存储库的 [did](#did-decentralized-id) 下发布的密钥材料进行验证。
+
+- [数据存储库简介](/guides/data-repos)
+- [存储库规范](/specs/repository)
+
+## 收藏
+
+“集合”是 [数据存储库](#data-repo) 中的 JSON [记录](#record) 存储桶。它们支持有序列表操作。每个集合都由 [NSID](#nsid-namespaced-id) 标识，预计映射到 [Lexicon](#lexicon) 模式。
+
+## 记录
+
+“记录”是 [repo](#data-repo) [collection](#collection) 内的 JSON 文档。记录的类型由“$type”字段标识，该字段预计映射到 [Lexicon](#lexicon) 模式。该类型还应该与包含它的 [collection](#collection) 相匹配。
+
+- [记录密钥规格](/specs/record-key)
+
+## 斑点
+
+Blob 是存储在 [repo](#data-repo) 内的非结构化数据。它们最常用于存储图像和视频等媒体。
+
+## 标签
+
+标签是附加到帐户 ([DIDs](#did-decentralized-id)) 和 [records](#record) 的元数据对象。它们通常通过其值来引用，例如“裸体”或“图形媒体”，这些值标识了标签的含义。标签主要由应用程序用于审核，但它们也可以用于其他目的。
+
+- [标签规格](/规格/标签)
+
+## 处理
+
+句柄是用于识别[数据存储库](#data-repo)的域名。可以将多个句柄分配给一个存储库。句柄可以用在域段中的“at://”URI 中。
+
+- [手柄规格](/规格/手柄)
+- [URI 方案规范](/specs/at-uri-scheme)
+
+## DID（去中心化ID）
+
+DID，或去中心化标识符，是代表[数据存储库](#data-repo)的通用唯一标识符。它们是永久性的且非人类可读的。 DID 是 [W3C 规范](https://www.w3.org/TR/did-core/)。 AT协议目前支持“did:web”和“did:plc”两种不同的DID方法。
+
+DID 解析为包含有关 [repo](#data-repo) 的元数据的文档，包括存储库的 [PDS](#pds) 地址、存储库的 [handles](#handle) 和公共签名密钥。
+
+- [DID 规范](/specs/did)
+
+## NSID（命名空间ID）
+
+NSID（即命名空间标识符）是 [Atmosphere](#atmosphere) 中使用的标识符格式，用于标识 [Lexicon](#lexicon) 模式。它们遵循反向 DNS 格式，例如“app.bsky.feed.post”。选择它们是因为它们通过域所有权提供了清晰的模式治理。选择反向 DNS 格式是为了避免与 URI 中的域混淆。
+
+- [NSID 规范](/specs/nsid)
+
+## TID（时间戳ID）
+
+TID（或时间戳标识符）是用于 [record](#record) 键的标识符格式。它们源自当前时间，旨在避免冲突、维护字典排序并有效平衡[数据存储库](#data-repo) 的内部数据结构。
+
+- [记录键规格](/specs/record-key)
+
+## CID（内容 ID）
+
+CID（即内容标识符）是 [records](#record) 的加密哈希值。它们用于跟踪记录的特定版本。
+
+## DAG CBOR
+
+DAG-CBOR 是 [atproto](#at-protocol) 使用的序列化格式。选择它是因为它提供了可靠的规范形式，这对于密码验证很重要。
+
+- [数据模型规范](/specs/data-model)
+
+## XRPC
+
+XRPC 是 [atproto](#at-protocol) HTTP API。它代表“跨组织远程过程调用”，是标准 HTTPS 的薄包装。 XRPC 使用 [Lexicon](#lexicon) 模式来定义每个 API 端点的有效参数和响应。
+
+- [HTTP API 规范](/specs/xrpc)

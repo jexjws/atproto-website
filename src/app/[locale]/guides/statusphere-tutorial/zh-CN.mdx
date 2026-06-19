@@ -1,0 +1,202 @@
+import {Container} from "@/components/Container"
+import setstatus from "./set-status.png"
+import tap from "./tap-status.png"
+import feed from "./feed-status.png"
+import taproot from "./taproot-status.png"
+import S01 from './_snippets/01-install-brew.mdx'
+import S02 from './_snippets/02-pnpm-add.mdx'
+import S03 from './_snippets/03-npm-install-lex.mdx'
+import S04 from './_snippets/04-lex-install.mdx'
+import S05 from './_snippets/05-lex-build.mdx'
+import S06 from './_snippets/06-scope-constant.mdx'
+import S07 from './_snippets/07-db-schema.mdx'
+import S08 from './_snippets/08-db-migrations.mdx'
+import S09 from './_snippets/09-status-route.mdx'
+import S10 from './_snippets/10-status-picker.mdx'
+import S11 from './_snippets/11-page-v1.mdx'
+import S12 from './_snippets/12-tap-index.mdx'
+import S13 from './_snippets/13-db-queries-v1.mdx'
+import S14 from './_snippets/14-webhook-route.mdx'
+import S15 from './_snippets/15-page-status-update.mdx'
+import S16 from './_snippets/16-tap-run.mdx'
+import S17 from './_snippets/17-curl-add-did.mdx'
+import S18 from './_snippets/18-queries-extra-imports.mdx'
+import S19 from './_snippets/19-queries-handle-statuses.mdx'
+import S20 from './_snippets/20-page-v2.mdx'
+import S21 from './_snippets/21-tap-run-signal.mdx'
+
+export const header = {
+  title: '创建社交应用程序',
+  description: '构建一个应用程序，让您可以使用 AT Record Lexicons 广播和接收状态更新。',
+}
+
+在本教程中，你将使用自定义词典和实时同步构建状态设置应用程序。
+
+你可以在 [statusphere-example-app](https://github.com/bluesky-social/statusphere-example-app) 存储库中找到本教程的源代码。
+
+## 先决条件
+
+本教程构建在我们的 [OAuth with NextJS 教程](/guides/oauth-tutorial) 中创建的应用程序之上。在开始本教程之前，你应该拥有一个完整的 NextJS OAuth 应用程序。如果你想跳过该步骤，可以从 [Cookbook](https://github.com/bluesky-social/nextjs-oauth-tutorial/tree/129cf28b4146ae709e0dac43ce20154ab5237559) 克隆已完成的 OAuth 应用程序。
+
+你应该已经安装：
+- Node.js 18-22.x
+- 去 1.25+
+- pnpm 包管理器
+
+<Note>
+This tutorial currently doesn't work on Node 24.x because of a [Request bug](https://github.com/vercel/next.js/issues/90826).
+</Note>
+
+在 [homebrew](https://brew.sh/) 支持的平台上，你可以使用以下命令安装它们：
+
+<S01 />
+
+首先将这些 atproto 库添加到你现有的项目中：
+
+<S02 />
+
+你还应该全局安装我们的“lex” CLI 工具：
+
+<S03 />
+
+你将首先将词典添加到你的项目中。
+
+## 第 1 部分：词典
+
+[Lexicons](/guides/lexicon) 定义 atproto 中记录的架构。为了创建本教程，我们已经在我们的存储库中发布了一个新的“Statusphere”词典，可从“xyz.statusphere.status”获取。你可以使用“lex”下载此词典并将其构建到你的项目中：
+
+<S04 />
+
+如果需要，你可以在“lib/lexicons/xyz.statusphere.status.json”查看下载的 Lexicon 文件。从这里，你可以运行“lex build”来为所有已安装的词典生成 TypeScript 类型：
+
+<S05 />
+
+<Note>
+You could add this command to `package.json` if you needed, but we won't be using it again in this tutorial now that our Lexicons have been built. If you ever add another Lexicon to a project with `lex install`, you'll need to re-run `lex build` with the `--override` flag to regenerate the types.
+</Note>
+
+你现在应该做的另一件事是更新“lib/auth/client.ts”中的“SCOPE”常量以请求访问此集合。 Atproto 权限范围是词典，因此你可以将 `xyz.statusphere.status` 添加到应用程序请求的范围列表中：
+
+<S06 />
+
+现在你可以继续创建数据库模式。
+
+## 第 2 部分：数据库架构
+
+更新 `lib/db/index.ts` 以添加新表：
+
+<S07 />
+
+接下来，添加创建这些表的迁移脚本。如果你在 OAuth 教程的基础上进行构建并且已经部署/迁移了数据库，则你需要将它们放入新的迁移中，例如在 `lib/db/migrations.ts` 中称为“002”：
+
+<S08 />
+
+你可以运行“pnpm migrate”将这些新迁移应用到你的数据库。现在，实际构建应用程序逻辑！
+
+## 第 3 部分：状态提交
+
+首先，你将构建允许用户将其状态写入其 [PDS](/guides/the-at-stack#pds) 的功能。在 `app/api/status/route.ts` 创建一个新的 API 路由：
+
+<S09 />
+
+这将验证用户是否已登录，使用其 OAuth 会话创建 lex `Client`，然后使用提交的状态文本创建新的 `xyz.statusphere.status` 记录。
+
+接下来，在“components/StatusPicker.tsx”中创建一个状态选择器组件：
+
+<S10 />
+
+最后，更新 `app/page.tsx` 以包含状态选择器：
+
+<S11 />
+
+使用“pnpm dev”运行应用程序 - 你将能够登录并选择一个表情符号来设置你的状态！
+
+<Container>
+  <Image src={setstatus} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+你还无法在此应用程序中查看你的状态，但你可以在 [atproto.at](https://atproto.at/) 上查找你的帐户并检查“xyz.statusphere.status”词典以查看此记录。
+
+<Container>
+  <Image src={taproot} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+接下来，你将添加同步功能以实际接收状态更新。
+
+## 第 4 部分：与 Tap 实时同步
+
+[Tap](/guides/backfilling#using-tap) 是同步和传输 AT 协议记录的最佳方式。你将使用 Tap [TypeScript 库](https://www.npmjs.com/package/@atproto/tap) 同步数据库中的新记录。创建“lib/tap/index.ts”：
+
+<S12 />
+
+接下来，使用一些数据库查询创建“lib/db/queries.ts”以处理 Tap 事件：
+
+<S13 />
+
+`setCurrStatus` 帮助器确保每个用户只有最新状态才具有 `current = 1`。这个稍后会用到。
+
+Tap 将通过位于 `app/api/webhook/route.ts` 的 webhook 端点传递事件：
+
+<S14 />
+
+当网络上任何位置的记录发生更改时，Tap 会发送 Webhook 事件。使用共享密钥验证请求；对于“身份”事件，你更新帐户缓存；对于“记录”事件，你检查记录是否与你的词典匹配，并将其插入/更新/删除到数据库中。
+
+再次更新 `app/page.tsx` 以获取并传递当前用户的状态：
+
+<S15 />
+
+这样，“StatusPicker”将在页面加载时突出显示用户的当前状态。
+
+现在，在另一个终端中，从其源存储库安装并运行“tap”：
+
+<S16 />
+
+<Note>
+If you set the `TAP_ADMIN_PASSWORD` environment variable, pass the same value to the tap command with `--admin-password="<your-password>"`.
+</Note>
+
+Ctrl+C 你正在运行的应用程序。然后将你的数据存储库添加到 Tap 以进行跟踪（稍后你将添加其他数据源）：
+
+<S17 />
+
+使用“pnpm dev”重新启动你的应用程序，完成登录流程，你应该会发现已保存的状态突出显示：
+
+<Container>
+  <Image src={tap} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+## 第 5 部分：显示句柄和提要
+
+最后，你将添加显示用户句柄和所有用户的状态源的功能。
+
+首先，向 `lib/db/queries.ts` 添加一些额外的导入：
+
+<S18 />
+
+然后，添加其他函数来获取帐户句柄和状态：
+
+<S19 />
+
+接下来，更新 `app/page.tsx` 以显示包含顶部状态、句柄和时间戳的完整提要：
+
+<S20 />
+
+现在，登录的用户将看到“以@theirhandle身份登录”而不仅仅是“已登录”，以及所有用户的最新状态的提要，以及显示最流行的当前状态的“热门状态”部分。
+
+你可以再次使用“pnpm dev”停止并重新启动你的应用程序。
+
+最后一件事 - 请记住，你之前只向“tap”添加了一个数据源。要查看整个网络的状态，请停止并使用“--signal-collection”标志重新运行“tap”：
+
+<S21 />
+
+...你将开始看到网络上其他用户的状态！
+
+<Container>
+  <Image src={feed} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+## 结论
+
+你现在已经构建了一个完整的 atproto 应用程序，该应用程序使用 OAuth 登录、自定义 Lexicon 来定义状态记录，并通过 Tap 实时同步记录。
+
+这为你提供了继续构建 AT 协议所需的所有工具。你可以在我们的 [指南](/guides) 部分中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

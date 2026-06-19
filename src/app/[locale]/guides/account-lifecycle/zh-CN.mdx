@@ -1,0 +1,70 @@
+export const header = {
+  title: '帐户和删除',
+  description: 'AT 协议中帐户生命周期和删除的工作原理',
+}
+
+## 帐户生命周期
+
+本文档对[帐户托管](/specs/account) 规范进行了补充，该规范提供了帐户生命周期的高级概述。它总结了一些常见帐户生命周期转换的预期行为，以及预期按什么顺序发生哪些消防事件。通常期望软件能够适应部分或不正确的事件传输。
+
+了解帐户生命周期还有助于了解 AT 协议中的记录删除。
+
+## 创建新帐户
+
+当在 PDS 上注册帐户并创建新身份 (DID) 时：
+
+- PDS 将生成或确认帐户身份的存在（DID 和句柄）。一旦 DID 处于可由网络中的其他服务解析的确认状态，并指向当前 PDS 实例，PDS 就会发出“#identity”事件。最好（但不是必需）等到第三方可以解析该句柄后再发出事件（特别是但不仅限于 PDS 为帐户提供句柄时）。发出此事件时，帐户状态可能是“活动”，也可能不是“活动”。
+- 帐户创建完成后，PDS 将通过“active”响应帐户状态的 API 请求，可以发出“#account”事件
+- 当使用“rev”和“commit”初始化帐户的存储库时，可以发出“#commit”消息。初始存储库可能是“空”（没有记录），或者可能包含记录。
+- 事件的具体顺序没有正式指定，但推荐的顺序是：`#identity`、`#account`、`#commit`
+- 下游服务处理并传递这些事件。
+
+## 账户迁移
+
+将帐户迁移到新 PDS 时的相关事件和行为：
+
+- 新的 PDS 不会在初始帐户创建时发出任何事件。新 PDS 上的帐户状态将被“停用”（它将相应地回复 API 请求）
+- 当新的 PDS 更新并确认身份时，它应该发出“#identity”事件
+- 当帐户在新 PDS 上切换为“活动”时，它应该发出“#account”事件和“#commit”事件；该顺序不是正式要求的，但建议先执行“#account”。理想情况下，“#commit”事件将为空（没有新记录），但使用任何新的签名密钥进行签名，并具有新的/增量的“rev”。
+- 当旧 PDS 上的帐户被停用时，它应该发出“#account”事件，表明该帐户处于非活动状态并且状态为“已停用”。
+- 中继应忽略不是来自当前声明的身份 PDS 实例的“#account”和“#commit”事件：这些事件不应传递到输出 Firehose。此外，当本地帐户状态不是“活动”时，他们应该忽略“#commit”事件。总体而言，这意味着帐户迁移应导致来自中继的三个事件：“#identity”（来自新 PDS）、“#account”（来自新 PDS）和“#commit”（来自新 PDS）。旧 PDS 中的“#account”通常会被忽略。
+- 下游服务（例如，AppView）应更新其身份缓存，并增加帐户的“rev”（当收到“#commit”时），但其他情况下不需要采取任何操作。
+
+## 账户删除
+
+- PDS 发出“#account”事件，“active”为 false，状态为“deleted”。
+- 中继更新存储库的本地帐户状态，并传递“#account”事件。如果 Relay 是完整镜像，它会立即停止为该帐户提供“getRepo”、“getRecord”和类似 API 请求，并在响应错误中指出原因。 Relay可以根据本地策略在本地完全删除repo内容。只要回填窗口有时间限制，就不需要立即清除回填窗口的提交事件。
+- PDS 不应为非“活动”帐户发出“#commit”事件。如果为存储库发出任何进一步的“#commit”消息（例如，由于意外或无序处理或交付），所有下游服务都应忽略该事件并且不传递该事件
+- 下游服务（例如，AppView）**应** 立即停止为该帐户提供/分发内容。他们“可能”根据当地政策推迟永久数据删除。根据策略和实现，更新聚合（例如，记录计数）也可以被推迟或在后台队列中处理。错误状态消息可能指示内容“消失”（存在，但不再可用），或者内容“未找到”（不显示内容以前存在）
+
+<Note>
+The behavior of downstream services is a recurring theme throughout this guide. Due to the nature of the AT Protocol, downstream services may go out of sync with [firehose events](/guides/streaming-data), and may fail to process requests such as deletion requests. Records that have been requested to be deleted, or have been removed from a self-hosted PDS, may still exist elsewhere if they were processed by a Relay and ingested into another application or data model that does not follow the atproto spec — i.e., doesn't resolve record requests back to the origin PDS. Full records are [deliberately not included](https://github.com/bluesky-social/indigo/issues/927) with delete events on the firehose to further mitigate this. As a rule, the PDS *should* be considered the source of truth for hosted accounts.
+</Note>
+
+帐户删除的工作方式与帐户删除类似。
+
+## 帐户停用
+
+- PDS 发出“#account”事件，“active”为 false，状态为“deactivated”。
+- 与删除类似，Relay 处理事件，停止重新分发内容，并传递事件。中继不应完全清除本地内容，但如果停用状态持续很长时间（根据本地策略），它最终可能会删除本地副本。
+- 与删除类似，`#commit` 事件不应由 PDS 发出，并且如果被中继接收到，则应被忽略且不传递
+- 下游服务（例如，AppViews）应该使内容不可用，但不需要在本地删除数据。他们应将帐户/内容状态指示为“不可用”；最佳做法是明确指出这是由于帐户停用造成的。
+
+帐户暂停的工作原理与停用类似。
+
+## 帐户重新激活
+
+- PDS 发出“#account”事件，状态为“active”。
+- 中继验证帐户重新激活是否有效，例如，它来自身份的当前 PDS 实例。它更新本地帐户状态，并传递事件。
+- 任何下游服务（例如，AppViews）应更新帐户的本地帐户状态。
+- 任何当前没有帐户任何存储库内容的服务（例如，因为它之前已被删除）都可以获取存储库 [CAR](/specs/repository#car-file-serialization) 导出并将其作为后台任务处理。 “上游”主机（如中继）可能有存储库副本，或者服务可能直接连接到帐户的 PDS 主机。他们不需要这样做，而是可以等待“#commit”事件。
+- 如果帐户之前被删除或长时间不活动，则 PDS 的最佳做法是在重新激活后发出空的“#commit”事件，以确保下游服务同步。
+
+## 进一步阅读和资源
+
+- [读取和写入](/guides/reads-and-writes)
+- [读取数据](/guides/reading-data)
+- [写入数据](/guides/writing-data)
+- [社交图谱](/guides/social-graph)
+- [记录密钥规格](/specs/record-key)
+- [URI 方案](/specs/at-uri-scheme)

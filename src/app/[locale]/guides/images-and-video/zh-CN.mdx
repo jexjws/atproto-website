@@ -1,0 +1,73 @@
+import UploadBlobTs from './_snippets/upload-blob-ts.mdx'
+import UploadBlobResponseTs from './_snippets/upload-blob-response-ts.mdx'
+import PostWithEmbedTs from './_snippets/post-with-embed-ts.mdx'
+import UploadBlobGo from './_snippets/upload-blob-go.mdx'
+import UploadBlobResponseGo from './_snippets/upload-blob-response-go.mdx'
+import PostWithEmbedGo from './_snippets/post-with-embed-go.mdx'
+import CdnUrlExample from './_snippets/cdn-url-example.mdx'
+
+export const header = {
+  title: '图片和视频',
+  description: '处理图像和视频 blob',
+}
+
+## 使用斑点
+
+“Blob”是与帐户存储库一起存储的媒体文件。它们包括图像、视频和音频，但也可以包括任何其他文件格式。 Blob 由 **`blob`** 词典数据类型的各个记录引用，其中包括 blob 的内容哈希（CID；`ref`）。
+
+<TabGroup defaultValue="ts">
+  <TabList>
+    <Tab value="ts">TypeScript</Tab>
+    <Tab value="go">Go</Tab>
+  </TabList>
+  <TabPanels>
+    <TabPanel value="ts">
+    <UploadBlobTs />
+
+    <UploadBlobResponseTs />
+
+Blob 文件与记录分开上传和分发：
+
+    <PostWithEmbedTs />
+    </TabPanel>
+    <TabPanel value="go">
+    <UploadBlobGo />
+
+    <UploadBlobResponseGo />
+
+Blob 文件与记录分开上传和分发：
+
+    <PostWithEmbedGo />
+    </TabPanel>
+  </TabPanels>
+</TabGroup>
+
+您可以在 [atproto.at](https://atproto.at/viewer?uri=did:plc:ewvi7nxzyoun6zhxrhs64oiz/app.bsky.feed.post/3juft56hdjg2o) 中查看现有 Blob 记录的外观。就是这个：
+
+![https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ewvi7nxzyoun6zhxrhs64oiz/bafkreiebtvblnu4jwu66y57kakido7uhiigenznxdlh6r6wiswblv5m4py@jpeg ](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ewvi7nxzyoun6zhxrhs64oiz/bafkreiebtvblnu4jwu66y57kakido7uhiigenznxdlh6r6wiswblv5m4py@jpeg)
+
+当从 CDN 提供服务时，这个美丽的 blob 的 URL 如下所示：
+
+<CdnUrlExample />
+
+请注意 URL 结构：blob 由 CDN 提供，但路径包括上传它的帐户的 DID 以及 blob 本身的 CID。
+
+## 斑点对象
+
+Blob 由帐户的 PDS 实例权威存储，但视图通常由与各个应用程序（“AppViews”）关联的 CDN 提供服务，以减少 PDS 上的流量。 CDN 可以提供原始 blob 的转换（调整大小、转码等）版本。
+
+虽然 blob 是普遍内容寻址的（通过 CID），但它们始终在个人帐户 (DID) 的上下文中被引用和管理。
+
+空 blob（零字节）通常是有效的，尽管个别词典/应用程序可能不允许它。
+
+创建 blob 需要权限范围 **`blob:*/*` .**
+
+如果您托管自己的 PDS，通常建议使用对象存储实现来处理 Blob。有关更多信息，请参阅[即将投入生产](/guides/going-to-production#object-storage)。
+
+## 进一步阅读和资源
+
+- [Blob 生命周期](/guides/blob-lifecycle)
+- [Blob 安全](/guides/blob-security)
+- [视频处理](/guides/video-handling)
+- [Blob 规格](/specs/blob)
+- [Streamplace](https://stream.place/docs/) 提供了 atproto 上视频流的实现和相关 Lexicon。

@@ -1,0 +1,114 @@
+import ListRecordsTs from './_snippets/list-records-ts.mdx'
+import ListRecordsGo from './_snippets/list-records-go.mdx'
+import GetRecordTs from './_snippets/get-record-ts.mdx'
+import GetRecordGo from './_snippets/get-record-go.mdx'
+import ResolveHandleUrl from './_snippets/resolve-handle-url.mdx'
+import ResolveHandleResponse from './_snippets/resolve-handle-response.mdx'
+import ClientDidTs from './_snippets/client-did-ts.mdx'
+import UnauthenticatedClientTs from './_snippets/unauthenticated-client-ts.mdx'
+import GetProfileTs from './_snippets/get-profile-ts.mdx'
+import UnauthenticatedClientGo from './_snippets/unauthenticated-client-go.mdx'
+import GetProfileGo from './_snippets/get-profile-go.mdx'
+
+export const header = {
+  title: '读取数据',
+  description: '读取AT协议记录',
+}
+
+## 挂牌记录
+
+<TabGroup defaultValue="ts">
+  <TabList>
+    <Tab value="ts">TypeScript</Tab>
+    <Tab value="go">Go</Tab>
+  </TabList>
+  <TabPanels>
+    <TabPanel value="ts">
+您可以使用“client.list()”从用户的数据存储库中读取记录：
+
+    <ListRecordsTs />
+
+每个词典都有自己的参数；对于“app.bsky.feed.post”，您可以指定“repo”（用户句柄或 [DID](#did-resolution)）以及要返回的帖子数量的“限制”。
+    </TabPanel>
+    <TabPanel value="go">
+您可以使用“RepoListRecords()”从用户的数据存储库中读取帖子：
+
+    <ListRecordsGo />
+    </TabPanel>
+  </TabPanels>
+</TabGroup>
+
+有关完整的词典，请参阅 [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post)。
+
+## 获取记录
+
+<TabGroup defaultValue="ts">
+  <TabList>
+    <Tab value="ts">TypeScript</Tab>
+    <Tab value="go">Go</Tab>
+  </TabList>
+  <TabPanels>
+    <TabPanel value="ts">
+您可以使用 client.get() 通过其 [`rkey`](/specs/record-key) 读取单个记录：
+
+    <GetRecordTs />
+    </TabPanel>
+    <TabPanel value="go">
+您可以使用 `RepoGetRecord()` 通过其 [`rkey`](/specs/record-key) 读取单个记录：
+
+    <GetRecordGo />
+    </TabPanel>
+  </TabPanels>
+</TabGroup>
+
+
+## DID 分辨率
+
+在atproto中，用户数据通过[DID](/guides/sync#data-repositories)解析，也称为[去中心化标识符](https://en.wikipedia.org/wiki/Decentralized_identifier)。大多数 AT 协议应用程序在注册用户帐户时使用 [`did:plc` DID](/guides/the-at-stack#did-plc)。
+
+您可以使用“com.atproto.identity.resolveHandle”端点将已知用户名解析为 DID。这意味着您只需在浏览器中使用“handle=”参数访问该地址即可查找您的 DID：
+
+<ResolveHandleUrl />
+
+<ResolveHandleResponse />
+
+TypeScript SDK 还提供当前经过身份验证的 DID 作为“client.did”：
+
+<ClientDidTs />
+
+## 未经身份验证的读取
+
+某些 API 端点无需身份验证即可访问。您可以通过将公共 API URL 传递给新的“客户端”来创建未经身份验证的客户端：
+
+<TabGroup defaultValue="ts">
+  <TabList>
+    <Tab value="ts">TypeScript</Tab>
+    <Tab value="go">Go</Tab>
+  </TabList>
+  <TabPanels>
+    <TabPanel value="ts">
+    <UnauthenticatedClientTs />
+
+与经过身份验证的客户端一样，您可以“.get()”任何公共记录，例如用户的个人资料：
+
+    <GetProfileTs />
+
+您可以使用相同的 SDK 客户端模式对任何 Lexicon 进行 API 调用。有关更多示例，请参阅[SDK 文档](https://www.npmjs.com/package/@atproto/lex)。
+    </TabPanel>
+    <TabPanel value="go">
+    <UnauthenticatedClientGo />
+
+与经过身份验证的客户端一样，您可以“.get()”任何公共记录，例如用户的个人资料：
+
+    <GetProfileGo />
+
+您可以使用相同的 SDK 客户端模式对任何 Lexicon 进行 API 调用。有关更多示例，请参阅 [Go SDK 库](https://pkg.go.dev/github.com/bluesky-social/indigo)。
+    </TabPanel>
+  </TabPanels>
+</TabGroup>
+
+接下来，您可以尝试[写入](/guides/writing-data) 到用户的数据存储库。
+
+## 进一步阅读和资源
+
+- [读取和写入](/guides/reads-and-writes)

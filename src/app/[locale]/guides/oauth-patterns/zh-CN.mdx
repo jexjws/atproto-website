@@ -1,0 +1,131 @@
+export const header = {
+  title: 'OAuth 模式',
+  description: 'atproto 应用程序的高级 OAuth 实现模式',
+}
+
+本页涵盖了大多数开发人员不需要直接处理的高级 OAuth 实现细节。如果您使用[参考 SDK](/guides/about-oauth#typescript) 之一，这些详细信息会自动处理。
+
+有关 OAuth 的入门信息，请参阅[关于 OAuth](/guides/about-oauth)。要了解权限范围，请参阅[权限集](/guides/permission-sets)。有关完整规范，请参阅 [OAuth 规范](/specs/oauth)。
+
+## OAuth 与 AT 协议有何不同？
+
+Atproto [指定](/specs/oauth) OAuth 标准的特定“配置文件”，使用 [OAuth 2.1](https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-13.html) 作为基础。
+
+如果您习惯使用其他 OAuth 系统，那么有一些细节可能会让您措手不及。
+
+- **Atproto 是分布式的** ：通常，当应用程序具有“使用...登录”按钮时，它会提供允许对用户进行身份验证的权限的选择（通常是少数大公司之一）。使用 atproto OAuth，应用程序与身份验证提供程序没有事先关系：用户的 [PDS](/guides/the-at-stack#pds)。这也是atproto OAuth不兼容OIDC的原因，OIDC需要预先建立关系。
+
+- **迁移** ：Atproto 用户可以随着时间的推移在服务器 ([PDSes](/guides/glossary#pds-personal-data-server)) 之间迁移其帐户。为了方便这一点，atproto 有一个灵活的 [Identity](/guides/identity) 层，它允许将用户名 ([handles](/specs/handle)) 解析为静态用户 ID ([DID](/specs/did))，进而可以解析该静态用户 ID 以定位用户的 PDS。当用户登录应用程序时，OAuth 客户端会动态解析这些关系。
+
+- **客户端 ID** ：在其他 OAuth 生态系统中，客户端应用程序通常需要向资源服务器预先注册。这在去中心化系统（具有许多客户端和许多资源服务器）中是不可行的。在 atproto 中，客户端 ID 是一个 URL，在身份验证时获取，以确定重定向 URI 和范围等 OAuth 功能。请参阅[客户端 ID 元数据文档](/specs/oauth#client-id-metadata-document)。
+
+## 了解 DPoP
+
+[DPoP（演示所有权证明）](https://datatracker.ietf.org/doc/html/rfc9449) 以加密方式将 OAuth 令牌绑定到客户端持有的密钥。即使攻击者拦截了您的访问令牌，如果没有您的私钥，他们也无法使用它。这对于具有长期会话（长达 2 年）的机密客户尤其重要。
+
+DPoP 在 atproto OAuth 中是强制性的。 **如果您使用 SDK** ，它会自动处理。如果您手动实现 OAuth（例如，对于写入记录的 sidecar），需要了解的关键事项是：
+
+- 每个会话生成一次 ES256 密钥对，并将其重复用于所有请求
+- 每个请求都需要在“DPoP”标头中提供一个新的 DPoP 证明 JWT，并带有“授权：DPoP {access_token}”
+- 分别跟踪授权服务器和 PDS 的随机数 — 它们可能不同
+- 当您收到带有 `error="use_dpop_nonce"` 的 401 时，请使用 `DPoP-Nonce` 响应标头中的随机数重试
+- 对于 PDS 请求，请包含包含访问令牌的 SHA-256 哈希值的“ath”声明
+
+[cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app) 在 `atproto_oauth.py` 中包含完整的手动 DPoP 实现。有关完整规范，请参阅 [OAuth 规范中的 DPoP](/specs/oauth#demonstrating-proof-of-possession-d-po-p)。
+
+## PKCE 和 PAR
+
+atproto OAuth 中另外两个安全机制是强制性的：
+
+- **[PKCE（代码交换证明密钥）](/specs/oauth#proof-key-for-code-exchange-pkce)** 防止授权代码拦截攻击。客户端为每个授权请求生成一个随机秘密，并在用代码交换令牌时证明拥有它。
+
+- **[PAR（推送授权请求）](/specs/oauth#pushed-authorization-requests-par)** 在重定向用户之前将授权参数直接发送到服务器，从而减少 URL 暴露并实现更好的请求验证。
+
+与 DPoP 一样，两者均由 SDK 自动处理。如果手动实施 OAuth，请参阅 [OAuth 规范](/specs/oauth) 了解要求。
+
+## 令牌刷新
+
+atproto 中的 OAuth 访问令牌的生命周期有限。当令牌过期时，您需要使用刷新令牌来获取新的访问令牌。 SDK 会自动处理此问题，但如果您手动实施 OAuth：
+
+- 将刷新令牌与访问令牌安全地存储在一起
+- 当 API 调用失败并出现 401 错误时，请在重试之前尝试刷新令牌
+- 新的访问令牌将绑定到相同的 DPoP 密钥对
+
+## 会话存储
+
+对于使用 BFF 模式的 Web 应用程序，您需要将 OAuth 会话与用户会话关联。常见的方法包括：
+
+- **基于 Cookie 的会话** ：将 OAuth 令牌存储在服务器端，由存储在仅 HTTP cookie 中的会话 ID 键入
+- **数据库支持的会话** ：使用用户帐户将令牌存储在数据库中，从而启用多设备会话
+
+请参阅[应用程序类型](/guides/about-oauth#types-of-app) 了解架构模式。
+
+## 渐进范围请求
+
+应用程序在登录时并不总是需要其所有权限。 [客户端元数据文档](/specs/oauth#client-id-metadata-document)中的“scope”参数声明应用程序可能请求的最大范围集，但单个授权流可以请求一个子集。这使得可以从最小的范围开始，并在用户选择需要它们的功能时请求更多。
+
+### 授权前选择范围
+
+对于不同用户有不同需求的客户端应用程序，一种方法是让用户在 OAuth 重定向之前选择要授予的[权限](/specs/permission)。应用程序根据用户的选择构建 [scope string](/specs/permission#scope-string-syntax) 并将其传递给 [`authorize()`](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme)：
+
+```typescript
+const BASE_SCOPES = ["atproto"];
+
+// 请求特定的记录集合访问权限而不是广泛的权限
+常量 OPTIONAL_SCOPES = [
+  // 访问您应用程序的 Lexicon 记录
+  { id: "posts", range: "repo:com.example.post", label: "创建帖子" },
+  { id: "喜欢", 范围: "repo:com.example.like", label: "喜欢内容" },
+  // 或者访问 Bluesky 个人资料数据
+  { id: "profile", range: "rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview", label: "读取个人资料" },
+  { id: "blob", range: "blob:*/*", label: "上传图片/视频" },
+];
+
+函数 buildScopeString(选定: Set<字符串>): 字符串 {
+  常量粒度 = OPTIONAL_SCOPES
+    .filter((s) => selected.has(s.id))
+    .map((s) => s.scope);
+  返回[...BASE_SCOPES，...粒度].join(" ");
+}
+
+// 将构建的范围字符串传递给授权流程
+const url = 等待 oauthClient.authorize(handle, {
+  范围：buildScopeString(userSelections),
+});
+````
+
+请注意，“repo:com.example.post”授予对该集合的完全创建/更新/删除访问权限。您可以使用查询参数限制特定操作：`repo:com.example.post?action=create&action=update`。有关完整语法，请参阅[权限规范](/specs/permission#resource-types)。
+
+回调后，应用程序会跟踪为会话授予了哪些范围，以便可以相应地显示或隐藏功能。
+
+### 升级现有会话的范围
+
+对于使用 [BFF 模式](/guides/about-oauth#types-of-app) 和可选集成的应用程序 - 需要应用程序主要 [命名空间权限](/specs/permission#namespace-authority) 之外的范围的功能 - 范围升级可以在用户登录后进行。应用程序存储用户的首选项，使用扩展的范围集启动新的 OAuth 流，并在回调时替换旧会话：
+
+```typescript
+// Your app's core permissions
+const BASE_SCOPE =
+  "atproto blob:*/* repo:com.example.post repo:com.example.like";
+
+// 添加另一个应用程序的 Lexicon 权限（跨命名空间集成）
+常量 EXTENDED_SCOPE =
+  `${BASE_SCOPE} 存储库：social.othernet.feed.play 存储库：social.othernet.actor.status`;
+
+// 使用扩展的范围启动新的 OAuth 流程
+const url = 等待 oauthClient.authorize(handle, {
+  范围：想要整合？扩展范围：基础范围，
+});
+````
+
+服务器将旧会话标识符与 OAuth 状态一起存储，以便回调处理程序知道要替换它。在后续登录时，服务器可以查找用户存储的首选项并自动包含扩展的范围。
+
+请注意，权限集可以减少显式范围升级的需要：当客户端刷新其令牌时，计算的权限可能会更新以反映对解析集的更改。如果新功能属于现有权限集的[命名空间权限](/specs/permission#namespace-authority)，则更新已发布的权限集就足够了，无需重新授权。跨命名空间集成仍然需要显式升级。有关协调范围更改与应用程序版本的指南，请参阅[推出更改](/guides/permission-requests#rolling-out-changes)。
+
+## 进一步阅读和资源
+
+- [授权](/guides/auth)
+- [关于 OAuth](/guides/about-oauth)
+- [权限请求](/guides/permission-requests)
+- [权限集](/guides/permission-sets)
+- [OAuth 规范](/specs/oauth)
+- [权限规范](/specs/permission)

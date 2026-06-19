@@ -1,0 +1,28 @@
+import { ScopeBuilderLoader } from '@/components/ScopeBuilder'
+
+export const header = {
+  title: '范围构建器',
+  description: '为您的应用程序编写 OAuth 范围字符串',
+}
+
+OAuth 范围是应用程序请求权限以从存储库创建、更新和删除记录、调用 XRPC 方法或执行某些帐户管理功能的方式。这对于 [OAuth 的工作原理](/guides/auth#what-is-o-auth) 以及应用程序如何与使用它的人建立信任至关重要。
+
+应用程序可以请求单独的范围，这些范围往往对应于特定的 [Lexicons](/guides/lexicon)、XRPC 方法或管理操作。
+
+然而，请求许多单独的范围往往会令人困惑，并且请求对 PDS 的一揽子权限过于宽松，因此应用程序可以将权限捆绑在一起到[权限集](/guides/permission-sets)。自 2025 年底推出以来，权限集一直是应用程序管理 OAuth 权限的推荐方式。请注意，某些范围（例如上传文件或管理帐户的电子邮件）无法捆绑到一个集合中，必须单独请求。
+
+此工具可让你以交互方式选择应用程序所需的范围并生成适当的[范围字符串](specs/permission#scope-string-syntax)。我们已经为 Bluesky 以及 atproto 生态系统中的许多流行应用程序提供了权限集；如果你希望包含应用程序的权限集，请[让我们知道](https://github.com/bluesky-social/atproto-website/issues/676)。如果你正在构建自己的权限集，你甚至可以提供指向特定权限集的链接（“at://” URL 或来自 [lexicon.garden](https://lexicon.garden) 的链接）。
+
+关于安全性的说明：OAuth 范围是来自应用程序的请求，而不是显式授予。生成的范围字符串供开发人员粘贴到他们自己的 OAuth 请求中，并且权限仍然必须由使用该应用程序的人授予。生成的范围已经过测试，可以与 atproto OAuth 一起使用，开发人员仍然负责[仅请求其应用程序所需的访问级别](/guides/permission-requests#requesting-permissions)。
+
+<ScopeBuilderLoader />
+
+## 进一步阅读和资源
+
+- [关于 OAuth](/guides/about-oauth)
+- [权限请求](/guides/permission-requests)
+- [权限集](/guides/permission-sets)
+- [授权](/guides/auth)
+- [OAuth 模式](/guides/oauth-patterns)
+- [OAuth 规范](/specs/oauth)
+- [权限规范](/specs/permission)

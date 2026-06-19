@@ -1,0 +1,187 @@
+export const header = {
+  title: '做过',
+  description: '持久去中心化标识符（如 atproto 中使用的）',
+}
+
+# AT 协议 DID
+
+AT 协议使用[去中心化标识符](https://en.wikipedia.org/wiki/Decentralized_identifier) (DID) 作为持久帐户标识符。核心 DID 标准由 W3C 开发，描述了兼容标识符系统的框架（“DID 方法”），其中存在多种框架。为了确保整个生态系统的广泛互操作，atproto 仅支持少数“有福的”DID 方法。 {{ className: '领导' }}
+
+DID 的一个示例是 `did:plc:ewvi7nxzyoun6zhxrhs64oiz`。
+
+## 受祝福的 DID 方法
+
+目前atproto支持两种DID方式：
+
+- `did:plc`：专为与 atproto 一起使用而开发的自验证 DID 方法。详情请参阅[DID PLC 网站](https://web.plc.directory)。
+- `did:web`：基于 HTTPS（和 DNS）的 [W3C 社区草案](https://w3c-ccg.github.io/did-method-web/)。标识符部分是主机名。 atproto 支持此方法，为 `did:plc` 提供独立的替代方案。请参阅下面的使用详细信息
+
+将来可能会支持其他方法，但目的是使“blessed”集尽可能小。当然，我们无意支持所有 DID 方法的全部或什至大部分。
+
+### AT 协议中的 `did:web`
+
+[DID Web 方法](https://w3c-ccg.github.io/did-method-web/) 本质上与所使用的域名相关，并且不提供迁移或从域名失控中恢复的机制。
+
+在 atproto 的上下文中，仅支持主机名级别的“did:web”DID：不支持基于路径的 DID。适用于句柄的顶级域的相同限制（例如，没有“.arpa”）也适用于“did:web”域。允许使用特殊的“localhost”主机名，但仅限于测试和开发环境。端口号（以十六进制编码分隔的冒号）仅允许用于“localhost”，并且仅在测试和开发中使用。
+
+## DID 标识符语法
+
+词典字符串格式类型：`did`
+
+DID 核心规范对所有 DID 标识符进行语法限制，并且各个 DID 方法可能有自己的更具体的语法。虽然 atproto 目前仅支持一小部分 DID 方法，但在许多解析和验证上下文中考虑通用 DID 语法仍然有意义。
+
+用于验证 atproto 中通用 DID 标识符的一般语法约束是：
+
+- 整个 URI 由 ASCII 的子集组成，包含字母 (`A-Z`、`a-z`)、数字 (`0-9`)、句点、下划线、冒号、百分号或连字符 (`._:%-`)
+- URI 区分大小写
+- URI 以小写“did:”开头
+- 方法段是一个或多个小写字母 (`a-z`)，后跟 `:`
+- URI 的其余部分（标识符）可以包含任何上述允许的 ASCII 字符，百分号 (`%`) 除外
+- URI（以及剩余的标识符）不能以“:”结尾。
+- 百分号（`%`）用于标识符部分中的“百分比编码”，并且后面必须始终跟有两个十六进制字符
+- DID URI 中允许使用查询 (`?`) 和片段 (`#`) 部分，但 DID 标识符中不允许使用。在 atproto 的上下文中，不允许使用查询和片段部分。
+
+DID 标识符通常没有最大长度限制，但在 atproto 的上下文中，当前存在 2048 个字符的硬限制。
+
+在 atproto 的上下文中，实现不需要验证百分比编码。 DID 标识符段中允许使用百分号，但标识符不应以百分号结尾。包含无效百分比编码的 DID *应该*会导致任何注册、解析等尝试失败。
+
+atproto 上下文中 DID 的合理起始点正则表达式是：
+
+````
+// 注意：不限制总长度
+/^did:[a-z]+:[a-zA-Z0-9._:%-]*[a-zA-Z0-9._-]$/
+````
+
+### 示例
+
+在 atproto 中使用的有效 DID（正确的语法和支持的方法）：
+
+````
+did:plc:ewvi7nxzyoun6zhxrhs64oiz
+did:web:user.example.com
+````
+
+有效的 DID 语法（将通过 Lexicon 语法验证），但不支持的 DID 方法：
+
+````
+做了：方法：值：二
+做了:m:v
+做了:方法::::val
+做了：方法：-：_：。
+做了：关键：zQ3shZc2QzApp2oymGvQbzP8eKheVshBHbU4ZYjeXqwSKEn6N
+````
+
+无效的 DID 标识符语法（无论 DID 方法如何）：
+
+````
+做了：方法：val
+做了：m123：val
+DID:方法:val
+做了：方法：
+做了:方法:val/二
+做了：方法：val？两个
+做了：方法：val#two
+````
+
+## DID 文件
+
+解析 DID 文档后，需要提取 atproto 特定信息。此解析过程与用于解析文档的 DID 方法无关。
+
+文档中声明的 DID（在“id”字段中）应始终根据预期进行验证（例如，用于解析）。
+
+DID 声明的 [handle](/specs/handle) 可在 `alsoKnownAs` 数组中找到。该数组的每个元素都是一个 URI 字符串。句柄将具有 URI 前缀“at://”，后跟句柄主机名，没有其他 URI 部分或尾随字符。在有序列表中找到的第一个语法上有效的句柄将被视为声明的句柄，即使它无法双向解析。应忽略任何其他句柄 URI。
+
+通过将句柄解析为 DID 并检查它是否与当前 DID 文档匹配，双向验证句柄至关重要。详情请参阅[手柄规格](/specs/handle)。
+
+DID 是 atproto 中的主要账户标识符，DID 文档不包含有效且确认的句柄的账户仍然可以参与 atproto 生态系统。软件应小心，要么不显示此类帐户的任何句柄，要么明显指示与其关联的任何句柄无效。
+
+帐户的公共 **atproto 签名密钥** 位于“verificationMethod”数组下，位于“id”以“#atproto”结尾的对象中，“controller”与 DID 本身匹配，“type”与固定字符串“Multikey”匹配。应使用数组中第一个有效的 atproto 签名密钥，并忽略任何其他密钥。 “publicKeyMultibase”字段将是多基编码中的公钥。存在一种遗留格式，其要求略有不同。有关两种格式的解析字段的详细信息，请参阅下文。
+
+大多数 atproto 功能都需要有效的签名密钥。 DID 文档中没有有效密钥的帐户可能已损坏。
+
+帐户的 **PDS 服务网络位置** 可在“service”数组下找到，“id”以“#atproto_pds”结尾，“type”与“AtprotoPersonalDataServer”匹配。应使用数组中的第一个匹配条目，并忽略任何其他条目。 `serviceEndpoint` 字段必须包含服务器的 HTTPS URL。它应该只包含 URI 方案（“http”或“https”）、主机名和可选端口号，而不包含任何“userinfo”、路径前缀或其他组件。
+
+大多数 atproto 帐户功能都需要有效的 PDS。如果帐户的 DID 文档中没有有效的 PDS 位置，则该帐户可能已损坏。
+
+请注意，有效的 URL 并不意味着 PDS 本身当前正在运行或为帐户托管内容。在帐户迁移或服务器停机期间，可能会出现无法访问 PDS 的窗口，但这并不意味着该帐户应立即被视为已损坏或无效。
+
+其他协议和应用程序功能可以使用“verificationMethod”密钥和“service”条目。例如，[labeling](/specs/label) 使用附加键类型，特定于应用程序的“AppView”实例使用定制服务条目。
+
+当解析`service`和`verificationMethod`数组的对象元素中的`id`字段时，实现应该支持相对片段语法（例如，`"id": "#atproto_pds"`）和完全限定语法（例如，`"id": "did:web:example.com#atproto_pds"`）。
+
+## 公钥的表示
+
+atproto 加密系统在 [Cryptography](/specs/cryptography) 中进行了描述，包括公钥的字节和字符串编码的详细信息。
+
+`verificationMethod` 下的 DID 文档中的公钥（包括 atproto 签名密钥）表示为具有以下字段的对象：
+
+- `id`（字符串，必需）：DID 后跟一个标识片段。使用“#atproto”作为 atproto 签名密钥的片段
+- `type`（字符串，必需）：固定字符串`Multikey`
+- `controller` （字符串，必需）：控制密钥的 DID，在当前版本的 atproto 中必须与帐户 DID 本身匹配
+- `publicKeyMultibase` （字符串，必需）：公钥本身，以“多密钥”格式编码
+
+“Multikey”的“publicKeyMultibase”格式与“did:key”使用的编码方案相同，但没有“did:key:”前缀。有关详细信息，请参阅[密码学](/specs/cryptography)。
+
+请注意，在 DID“verificationMethod”部分中还没有使用 P-256 公钥的正式 W3C 标准，但“Multikey”标准确实阐明了此密钥类型的编码应该是什么。
+
+### 旧版表示
+
+一些较旧的 DID 文档可能仍出现在“did:web”文档中，其密钥编码和“verificationMethod”语法略有不同。在过渡期间，实现可能会支持这些较旧的 DID 文档，但其目的是要求未来符合 DID 规范。
+
+atproto 签名密钥的旧“verificationMethod”包含：
+
+- `id`（字符串，必需）：固定字符串`#atproto`，不包含完整的 DID
+- `type` （字符串，必需）：标识键的曲线类型的固定名称
+    - `p256`：`EcdsaSecp256r1VerificationKey2019`（注意“r”）
+    - `k256`：`EcdsaSecp256k1VerificationKey2019`（注意“k”）
+- `controller` （字符串，必需）：控制密钥的 DID，在当前版本的 atproto 中必须与帐户 DID 本身匹配
+- `publicKeyMultibase` （字符串，必需）：公钥本身，以多基格式编码（*没有*多编解码器，和*未压缩*密钥字节）
+
+请注意，“EcdsaSecp256r1VerificationKey2019”类型不是最终的 W3C 标准。
+
+`EcdsaSecp256r1VerificationKey2019` `verificationMethod` 不是最终的 W3C 标准。我们将转向 W3C 最终标准化的任何内容，用“publicKeyMultibase”表示 P-256 公钥。这可能意味着向“多密钥”的过渡，我们也将 K-256 表示过渡到该“类型”。
+
+在这种情况下多基编码的总结：
+
+- 从完整的公钥字节开始。不要使用“压缩”或“紧凑”表示（与“did:key”或“Multikey”编码不同）
+- *不要*使用指示密钥类型的多编解码器值作为前缀
+- 使用“base58btc”对密钥字节进行编码，生成一个字符串
+- 添加字符“z”作为前缀，以指示多库，并且不包含其他多编解码器指示符
+
+解码过程反过来也是一样的，使用曲线类型作为上下文。
+
+以下是以旧格式和当前格式编码的单个公钥的示例：
+
+````
+// K-256 公钥的传统多基编码
+{
+    “id”：...，
+    “控制器”：...，
+    “类型”：“EcdsaSecp256k1VerificationKey2019”，
+    “publicKeyMultibase”：“zQYEBzXeuTM9UR3rfvNag6L3RNAs5pQZyYPsomTsgQhsxLdEgCrPTLgFna8yqCnxPpNT7DBk6Ym3dgPKNu86vt9GR”
+}
+
+// 相同 K-256 公钥的首选多基编码
+{
+    “id”：...，
+    “控制器”：...，
+    "type": "多键",
+    “publicKeyMultibase”：“zQ3shXjHeiBuRCKmM36cuYnm7YEMzhGnCmCyW92sRJ9pribSF”
+}
+````
+
+## 使用和实施指南
+
+协议实现应该灵活地处理包含基于不支持的 DID 方法的 DID 的内容。这对于协议生态系统随着时间的推移逐步发展非常重要。换句话说，实现应该至少区分不同的情况“无效的 DID 语法”、“不支持的 DID 方法”和“支持的 DID 方法，但特定的 DID 解析失败”。
+
+虽然协议支持较长的 DID，但最佳实践是使用相对较短的 DID，并避免长于 64 个字符的 DID。
+
+DID 区分大小写。虽然当前支持的方法*不*区分大小写，并且可以安全地小写，但协议实现应拒绝大小写无效的 DID。在接收用户控制的输入时，例如在解析公共 URL 路径组件或文本输入字段时，允许尝试大小写标准化。
+
+互操作测试向量可从 [atproto-interop-tests](https://github.com/bluesky-social/atproto-interop-tests) 存储库中获取。
+
+## 未来可能的变化
+
+可以在协议语法级别减少最大 DID 长度硬限制。我们不知道我们会考虑支持标识符长度超过 256 个字符的任何 DID 方法。
+
+随着时间的推移，“受祝福的”DID 方法集有可能会慢慢扩展。

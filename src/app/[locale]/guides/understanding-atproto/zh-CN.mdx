@@ -1,0 +1,55 @@
+import { Card, CardParagraph, CardTitle } from '@/components/Card'
+
+export const header = {
+  title: '了解 Atproto',
+  description: '更仔细地了解这一切是如何运作的',
+}
+
+## 长话；博士
+
+Atproto 是一个大世界、开放的社交平台。用户将 JSON 记录发布到存储库中。然后，这些记录的变更流通过网络同步以驱动应用程序。
+
+我们推荐社区成员 [Dan Abramov](https://bsky.app/profile/danabra.mov) 撰写的精彩文章：
+
+- [**开放社交** ](https://overreacted.io/open-social/) - 协议是 API。
+- [**位置：//** ](https://overreacted.io/where-its-at/) - 从句柄到托管。
+- [**社交文件系统** ](https://overreacted.io/a-social-filesystem/) - 应用程序上的格式。
+
+## 核心原语
+
+- **用户存储库。** 公共每用户数据库。
+- **用户句柄。** 用户名，即 DNS 记录。我们的帐户是[@atproto.com](https://bsky.app/profile/atproto.com)。
+- **用户 DID。** 用户的永久 ID。
+
+## 数据模型
+
+- **记录** 。 JSON，分类为集合。
+- **斑点** 。 [图像和视频](/guides/images-and-video)。
+- **词典** 。模式语言。
+- **Lexicon RPC (XRPC)。** 它是 HTTPS，但具有 Lexicons 定义的路由。
+
+## 堆栈
+
+您可以[自行托管](/guides/self-hosting) 提供不同类型的服务：
+
+- **个人数据服务器 (PDS)。** 它们托管用户帐户。
+- **继电器** 。他们收集并重播用户写入事件。
+- **应用程序** 。他们聚合用户数据以产生应用程序体验。
+- **贴标机** 。将审核决策发布为标签元数据。
+
+## 让它发生
+
+假设您正在构建一个应用程序。您的用户将使用 [OAuth](/guides/auth) 登录，这会将其 PDS 地址交给您的应用程序。然后，您的应用程序通过联系其 PDS 来[读取和写入](/guides/reads-and-writes) 记录。
+
+要侦听网络上的活动，您可以[从中继同步](/guides/sync)。您可以直接从用户的 PDS 进行同步，但使用中继更方便。由于所有数据都经过签名，因此您可以确认中继的流是准确的。
+
+[Lexicons](/guides/lexicon) 帮助识别网络上发布的数据。您可以使用它们在读取数据时验证数据，就像验证传入的 HTTP 请求一样。
+
+最后，您可以通过订阅（或运行）接收用户报告并在用户内容上发布标签的标签来处理[审核](/guides/moderation)。
+
+## 深入阅读
+
+我们还推荐该团队撰写的这些深度文章：
+
+- [**分布式系统工程师的 Atproto** ](/articles/atproto-for-distsys-engineers)。后端思考者的解释者。
+- [**Atproto 精神** ](/articles/atproto-ethos)。 atproto 设计的基础原则。

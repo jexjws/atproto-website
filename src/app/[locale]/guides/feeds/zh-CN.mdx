@@ -1,0 +1,82 @@
+import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@/components/mdx'
+import InstallLexServer from './_snippets/install-lex-server.mdx'
+import LexRouterTs from './_snippets/lex-router-ts.mdx'
+import FeedInterfaceGo from './_snippets/feed-interface-go.mdx'
+
+export const header = {
+  title: '饲料',
+  description: '创建和使用自定义 feed 生成器',
+}
+
+## 自定义提要
+
+自定义提要或提要生成器是通过 AT 协议向用户提供自定义算法的服务。这允许用户选择自己的时间线，并允许 Feed 构建者[创建和嵌入 AT 记录的专用视图](https://graze.leaflet.pub/3m4yjmbnyec2c)。
+
+自定义提要的工作方式很简单：服务器接收来自用户服务器的请求，并返回附加了一些可选元数据的帖子 URI 列表。然后，请求服务器将这些帖子合并为完整视图并发送回客户端。
+
+由于 Feed 将提供自己的 XRPC 端点，因此它们应该使用服务器 SDK：
+
+<TabGroup defaultValue="ts">
+  <TabList>
+    <Tab value="ts">TypeScript</Tab>
+    <Tab value="go">Go</Tab>
+  </TabList>
+  <TabPanels>
+    <TabPanel value="ts">
+      Use the [lex-server](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-server) package:
+
+      <InstallLexServer />
+
+      <LexRouterTs />
+    </TabPanel>
+    <TabPanel value="go">
+      In Go, you can implement HTTP endpoints manually:
+
+      <FeedInterfaceGo />
+
+      Refer to [https://github.com/jazware/go-bsky-feed-generator](https://github.com/jazware/go-bsky-feed-generator) for a community example.
+    </TabPanel>
+  </TabPanels>
+</TabGroup>
+
+Feed 生成器服务可以托管一种或多种算法。服务本身由 DID 标识，而它托管的每个算法则由创建它的帐户的存储库中的记录声明。例如，Bluesky 提供的提要可能会在“@bsky.app”的存储库中声明。因此，给定的算法由声明记录的 at-uri 来标识。该声明记录包括指向服务 DID 的指针以及提要的一些配置文件信息。
+
+向用户提供自定义算法的一般流程如下：
+
+- 用户使用声明的 feed 的 at-uri 向 AppView 请求 feed
+
+对于用户来说，这应该就像访问应用程序中的页面一样。一旦他们订阅了自定义算法，它将作为可用的提要之一出现在他们的主界面中。
+
+## Feed 生成器模板
+
+我们用 TypeScript 维护一个 Feed 生成器示例。请参阅[教程](/guides/custom-feed-tutorial) 开始使用。
+
+[Python](https://github.com/MarshalX/bluesky-feed-generator) 和 [Ruby](https://github.com/mackuba/bluesky-feeds-rb) 中也有社区维护的实现。
+
+您还可以添加一些机器学习功能来进一步定制 feed 算法 - 有关示例，请参阅 [tri-bsky-feed](https://tangled.org/cuducos.me/tri-bsky-feed)。
+
+## 实施提要
+
+feed 生成器如何满足“getFeedSkeleton”请求完全由他们自行决定。最简单的情况是，提要生成器可以提供仅包含一些硬编码帖子的“提要”。
+
+对于大多数用例，我们建议通过“com.atproto.sync.subscribeRepos”[订阅 firehose](/guides/streaming-data)。该 websocket 将向您发送网络上发布的每条记录。由于饲料生成器不需要提供水合柱，因此您可以根据需要索引尽可能多或尽可能少的消防水带。这是很重要的一点——需要与 Firehose 同步来提供 feed *可能*是资源密集型的，但并非必须如此。有关更多详细信息，请参阅本指南链接的示例。
+
+根据您的 Feed 的算法，您可能不需要长时间保留帖子。除非您的 Feed 旨在提供“您错过的帖子”或类似内容，否则您可能会从 Feed 中收集超过 48 小时的任何数据。
+
+## 语言处理
+
+当向“getFeedSkeleton”发出请求时，鼓励客户端使用逗号分隔的 BCP-47 语言代码填充“Accept-Language” HTTP 标头，例如`en`，`pr-BR`。提要生成器可以使用此语言上下文来过滤或排名帖子。如果应用语言过滤，提要生成器应使用“Content-Language”响应标头来指示已解析的语言代码。
+
+## 反馈信息
+
+Feed 生成器还可以实现“app.bsky.feed.sendInteractions”端点来接收来自用户的输入。其中包括点赞、转发、分享和其他互动。有关完整列表，请参阅 [app.bsky.feed Lexicon](https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/defs.json#L247)。
+
+实施反馈是可选的，但可以帮助改善用户体验。
+
+## 示例提要
+
+- 社区提要：编译该社区内的 DID 列表，并过滤来自该列表中用户的所有帖子的 Firehose。
+
+## 进一步阅读和资源
+
+- [同步​​](/guides/sync)

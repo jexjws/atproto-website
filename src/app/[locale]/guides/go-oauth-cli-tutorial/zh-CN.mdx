@@ -1,0 +1,107 @@
+import S01 from './_snippets/01-install-go.mdx'
+import S02 from './_snippets/02-project-setup.mdx'
+import S03 from './_snippets/03-package-main.mdx'
+import S04 from './_snippets/04-run-part1-callback-client.mdx'
+import S05 from './_snippets/05-run-part2-login-flow.mdx'
+import S06 from './_snippets/06-run-part3-use-session.mdx'
+import S07 from './_snippets/07-helper-functions.mdx'
+import S08 from './_snippets/08-run-command.mdx'
+import S09 from './_snippets/09-output-example.mdx'
+
+export const header = {
+  title: 'Go 教程中的 OAuth',
+  description: '从 Go 应用程序使用 atproto OAuth 进行身份验证',
+}
+
+在本教程中，您将构建一个最小的 Go 工具，用于使用 [atproto OAuth](/guides/auth) 对用户进行身份验证并获取其会话信息。整个应用程序适合一个文件。
+
+这是了解 OAuth 在 AT 协议中如何工作的一个很好的起点。对于 TypeScript 版本，请参阅 [OAuth with Node 教程](/guides/oauth-cli-tutorial)。要构建生产 Web 应用程序，请参阅 [OAuth with NextJS 教程](/guides/oauth-tutorial)。
+
+## 先决条件
+
+您应该对 Go 有一个有效的理解。
+
+您应该已经安装：
+- 去 1.24+
+
+在 [homebrew](https://brew.sh/) 支持的平台上，您可以使用以下命令安装它：
+
+<S01 />
+
+您还应该有一个 atproto 句柄来进行测试。
+
+## 第 1 部分：项目设置
+
+创建一个新的Go模块并安装[Go SDK](https://github.com/bluesky-social/indigo)：
+
+<S02 />
+
+就是这样 - Go SDK 包含 OAuth 所需的一切，包括用于开发的内存中会话存储。
+
+## 第 2 部分：构建 OAuth 客户端
+
+创建“main.go”。从导入和 OAuth 客户端设置开始：
+
+<S03 />
+
+现在添加“run”函数。首先，在随机端口上设置回调服务器，然后配置 OAuth 客户端：
+
+<S04 />
+
+`NewLocalhostConfig` 设置一个环回客户端。
+
+<Note>
+OAuth 环回的工作原理是使用特殊的重定向 URI（例如“http://127.0.0.1:PORT/callback”）将授权代码直接发送回应用程序，该应用程序侦听本地端口，避免基于浏览器的回调并为令牌交换启用安全、直接的通信。应用程序打开一个本地侦听器，而不是 Web 重定向，您可以在浏览器中进行身份验证，服务器重定向回应用程序的本地 URI，让应用程序获取代码并将其交换为令牌。它对于开发场景特别有用。
+</Note>
+
+`NewMemStore` 为开发提供内存会话存储。
+
+## 第 3 部分：登录流程
+
+继续使用登录流程的“run”函数。这将解析句柄，打开浏览器，并等待回调：
+
+<S05 />
+
+流程如下：
+
+1. `StartAuthFlow` 解析用户的句柄，发现其 PDS，发送 [推送授权请求 (PAR)](/guides/permission-sets#requesting-permissions)，并返回授权 URL。
+2. 用户的浏览器将打开一个同意屏幕。
+3. After the user approves, their PDS redirects back to `http://127.0.0.1:<port>/callback` with an authorization code.
+
+## 第 4 部分：使用会话
+
+通过将回调交换为会话并进行经过身份验证的 API 调用来完成“run”函数：
+
+<S06 />
+
+`ProcessCallback` 将授权代码交换为令牌。 `ResumeSession` 将这些令牌包装在自动处理 DPoP 签名和令牌刷新的会话中。 `APIClient()` 返回一个预先配置了用户凭据的 HTTP 客户端 - 您可以使用它来进行任何 [XRPC](/specs/xrpc) 调用。
+
+## 第 5 部分：辅助函数
+
+添加回调服务器和浏览器打开助手：
+
+<S07 />
+
+回调服务器监听“127.0.0.1:0”，告诉操作系统分配任何可用端口。当回调到达时，它通过通道将查询参数发送回主流程，然后自行关闭。
+
+## 第 6 部分：运行它
+
+运行 CLI 工具，将句柄作为参数传递：
+
+<S08 />
+
+您的浏览器应该打开一个同意屏幕。批准后，CLI 将打印您的会话信息：
+
+<S09 />
+
+＃＃ 结论
+
+您已经在 Go 中构建了一个最小的 OAuth CLI 工具，可以使用 AT 协议进行身份验证。完整源代码大约有 120 行代码。
+
+需要记住以下几点：
+
+- **这适用于本地开发。** 本地主机客户端无法在生产环境中工作。有关具有 SQLite 持久性和多个命令的生产就绪型 Go 示例，请参阅 Cookbook 中的 [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app)。
+- **会话位于内存中。** 每次运行都需要重新授权。 Cookbook 示例展示了如何使用 SQLite 保留会话。
+- **范围。** 本教程仅请求基本“atproto”范围。要代表用户读取或写入数据，您需要额外的[范围](/guides/permission-sets)。
+
+您可以在我们的 [Docs](/guides) 中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

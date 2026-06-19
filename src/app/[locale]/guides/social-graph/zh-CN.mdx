@@ -1,0 +1,31 @@
+export const header = {
+  title: '社交图谱',
+  description: '使用 AT 协议社交图谱',
+}
+
+## 查询社交图谱
+
+基于 AT 协议构建的新应用程序可以利用现有的社交图数据（例如，来自“app.bsky.graph.getFollows”Lexicon RPC 端点）来构建新的用例，并利用现有用户群进行引导。反过来，这会让你了解本机 atproto 概念，例如 [社交文件系统](https://overreacted.io/a-social-filesystem/)。
+
+有关此方法的另一个示例，请参阅[使用 Python 探索 AT 协议](https://davidgasquez.com/exploring-atproto-python/)。
+
+## 反向链接
+
+从 AT 协议获取社交图数据的最有效方法之一是使用**反向链接** 。通过查询反向链接，你可以解析链接到任何给定记录、或身份的所有记录。
+
+[Microcosm](https://constellation.microcosm.blue) 提供了一组用于处理反向链接的资源。由于所有 AT 协议记录都是公开可用的，并且可通过“at://” URI 进行寻址，因此可以将嵌套 API 查询编码到单独的 URL 中。微观世界[确实这个](https://constellation.microcosm.blue/xrpc/blue.microcosm.links.getBacklinks?subject=at%3A%2F%2Fdid%3Aplc%3 Aa4pqq234yw7fqbddawjo7y35%2Fapp.bsky.feed.post%2F3m237ilwc372e&source=app.bsky.feed.like%3Asubject.uri&limit=16),例如。
+
+对于实现反向链接的 Claude 代码插件，请参阅 [protopack](https://tangled.org/zzstoatzz.io/protopack.git)。
+
+## 重用词典
+
+在 atproto 上构建新体验时，你可以决定在多大程度上重用网络上流行词典中的现有社交图。例如，某些应用程序可能会选择重用“app.bsky.graph”中的“关注”或“阻止”关系（可能通过集成 Microcosm），而其他应用程序可能会实现自己的关系。你还可以重用现有帖子中的媒体 blob 来构建使用现有内容引导的图像板或视频共享应用程序。这会影响你需要[回填](/guides/backfilling) 的数据量，以及驱动[应用程序视图](/guides/the-at-stack#app-views) 可能需要多少托管基础设施。
+
+## 进一步阅读和资源
+
+- [读取和写入](/guides/reads-and-writes)
+- [读取数据](/guides/reading-data)
+- [写入数据](/guides/writing-data)
+- [帐户和删除](/guides/account-lifecycle)
+- [记录密钥规格](/specs/record-key)
+- [URI 方案](/specs/at-uri-scheme)

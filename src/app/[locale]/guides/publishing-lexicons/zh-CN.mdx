@@ -1,0 +1,63 @@
+import BrewInstallGoat from './_snippets/brew-install-goat.mdx'
+import GoatLexPull from './_snippets/goat-lex-pull.mdx'
+import GoatLexNew from './_snippets/goat-lex-new.mdx'
+import GoatLexPublish from './_snippets/goat-lex-publish.mdx'
+
+export const header = {
+  title: '发布 Lexicons',
+  description: '与世界分享您的词典',
+}
+
+## 词典生命周期
+
+Lexicons are designed to be machine-readable and network-accessible.虽然当前“不需要”网络上有可用的词典，但强烈建议发布词典，以便该方法的使用者可以使用单一规范和权威的表示形式。
+
+词典像任何其他 AT 记录一样发布到 PDS。它们是使用 DNS TXT 记录将 [NSID 命名空间](/specs/nsid) 链接到 PDS 存储库来解析的，这样当你寻址像“com.atproto.example”这样的 Lexicon 时，atproto SDK 就会知道[在以下位置查找身份] `atproto.com`](https://pds.ls/at://did:plc:6msi3pj7krzih5qxqtryxlzw/com.atproto.lexicon.schema) 并从那里检索词典。
+
+对于像 `app.toy.record` 这样的 NSID：
+
+- The final segment `record` is the record/method name
+- 权限为`app.toy`；反过来，这将成为域“toy.app”
+- DNS TXT 记录位于“_lexicon.toy.app”
+
+每个唯一的命名空间前缀都需要有自己的 DNS TXT 记录，指向你的 DID。例如：
+
+````
+_lexicon.toy.app TXT“did=did:plc:abc123...”
+_lexicon.like.toy.app TXT "did=did:plc:abc123..."
+````
+
+## 使用山羊
+
+You can use [`goat`](https://github.com/bluesky-social/goat), our command line tool, for creating and publishing Lexicons. The Lexicon-related features are available under [`goat lex`](https://github.com/bluesky-social/goat?tab=readme-ov-file#lexicon-development) :
+
+- 将模式发布到 AT 网络并从 AT 网络同步
+- 比较、检查和验证模式演化规则
+
+`goat` 可以从 macOS 和 Linux 上的 [Homebrew](https://formulae.brew.sh/formula/goat) 安装：
+
+<BrewInstallGoat />
+
+在项目目录中，你可以下载一些现有的词典，这些词典将在“./lexicons/”中保存为 JSON 文件：
+
+<GoatLexPull />
+
+你还可以使用“goat lex new record”创建新的 Lexicon 记录：
+
+<GoatLexNew />
+
+最终用“goat lexpublish”发布它：
+
+<GoatLexPublish />
+
+<Note>
+You'll need to log in with `goat` to publish to your PDS! To do this, use `goat account login` or set the `GOAT_USERNAME` and `GOAT_PASSWORD` environment variables.
+</Note>
+
+有关创建新词典的指导，请参阅[词典样式指南](/guides/lexicon-style-guide)。
+
+## 进一步阅读和资源
+
+- [词典](/guides/lexicon)
+- [词典风格指南](/guides/lexicon-style-guide)
+- [词典规格](/specs/lexicon)

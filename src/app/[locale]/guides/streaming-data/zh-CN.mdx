@@ -1,0 +1,49 @@
+import FirehoseConnect from './_snippets/firehose-connect.mdx'
+import JetstreamPython from './_snippets/jetstream-python.mdx'
+
+export const header = {
+  title: '流式数据',
+  description: '使用 Firehose 和 Jetstream',
+}
+
+## 流数据
+
+AT 协议的核心原语之一是“firehose”。它是经过身份验证的事件流，用于有效同步用户更新（帖子、点赞、关注、处理更改等）。
+
+许多需要传输传入数据的 AT 应用程序将利用 Firehose——从 Feed 生成器到贴标机，再到机器人和搜索引擎。在 AT 生态系统中，有许多不同的端点为这些 Firehose API 提供种子。每个 PDS 都为其负责的存储库上的所有活动提供服务。从那里，中继将每个参与的 PDS 的流聚合成一个统一的流 - 消防水带。
+
+## 消防水带
+
+任何人都可以在无需身份验证的情况下连接到 Firehose——这是该协议的核心功能。首先，打开与“com.atproto.sync.subscribeRepos”端点的任何提供者的 WebSocket 连接：
+
+<FirehoseConnect />
+
+从这里，你需要读取每条传入的消息，并解码关联的数据。我们的 [Go](https://github.com/bluesky-social/indigo) SDK 是目前功能最齐全的直接与 firehose 交互的 SDK。
+
+请记住，firehose 输出格式是 atproto 中较复杂的部分之一，涉及解码二进制 [CBOR](/specs/data-model) 数据和 [CAR](/specs/repository#car-file-serialization) 文件。此外，随着网络的发展，数据量也迅速增加。完全同步 Firehose 是核心网络基础设施，但对于 [feed 开发人员](/guides/feeds) 等最终用户，我们提供了一种名为 **Jetstream** 的替代流媒体解决方案。
+
+## 捷流
+
+Jetstream 有几个关键优势：
+
+- 简单的JSON编码
+- 减少带宽和压缩
+- 能够按集合 (NSID) 或存储库 (DID) 进行过滤
+
+Jetstream 服务器从 Firehose 中进行消耗并扇出到许多订阅者。它是[开源](https://github.com/bluesky-social/jetstream)，用Go实现，易于自托管。 （Go 中）包含一个官方客户端库，并且已经开发了[社区客户端库](https://skyware.js.org/guides/jetstream/introduction/getting-started/)。
+
+你可以像使用任何其他 Websocket 一样使用 Jetstream。只需提供一个 Jetstream 端点（例如“wss://jetstream2.us-east.bsky.network/subscribe”）和一个“wantedCollections”参数（例如“?wantedCollections=app.bsky.feed.post”）。
+
+这是一个 Python 示例：
+
+<JetstreamPython />
+
+## 进一步阅读和资源
+
+- [同步](/指南/同步)
+- [回填](/guides/回填)
+- [提要](/指南/提要)
+- [存储库规范](/specs/repository)
+- [事件流规范](/specs/event-stream)
+- [同步规范](/specs/sync)
+- [Microcosm](https://www.microcosm.blue/) 社区项目维护了无需本地镜像即可大规模处理 AT 记录的工具。

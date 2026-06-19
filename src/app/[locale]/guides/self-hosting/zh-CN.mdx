@@ -1,0 +1,57 @@
+export const header = {
+  title: '自托管',
+  description: '用于自托管 Atmosphere 堆栈的各种组件的资源',
+}
+
+Atmosphere 堆栈的大部分部分都支持部署。有些组件比其他组件更容易自行托管，具体取决于你是提供应用程序级基础设施（如 AppView 或 Relay）还是数据级基础设施（如 PDS）。
+
+## PDS
+
+可从 [PDS](https://github.com/bluesky-social/pds) Github 存储库获取用于自托管 PDS 的资源，包括安装步骤、Docker 映像和常见问题。如果你想托管自己的 PDS，请从这里开始！
+
+PDS Docker 镜像包括 [goat](https://github.com/bluesky-social/goat)，我们用于执行管理功能的命令行工具。
+
+如果你要将帐户从一个 PDS（例如 Bluesky 托管的 PDS）转移到另一个 PDS，请参阅[帐户迁移](/guides/account-migration)。
+
+如果你需要更改自托管 PDS 的*域名*，你需要：
+
+- 更改*每个*你托管帐户的 PLC 条目。为此，你可以使用社区维护的接口，例如 [boat](https://boat.kelinci.net/plc-applicator)。
+- 像任何其他服务器一样更新你的 DNS 配置，然后更改“pds.env”中的域名。
+
+有关扩展和强化 PDS 的指南，请参阅[进入生产](/guides/going-to Production)。
+
+Bluesky 运行着许多 PDS，前面有一个“入口”。有关此实现的信息，请参阅[Entryway](https://docs.bsky.app/docs/advanced-guides/entryway)。
+
+还有几个社区 PDS 实现！例如：
+- [Tranquil PDS](https://tangled.org/tranquil.farm/tranquil-pds)，用 Rust 编写。
+- [Cocoon](https://tangled.org/hailey.at/cocoon)，用 Go 编写。
+
+## 继电器
+
+托管你自己的中继是可能的，尽管带宽密集。中继通常以[全网络模式](/guides/the-at-stack#relays) 运行，在该模式下，它们从 AT 协议网络上的所有 PDS 和存储库复制数据。然而，操作中继并不是*存储密集型的，因为从 [Sync 1.1](/blog/relay-updates-sync-v1-1) 开始，中继不需要保留网络数据的存档副本。
+
+有几种不同的中继实现：
+- [参考实现](https://github.com/bluesky-social/indigo/blob/main/cmd/relay/README.md)，用 Go 编写。
+- [Blacksky Relay](https://github.com/blacksky-algorithms/rsky/tree/main/rsky-relay#rsky-relay)，用 Rust 编写。
+
+## 轻敲
+
+Tap 用于从 AT 网络同步现有记录，然后继续从 firehose 接收新记录。有关部署 Tap 的指南，请参阅 [Tap 自述文件](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md#distribution--deployment)。
+
+我们还提供了将 Tap 部署到 [Railway](https://railway.com/) 的快速入门指南。
+
+## 应用程序视图
+
+创建或托管你自己的 AppView 是可能的，但需要占用大量资源。与托管你自己的 PDS（一种个人控制对你自己的数据存储库的访问的方式）相比，托管 AppView 只是为了提供应用程序级基础架构。一般来说，你需要在这里做的第一件事是复制网络中应用程序处理的词典的所有数据。请参阅 [Sync](/guides/sync) 文档了解起点，或参阅上面的 Tap 部分。
+
+还有许多其他决定将涉及到设计和运行你自己的 Atmosphere 应用程序！这不是完整的建议列表。
+
+- 对于你的应用程序的注册流程，你将需要用户登录或创建帐户。我们通常建议将你自己的 PDS 与你的应用程序一起托管，以便首次使用 Atmosphere 的用户（可能还不知道 PDS 的概念）直接在你的应用程序中注册。你的 PDS 和 AppView 应具有[不同的域名](/guides/going-to-production#domain-names)。
+
+## 臭氧
+
+有关自托管指南，请参阅[使用 Ozone](/guides/using-ozone)。
+
+## 部署食谱
+
+对于不使用我们官方工具且可能支持不同环境的社区贡献的部署解决方案，请参阅 [deploy-recipes](https://github.com/bluesky-social/deploy-recipes) Github 存储库。欢迎贡献！

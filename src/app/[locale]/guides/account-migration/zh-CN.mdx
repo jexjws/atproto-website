@@ -1,0 +1,76 @@
+export const header = {
+  title: '账户迁移',
+  description: '将帐户迁移到新的 PDS',
+}
+
+本文档对[帐户托管](/specs/account) 规范进行了补充，该规范提供了帐户生命周期的高级概述。它分解了各个迁移步骤，既适用于“轻松”迁移（当两个 PDS 实例都参与时），也适用于帐户恢复方案。请注意，这些特定机制不是协议的正式部分，并且可能会随着时间的推移而演变。
+
+如果你只是想使用现有工具将帐户迁移到新的 PDS，我们建议：
+- [使用 `goat` 迁移 PDS 帐户](https://whtwnd.com/bnewbold.net/3l5ii332pf32u)
+- [PDS MOOver](https://pdsmoover.com/) — 社区开发的工具
+
+有关迁移所涉及步骤的深入说明，请继续阅读。
+
+## 创建新帐户
+
+要使用现有身份创建 PDS 帐户，需要证明对身份的控制权。
+
+对于另一个 PDS 上的活动帐户，这是通过生成使用身份 DID 文档中指示的当前 atproto 签名密钥签名的服务身份验证令牌 (JWT) 来完成的。这可以使用“com.atproto.server.getServiceAuth”端点（或等效的接口/API）从先前的 PDS 实例请求。
+
+对于独立控制的身份（例如，“did:web”或旧 PDS 离线或不合作的“did:plc”），这可能涉及更新身份以包括自我控制的 atproto 签名密钥，并离线生成服务身份验证令牌。
+
+在新 PDS 上使用“com.atproto.server.createAccount”（或等效接口/API）创建帐户时，服务身份验证令牌与现有 DID 一起提供。
+
+新帐户将处于“已停用”状态。应该可以直接登录并验证，但不参与网络。从网络中的其他服务的角度来看，旧的PDS帐户仍然是当前的，并且新的PDS帐户尚未激活或有效。 OAuth 或使用服务身份验证的代理请求等功能尚不适用于新的 PDS。
+
+## 迁移数据
+
+通常迁移的一些数据类别是：
+
+- 公共存储库
+- 公共 blob（媒体文件）
+- 私人偏好
+
+在迁移的任何阶段，都可以在旧的或新的 PDS 实例上调用经过身份验证的“com.atproto.server.checkAccountStatus”端点，以检查有关当前索引数据的统计信息。
+
+可以使用公共“com.atproto.sync.getRepo”端点从旧 PDS 中以 CAR 文件形式获取存储库的副本。如果旧的 PDS 无法访问，则可以从公共中继获得镜像，或者可以使用本地备份。否则，新帐户仍将以相同的身份运行，但旧内容将丢失。
+
+可以使用经过身份验证的“com.atproto.repo.importRepo”端点将 CAR 文件导入到新的 PDS。
+
+Blob（媒体文件）被一一下载并重新上传。在导入存储库并完全建立索引之前，不应将它们上传到新的 PDS，以便 Blob 可以链接到引用它们的记录，并且不会被垃圾收集。可以从旧 PDS (`com.atproto.sync.listBlobs`) 获取相关 Blob 的完整列表（按 CID），也可以在新 PDS (`com.atproto.repo.listMissingBlobs`) 上检查当前“丢失”Blob 列表。如果找不到某些 Blob，则迁移过程可以继续，并且可以稍后上传任何恢复的 Blob（如果 Blob CID 完全匹配）。
+
+可以使用经过身份验证的“app.bsky.actor.getPreferences”端点从旧 PDS 导出私人帐户首选项，然后使用“app.bsky.actor.putPreferences”导入。这些是 Bluesky 应用程序特定的端点，其他应用程序（Lexicons）可以定义自己的首选项 API。请注意，这仅包括存储在 PDS 中的私有状态；一些偏好和状态可能存在于外部服务中（例如，集中式聊天/DM 实现）。
+
+## 更新身份
+
+内容迁移后，可以更新身份（DID 和句柄）以指示新的 PDS 是帐户的当前主机。
+
+可以使用“com.atproto.identity.getRecommendedDidCredentials”端点从新的 PDS 获取“推荐”DID 文档参数。这将包括 DID 服务主机名、本地句柄（根据帐户创建期间的请求）、PDS 管理的 atproto 签名密钥（公钥）和（如果相关）PLC 轮换密钥（公钥）。
+
+对于能够安全管理私有加密密钥对（例如，存储在密码管理器或数字钱包中）的用户，建议在 PLC 操作中包含自控 PLC 旋转密钥（公钥）。
+
+对于自我控制的身份（例如，带有本地轮换密钥的“did:web”或“did:plc”），身份更新可以由用户直接完成。
+
+对于具有由旧 PDS 管理的 `did:plc` 的帐户，PLC“操作”由旧 PDS 签名，然后通过新 PDS 提交。让新 PDS 提交 PLC 操作而不是让用户直接提交的动机是让新 PDS 有机会验证操作并进行安全检查，以防止帐户陷入损坏状态。
+
+由于身份操作很敏感，因此需要额外的安全令牌作为额外的“因素”。可以通过旧 PDS 上的“com.atproto.identity.requestPlcOperationSignature”请求令牌，默认情况下将通过电子邮件发送到经过验证的帐户电子邮件。
+
+该令牌作为旧 PDS 上“com.atproto.identity.signPlcOperation”调用的一部分，以及请求的 DID 字段（新签名密钥、轮换密钥、PDS 位置等）包含在内。旧 PDS 将验证请求，使用 PDS 管理的 PLC 轮换密钥进行签名，并返回签名的 PLC 操作。此时该操作尚未提交到任何 PLC 目录。
+
+然后建议用户将操作提交到新的 PDS（使用 com.atproto.identity.submitPlcOperation 端点），这将验证更改是否“安全”（也就是说，它们使 PDS 能够帮助管理身份和 atproto 帐户），然后将其提交到 PLC 目录。
+
+身份更新成功后，从整个网络的角度来看，新的 PDS 现在是该帐户的“当前”主机。这对于解析身份的新服务来说是显而易见的。从 Firehose 消耗的现有服务将收到“#identity”事件的警报。其他服务可能具有已过时的帐户身份元数据缓存，它们将在缓存过期时刷新，或者在遇到错误（例如无效的服务身份验证签名）时刷新其缓存。
+
+然而，新帐户尚未“激活”。
+
+## 最终确定帐户状态
+
+此时，用户仍然能够对两个 PDS 实例进行身份验证。新的 PDS 知道该帐户是当前帐户，但仍将该帐户标记为“已停用”。旧的 PDS 可能没有意识到它不再是最新的。
+
+可能值得在两个 PDS 实例上使用“com.atproto.server.checkAccountStatus”进行双重检查，以确认所有预期内容均已迁移。
+
+用户可以通过调用“com.atproto.server.activateAccount”在新 PDS 上激活其帐户，并通过“com.atproto.server.deactivateAccount”停用旧 PDS 上的帐户。
+
+至此迁移完成。可以通过写入存储库来发布新内容，可以更新首选项，并且服务间身份验证和代理应该按预期工作。可能需要注销任何客户端并重新登录。在某些情况下，如果服务具有积极的身份缓存并且在签名失败时不刷新，则服务身份验证请求可能会失败长达 24 小时。
+
+仍然可以使用旧的 PDS 进行登录和身份验证。用户可能希望最终完全终止他们的旧帐户。这可以通过“com.atproto.server.deactivateAccount”请求的“deleteAfter”参数自动完成。请注意，旧的 PDS 可能能够在固定的 72 小时窗口期间协助 PLC 身份恢复，但前提是帐户在该窗口期间未完全删除。
