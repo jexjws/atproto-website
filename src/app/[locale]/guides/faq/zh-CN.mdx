@@ -7,44 +7,44 @@ export const header = {
     'Frequently Asked Questions about AT Protocol.',
 }
 
-# FAQ
+# 常问问题
 
-Frequently Asked Questions about the Authenticated Transfer Protocol (atproto). For FAQ about Bluesky, visit [here](https://bsky.social/about/faq).
+有关身份验证传输协议 (atproto) 的常见问题。有关 Bluesky 的常见问题解答，请访问[此处](https://bsky.social/about/faq)。
 
-## Is the AT Protocol a blockchain?
+## AT 协议是区块链吗？
 
-No. The AT Protocol is a [federated protocol](https://en.wikipedia.org/wiki/Federation_(information_technology)). It's not a blockchain nor does it use a blockchain.
+不。AT 协议是一个[联邦协议](https://en.wikipedia.org/wiki/Federation_(information_technology))。它不是区块链，也不使用区块链。
 
-## Why not use ActivityPub?
+## 为什么不使用 ActivityPub？
 
-[ActivityPub](https://en.wikipedia.org/wiki/ActivityPub) is a federated social networking technology popularized by [Mastodon](https://joinmastodon.org/).
+[ActivityPub](https://en.wikipedia.org/wiki/ActivityPub) 是一种由 [Mastodon](https://joinmastodon.org/) 推广的联合社交网络技术。
 
-Account portability is a major reason why we chose to build a separate protocol. We consider portability to be crucial because it protects users from sudden bans, server shutdowns, and policy disagreements. Our solution for portability requires both [signed data repositories](/guides/data-repos) and [DIDs](/guides/identity), neither of which are easy to retrofit into ActivityPub. The migration tools for ActivityPub are comparatively limited; they require the original server to provide a redirect and cannot migrate the user's previous data.
+帐户可移植性是我们选择构建单独协议的主要原因。我们认为可移植性至关重要，因为它可以保护用户免受突然禁止、服务器关闭和政策分歧的影响。我们的可移植性解决方案需要[签名数据存储库](/guides/data-repos) 和[DID](/guides/identity)，这两者都不容易改装到 ActivityPub 中。 ActivityPub的迁移工具比较有限；它们需要原始服务器提供重定向，并且无法迁移用户以前的数据。
 
-Another major reason is scalability. ActivityPub depends heavily on delivering messages between a wide network of small-to-medium sized nodes, which can cause individual nodes to be flooded with traffic and generally struggles to provide global views of activity. The AT Protocol uses aggregating applications to merge activity from the users' hosts, reducing the overall traffic and dramatically reducing the load on individual hosts.
+另一个主要原因是可扩展性。 ActivityPub 在很大程度上依赖于在中小型节点组成的广泛网络之间传递消息，这可能会导致各个节点被流量淹没，并且通常难以提供活动的全局视图。 AT 协议使用聚合应用程序来合并来自用户主机的活动，从而减少总体流量并显着减少各个主机上的负载。
 
-Other smaller differences include: a different viewpoint about how schemas should be handled, a preference for domain usernames over AP's double-@ email usernames, and the goal of having large scale search and algorithmic feeds.
+其他较小的差异包括：关于如何处理模式的不同观点、相对于 AP 的双 @ 电子邮件用户名对域用户名的偏好，以及拥有大规模搜索和算法提要的目标。
 
-## Why create Lexicon instead of using JSON-LD or RDF?
+## 为什么创建 Lexicon 而不是使用 JSON-LD 或 RDF？
 
-Atproto exchanges data and RPC commands across organizations. For the data and RPC to be useful, the software needs to correctly handle schemas created by separate teams. This is the purpose of [Lexicon](/guides/lexicon).
+Atproto 跨组织交换数据和 RPC 命令。为了使数据和 RPC 发挥作用，软件需要正确处理由不同团队创建的模式。这就是[词典](/guides/lexicon) 的目的。
 
-We want engineers to feel comfortable using and creating new schemas, and we want developers to enjoy the DX of the system. Lexicon helps us produce strongly typed APIs which are extremely familiar to developers and which provides a variety of runtime correctness checks.
+我们希望工程师能够轻松地使用和创建新模式，并且希望开发人员能够享受系统的 DX。 Lexicon 帮助我们生成开发人员非常熟悉的强类型 API，并提供各种运行时正确性检查。
 
-[RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) is intended for extremely general cases in which the systems share very little infrastructure. It's conceptually elegant but difficult to use, often adding a lot of syntax which devs don't understand. JSON-LD simplifies the task of consuming RDF vocabularies, but it does so by hiding the underlying concepts, not by making RDF more legible.
+[RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) 适用于系统共享很少基础设施的极其一般的情况。它在概念上很优雅，但很难使用，经常添加大量开发人员不理解的语法。 JSON-LD 简化了使用 RDF 词汇表的任务，但它是通过隐藏底层概念来实现的，而不是使 RDF 更易读。
 
-We looked very closely at using RDF but just didn't love the developer experience (DX) or the tooling it offered.
+我们非常仔细地研究了 RDF 的使用，但就是不喜欢它的开发人员体验 (DX) 或其提供的工具。
 
-## What is "XRPC," and why not use ___?
+## 什么是“XRPC”，为什么不使用 ___？
 
-[XRPC](/specs/xrpc) is HTTP with some added conventions.
+[XRPC](/specs/xrpc) 是带有一些附加约定的 HTTP。
 
-XRPC uses [Lexicons](/guides/lexicon) to describe HTTP calls and maps them to `/xrpc/{methodId}`. For example, this API call:
+XRPC 使用 [Lexicons](/guides/lexicon) 来描述 HTTP 调用并将它们映射到 `/xrpc/{methodId}`。例如，这个 API 调用：
 
 <ListRecordsCallTs />
 
-...maps to:
+...映射到：
 
 <ListRecordsHttp />
 
-Lexicons establish shared method id (`com.atproto.repo.listRecords`) and the expected query params, input body, and output body. By using Lexicons we get runtime checks on the inputs and outputs of the call, and can generate typed code like the API call example above.
+词典建立共享方法 id (`com.atproto.repo.listRecords`) 和预期的查询参数、输入正文和输出正文。通过使用 Lexicons，我们可以对调用的输入和输出进行运行时检查，并可以生成类型化代码，如上面的 API 调用示例。

@@ -53,7 +53,7 @@ Parameters, input body, and output are all type-checked at compile time and vali
 
 ## Using the .internal TLD
 
-NSIDs use reverse DNS lookup — `app.bsky.*` resolves under `bsky.app`, `com.atproto.*` under `atproto.com`. But for **service-to-service calls between components of the same operator** , there's no public schema to publish or resolve.
+NSIDs use reverse DNS lookup — `app.bsky.*` resolves under `bsky.app`, `com.atproto.*` under `atproto.com`. But for **service-to-service calls between components of the same operator**, there's no public schema to publish or resolve.
 
 For those, you can use NSIDs prefixed with `internal.`, taking advantage of [`.internal` being a reserved TLD](https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml) that can never be registered. For example, the reference implementation includes [`internal.bsky.actor.getProfiles`](https://github.com/bluesky-social/atproto/blob/main/lexicons/internal/bsky/actor/getProfiles.json), a variant of `app.bsky.actor.getProfiles`.
 

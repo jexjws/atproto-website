@@ -5,51 +5,51 @@ export const header = {
   description: 'A closer look into how it all works',
 }
 
-## TL;DR
+## 长话；博士
 
-Atproto is big-world, open social. Users publish JSON records into repositories. The changestreams of those records then sync across the network to drive applications.
+Atproto 是一个大世界、开放的社交平台。用户将 JSON 记录发布到存储库中。然后，这些记录的变更流通过网络同步以驱动应用程序。
 
-We recommend these fantastic articles by community member [Dan Abramov](https://bsky.app/profile/danabra.mov):
+我们推荐社区成员 [Dan Abramov](https://bsky.app/profile/danabra.mov) 撰写的精彩文章：
 
-- [**Open Social** ](https://overreacted.io/open-social/) - The protocol is the API.
-- [**Where it's at://** ](https://overreacted.io/where-its-at/) - From handles to hosting.
-- [**A Social Filesystem** ](https://overreacted.io/a-social-filesystem/) - Formats over apps.
+- [**开放社交** ](https://overreacted.io/open-social/) - 协议是 API。
+- [**位置：//** ](https://overreacted.io/where-its-at/) - 从句柄到托管。
+- [**社交文件系统** ](https://overreacted.io/a-social-filesystem/) - 应用程序上的格式。
 
-## Core primitives
+## 核心原语
 
-- **User repos.** The public per-user databases.
-- **User handles.** Usernames, which are DNS records. Our account is [@atproto.com](https://bsky.app/profile/atproto.com).
-- **User DIDs.** The permanent IDs of users.
+- **用户存储库。** 公共每用户数据库。
+- **用户句柄。** 用户名，即 DNS 记录。我们的帐户是[@atproto.com](https://bsky.app/profile/atproto.com)。
+- **用户 DID。** 用户的永久 ID。
 
-## Data models
+## 数据模型
 
-- **Records** . JSON, categorized into collections.
-- **Blobs** . The [images and videos](/guides/images-and-video).
-- **Lexicon** . The schema language.
-- **Lexicon RPC (XRPC).** It's HTTPS but with the routes defined by Lexicons.
+- **记录** 。 JSON，分类为集合。
+- **斑点** 。 [图像和视频](/guides/images-and-video)。
+- **词典** 。模式语言。
+- **Lexicon RPC (XRPC)。** 它是 HTTPS，但具有 Lexicons 定义的路由。
 
-## The stack
+## 堆栈
 
-There are different kinds of services which you can [self-host](/guides/self-hosting):
+您可以[自行托管](/guides/self-hosting) 提供不同类型的服务：
 
-- **Personal Data Servers (PDS).** They host user accounts.
-- **Relays** . They collect and rebroadcast user write events.
-- **Applications** . They aggregate user data to produce app experiences.
-- **Labelers** . Publish moderation decisions as label metadata.
+- **个人数据服务器 (PDS)。** 它们托管用户帐户。
+- **继电器** 。他们收集并重播用户写入事件。
+- **应用程序** 。他们聚合用户数据以产生应用程序体验。
+- **贴标机** 。将审核决策发布为标签元数据。
 
-## Making it happen
+## 让它发生
 
-Let's assume you're building an application. Your users will sign in with [OAuth](/guides/auth), which hands your application the address of their PDS. Your application then [reads & writes](/guides/reads-and-writes) records by contacting their PDS.
+假设您正在构建一个应用程序。您的用户将使用 [OAuth](/guides/auth) 登录，这会将其 PDS 地址交给您的应用程序。然后，您的应用程序通过联系其 PDS 来[读取和写入](/guides/reads-and-writes) 记录。
 
-To listen for activity across the network, you [sync from relays](/guides/sync). You could sync directly from the users' PDSes, but it's more convenient to use the relays. Since all data is signed, you can confirm the relay's stream is accurate.
+要侦听网络上的活动，您可以[从中继同步](/guides/sync)。您可以直接从用户的 PDS 进行同步，但使用中继更方便。由于所有数据都经过签名，因此您可以确认中继的流是准确的。
 
-The [Lexicons](/guides/lexicon) help identify the data being published on the network. You use them to validate data as you read it, just like you validate incoming HTTP requests.
+[Lexicons](/guides/lexicon) 帮助识别网络上发布的数据。您可以使用它们在读取数据时验证数据，就像验证传入的 HTTP 请求一样。
 
-Finally, you handle [moderation](/guides/moderation) by subscribing to (or running) labelers which receive user reports and publish labels on user content.
+最后，您可以通过订阅（或运行）接收用户报告并在用户内容上发布标签的标签来处理[审核](/guides/moderation)。
 
-## Deeper reads
+## 深入阅读
 
-We also recommend these deep-dive articles by the team:
+我们还推荐该团队撰写的这些深度文章：
 
-- [**Atproto for distributed systems engineers** ](/articles/atproto-for-distsys-engineers). An explainer for backend thinkers.
-- [**The Atproto Ethos** ](/articles/atproto-ethos). The principles that underpin the design of atproto.
+- [**分布式系统工程师的 Atproto** ](/articles/atproto-for-distsys-engineers)。后端思考者的解释者。
+- [**Atproto 精神** ](/articles/atproto-ethos)。 atproto 设计的基础原则。

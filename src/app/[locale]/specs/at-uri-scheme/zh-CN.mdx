@@ -33,13 +33,13 @@ The full, general structure of an AT URI is:
 
 The **authority** part of the URI can be either a handle or a DID, indicating the identity associated with the repository. Note that a handle can refer to different DIDs (and thus different repositories) over time. See discussion below about strong references, and in "Usage and Implementation".
 
-In current atproto Lexicon use, the **query** and ** fragment** parts are not yet supported, and only a fixed pattern of paths are allowed:
+In current atproto Lexicon use, the **query** and **fragment** parts are not yet supported, and only a fixed pattern of paths are allowed:
 
 ```text
 "at://" AUTHORITY [ "/" COLLECTION [ "/" RKEY ] ]
 ```
 
-The **authority** section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional ** collection** part of the path must be a normalized [NSID](/specs/nsid). The optional ** rkey** part of the path must be a valid [record key](/specs/record-key).
+The **authority** section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional **collection** part of the path must be a normalized [NSID](/specs/nsid). The optional **rkey** part of the path must be a valid [record key](/specs/record-key).
 
 An AT URI pointing to a specific record in a repository is not a *strong* reference, in that it is not content-addressed. The record may change or be removed over time, or the DID itself may be deleted or unavailable. For `did:web`, control of the DID (and thus repository) may change over time. For AT URIs with a handle in the authority section, the handle-to-DID mapping can also change.
 

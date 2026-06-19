@@ -4,352 +4,352 @@ export const header = {
     'A schema definition language.',
 }
 
-# Lexicon
+# 词典
 
-Lexicon is a schema definition language used to describe atproto records, HTTP endpoints (XRPC), and event stream messages. It builds on top of the atproto [Data Model](/specs/data-model). {{ className: 'lead' }}
+Lexicon 是一种模式定义语言，用于描述 atproto 记录、HTTP 端点 (XRPC) 和事件流消息。它构建在 atproto [数据模型](/specs/data-model) 之上。 {{ className: '领导' }}
 
-The schema language is similar to [JSON Schema](http://json-schema.org/) and [OpenAPI](https://en.wikipedia.org/wiki/OpenAPI_Specification), but includes some atproto-specific features and semantics. {{ className: 'lead' }}
+模式语言类似于 [JSON Schema](http://json-schema.org/) 和 [OpenAPI](https://en.wikipedia.org/wiki/OpenAPI_Specification)，但包含一些 atproto 特定的功能和语义。 {{ className: '领导' }}
 
-This specification describes version 1 of the Lexicon definition language. {{ className: 'lead' }}
+本规范描述了 Lexicon 定义语言的版本 1。 {{ className: '领导' }}
 
-## Overview of Types
+## 类型概述
 
-| Lexicon Type | Data Model Type | Category |
-| --- | --- | --- |
-| `boolean` | Boolean | concrete |
-| `integer` | Integer | concrete |
-| `string` | String | concrete |
-| `bytes` | Bytes | concrete |
-| `cid-link` | Link | concrete |
-| `blob` | Blob | concrete |
-| `array` | Array | container |
-| `object` | Object | container |
-| `params` |  | sub-type |
-| `permission` |  | sub-type |
-| `token` |  | meta |
-| `ref` |  | meta |
-| `union` |  | meta |
-| `unknown` |  | meta |
-| `record` |  | primary |
-| `query` |  | primary |
-| `procedure` |  | primary |
-| `subscription` |  | primary |
-| `permission-set` |  | primary |
+|词典类型 |数据模型类型|类别 |
+| ---| ---| ---|
+| `布尔值` |布尔 |混凝土|
+| `整数` |整数 |混凝土|
+| `字符串` |字符串|混凝土|
+| `字节` |字节 |混凝土|
+| `cid 链接` |链接 |混凝土|
+| `斑点` |斑点|混凝土|
+| `数组` |数组 |集装箱|
+| `对象` |对象|集装箱|
+| `参数` |  |子类型 |
+| `许可` |  |子类型 |
+| `令牌` |  |元|
+| `参考` |  |元|
+| `联盟` |  |元|
+| `未知` |  |元|
+| `记录` |  |初级 |
+| `查询` |  |初级 |
+| `程序` |  |初级 |
+| `订阅` |  |初级 |
+| `权限集` |  |初级 |
 
-## Lexicon Files
+## 词典文件
 
-Lexicons are JSON files associated with a single NSID. A file contains one or more definitions, each with a distinct short name. A definition with the name `main` optionally describes the "primary" definition for the entire file. A Lexicon with zero definitions is invalid.
+词典是与单个 NSID 关联的 JSON 文件。一个文件包含一个或多个定义，每个定义都有一个不同的短名称。名称为“main”的定义可以选择描述整个文件的“主要”定义。具有零定义的词典无效。
 
-A Lexicon JSON file is an object with the following fields:
+Lexicon JSON 文件是一个具有以下字段的对象：
 
-- `lexicon` (integer, required): indicates Lexicon language version. In this version, a fixed value of `1`
-- `id` (string, required): the NSID of the Lexicon
-- `description` (string, optional): short overview of the Lexicon, usually one or two sentences
-- `defs` (map of strings-to-objects, required): set of definitions, each with a distinct name (key)
+- `lexicon`（整数，必填）：表示 Lexicon 语言版本。在此版本中，固定值为“1”
+- `id`（字符串，必需）：词典的 NSID
+- `description`（字符串，可选）：词典的简短概述，通常是一两个句子
+- `defs` （字符串到对象的映射，必需）：定义集，每个定义都有一个不同的名称（键）
 
-Schema definitions under `defs` all have a `type` field to distinguish their type. A file can have at most one definition with one of the "primary" types. Primary types should always have the name `main`. It is possible for `main` to describe a non-primary type. Not all types can be directly used as a definition. For example, sub-types, `unknown`, `ref`, and `union` can not be used as named definitions.
+“defs”下的模式定义都有一个“type”字段来区分它们的类型。一个文件最多可以有一个“主要”类型之一的定义。主要类型应始终具有名称“main”。 `main` 可以描述非主类型。并非所有类型都可以直接用作定义。例如，子类型、“unknown”、“ref”和“union”不能用作命名定义。
 
-References to specific definitions within a Lexicon use fragment syntax, like `com.example.defs#someView`. If a `main` definition exists, it can be referenced without a fragment, just using the NSID. For references in the `$type` fields in data objects themselves (eg, records or contents of a union), this is a "must" (use of a `#main` suffix is invalid). For example, `com.example.record` not `com.example.record#main`.
+对词典中特定定义的引用使用片段语法，例如“com.example.defs#someView”。如果“main”定义存在，则无需片段即可引用它，只需使用 NSID。对于数据对象本身的“$type”字段中的引用（例如，联合的记录或内容），这是“必须的”（使用“#main”后缀是无效的）。例如，“com.example.record”而不是“com.example.record#main”。
 
-Related Lexicons are often grouped together in the NSID hierarchy. As a convention, any definitions used by multiple Lexicons are defined in a dedicated `*.defs` Lexicon (eg, `com.atproto.server.defs`) within the group. A `*.defs` Lexicon should generally not include a definition named `main`, though it is not strictly invalid to do so.
+相关词典通常在 NSID 层次结构中分组在一起。作为惯例，多个词典使用的任何定义都在组内的专用“*.defs”词典（例如“com.atproto.server.defs”）中定义。 “*.defs”词典通常不应包含名为“main”的定义，尽管这样做并非严格无效。
 
-## Primary Type Definitions
+## 主要类型定义
 
-The primary types are:
+主要类型有：
 
-- `query`: describes an XRPC Query (HTTP GET)
-- `procedure`: describes an XRPC Procedure (HTTP POST)
-- `subscription`: Event Stream (WebSocket)
-- `record`: describes an object that can be stored in a repository record
-- `permission-set`: describes a bundle of auth permissions
+- `query`：描述 XRPC 查询 (HTTP GET)
+- `procedure`：描述 XRPC 过程（HTTP POST）
+- `订阅`：事件流（WebSocket）
+- `record`：描述可以存储在存储库记录中的对象
+- `permission-set`：描述一组身份验证权限
 
-All of the primary definition types include these fields:
+所有主要定义类型都包含以下字段：
 
-- `type` (string, required): the type value (eg, `record` for records)
-- `description` (string, optional): short, usually only a sentence or two
+- `type` （字符串，必需）：类型值（例如，记录的 `record`）
+- `description`（字符串，可选）：简短，通常只有一两句话
 
-### Record
+### 记录
 
-Specifies schema of data objects stored in [Repositories](/specs/repository).
+指定存储在[Repositories](/specs/repository)中的数据对象的架构。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `key` (string, required): specifies the [record key](/specs/record-key) type
-- `record` (object, required): a schema definition with type `object`, which specifies this type of record
+- `key` （字符串，必填）：指定 [记录密钥](/specs/record-key) 类型
+- `record`（对象，必需）：类型为`object`的模式定义，它指定这种类型的记录
 
-### Query and Procedure (HTTP API)
+### 查询和过程（HTTP API）
 
-Specifies an [XRPC](/specs/xrpc) HTTP API endpoint.
+指定 [XRPC](/specs/xrpc) HTTP API 端点。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `parameters` (object, optional): a schema definition with type `params`, describing the HTTP query parameters for this endpoint
-- `output` (object, optional): describes the HTTP response body
-    - `description` (string, optional): short description
-    - `encoding` (string, required): MIME type for body contents. Use `application/json` for JSON responses.
-    - `schema` (object, optional): schema definition, either an `object`, a `ref`, or a `union` of refs. Used to describe JSON encoded responses, though schema is optional even for JSON responses.
-- `input` (object, optional, exclusive to `procedure`): describes HTTP request body schema, with the same format as the `output` field
-- `errors` (array of objects, optional): set of string error codes which might be returned
-    - `name` (string, required): short name for the error type, with no whitespace
-    - `description` (string, optional): short description, one or two sentences
+- `parameters` （对象，可选）：类型为 `params` 的模式定义，描述此端点的 HTTP 查询参数
+- `output`（对象，可选）：描述 HTTP 响应正文
+    - `description`（字符串，可选）：简短描述
+    - `encoding`（字符串，必需）：正文内容的 MIME 类型。使用“application/json”进行 JSON 响应。
+    - `schema` （对象，可选）：模式定义，可以是 `object`、`ref` 或引用的 `union`。用于描述 JSON 编码的响应，尽管架构对于 JSON 响应来说也是可选的。
+- `input`（对象，可选，`procedure`独有）：描述HTTP请求体模式，与`output`字段格式相同
+- `errors` （对象数组，可选）：可能返回的字符串错误代码集
+    - `name` （字符串，必需）：错误类型的短名称，没有空格
+    - `description`（字符串，可选）：简短描述，一两个句子
 
-### Subscription (Event Stream)
+### 订阅（事件流）
 
-Specifies an [Event Stream](/specs/event-stream) endpoint, eg messages on a WebSocket.
+指定 [Event Stream](/specs/event-stream) 端点，例如 WebSocket 上的消息。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `parameters` (object, optional): same as Query and Procedure
-- `message` (object, required): specifies what messages can be
-    - `description` (string, optional): short description
-    - `schema` (object, required): schema definition, which must be a `union` of refs
-- `errors` (array of objects, optional): same as Query and Procedure
+- `parameters`（对象，可选）：与查询和过程相同
+- `message`（对象，必需）：指定可以是哪些消息
+    - `description`（字符串，可选）：简短描述
+    - `schema`（对象，必需）：模式定义，必须是引用的`union`
+- `errors`（对象数组，可选）：与查询和过程相同
 
-Subscription schemas (referenced by the `schema` field under `message`) must be a `union` of refs, not an `object` type.
+订阅模式（由“message”下的“schema”字段引用）必须是引用的“union”，而不是“object”类型。
 
-### Permission Set
+### 权限设置
 
-Specifies a bundle of permissions for use as [OAuth](/specs/oauth) scopes. See [Permissions specification](/specs/permission) for more details.
+指定用作 [OAuth](/specs/oauth) 范围的一组权限。有关更多详细信息，请参阅[权限规范](/specs/permission)。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `title` (string, optional): short name for the permission set, which will be displayed to users. Should be limited to a handful of words
-- `title:lang` (map of strings to strings, optional): internationalized/localized variations of `title` for display. The map key strings must be valid language codes; see the `language` lexicon string format
-- `detail` (string, optional): human-meaningful description of the scope of this permission set, which will be displayed to users. Should be limited to a paragraph or so.
-- `detail:lang` (map of strings to strings, optional): same as `title:lang`, but for `detail`
-- `permissions` (array of `permission` definitions, required): the permissions included in this set
+- `title` （字符串，可选）：权限集的短名称，将显示给用户。应该限于少数几个字
+- `title:lang` （字符串到字符串的映射，可选）：用于显示的 `title` 的国际化/本地化变体。地图键字符串必须是有效的语言代码；查看“语言”词典字符串格式
+- `detail` （字符串，可选）：此权限集范围的人类有意义的描述，将显示给用户。应限制在一个段落左右。
+- `detail:lang` （字符串到字符串的映射，可选）：与 `title:lang` 相同，但适用于 `detail`
+- `permissions` （`permission` 定义的数组，必需）：该集合中包含的权限
 
-## Field Type Definitions
+## 字段类型定义
 
-As with the primary definitions, every schema object includes these fields:
+与主要定义一样，每个模式对象都包含以下字段：
 
-- `type` (string, required): fixed value for each type
-- `description` (string, optional): short, usually only a sentence or two
+- `type`（字符串，必需）：每种类型的固定值
+- `description`（字符串，可选）：简短，通常只有一两句话
 
-### `boolean`
+### `布尔值`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `default` (boolean, optional): a default value for this field
-- `const` (boolean, optional): a fixed (constant) value for this field
+- `default`（布尔值，可选）：该字段的默认值
+- `const`（布尔值，可选）：该字段的固定（常量）值
 
-When included as an HTTP query parameter, should be rendered as `true` or `false` (no quotes).
+当作为 HTTP 查询参数包含时，应呈现为“true”或“false”（无引号）。
 
-### `integer`
+### `整数`
 
-A signed integer number.
+有符号整数。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `minimum` (integer, optional): minimum acceptable value
-- `maximum` (integer, optional): maximum acceptable value
-- `enum` (array of integers, optional): a closed set of allowed values
-- `default` (integer, optional): a default value for this field
-- `const` (integer, optional): a fixed (constant) value for this field
+- `minimum`（整数，可选）：可接受的最小值
+- `maximum` （整数，可选）：可接受的最大值
+- `enum`（整数数组，可选）：一组封闭的允许值
+- `default`（整数，可选）：该字段的默认值
+- `const`（整数，可选）：该字段的固定（常量）值
 
-### `string`
+### `字符串`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `format` (string, optional): string format restriction
-- `maxLength` (integer, optional): maximum length of value, in UTF-8 bytes
-- `minLength` (integer, optional): minimum length of value, in UTF-8 bytes
-- `maxGraphemes` (integer, optional): maximum length of value, counted as Unicode Grapheme Clusters
-- `minGraphemes` (integer, optional): minimum length of value, counted as Unicode Grapheme Clusters
-- `knownValues` (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
-- `enum` (array of strings, optional): a closed set of allowed values
-- `default` (string, optional): a default value for this field
-- `const` (string, optional): a fixed (constant) value for this field
+- `format`（字符串，可选）：字符串格式限制
+- `maxLength`（整数，可选）：值的最大长度，以 UTF-8 字节为单位
+- `minLength`（整数，可选）：值的最小长度，以 UTF-8 字节为单位
+- `maxGraphemes`（整数，可选）：值的最大长度，计为 Unicode 字素簇
+- `minGraphemes`（整数，可选）：值的最小长度，计为 Unicode 字素簇
+- `knownValues`（字符串数组，可选）：该字段的一组建议值或通用值。值不限于此集合（也称为非封闭枚举）。
+- `enum`（字符串数组，可选）：一组封闭的允许值
+- `default`（字符串，可选）：该字段的默认值
+- `const` （字符串，可选）：该字段的固定（常量）值
 
-Strings are Unicode. For non-Unicode encodings, use `bytes` instead. The basic `minLength`/`maxLength` validation constraints are counted as UTF-8 bytes. Note that Javascript stores strings with UTF-16 by default, and it is necessary to re-encode to count accurately. The `minGraphemes`/`maxGraphemes` validation constraints work with Grapheme Clusters, which have a complex technical and linguistic definition, but loosely correspond to "distinct visual characters" like Latin letters, CJK characters, punctuation, digits, or emoji (which might comprise multiple Unicode codepoints and many UTF-8 bytes).
+字符串是 Unicode 的。对于非 Unicode 编码，请改用“字节”。基本的 `minLength`/`maxLength` 验证约束被计为 UTF-8 字节。注意，Javascript默认使用UTF-16存储字符串，需要重新编码才能准确计数。 `minGraphemes`/`maxGraphemes` 验证约束与字素簇一起使用，它具有复杂的技术和语言定义，但大致对应于“不同的视觉字符”，如拉丁字母、CJK 字符、标点符号、数字或表情符号（可能包含多个 Unicode 代码点和许多 UTF-8 字节）。
 
-`format` constrains the string format and provides additional semantic context. Refer to the Data Model specification for the available format types and their definitions.
+`format` 限制字符串格式并提供额外的语义上下文。有关可用格式类型及其定义，请参阅数据模型规范。
 
-`const` and `default` are mutually exclusive.
+`const` 和 `default` 是互斥的。
 
-### `bytes`
+### `字节`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `minLength` (integer, optional): minimum size of value, as raw bytes with no encoding
-- `maxLength` (integer, optional): maximum size of value, as raw bytes with no encoding
+- `minLength`（整数，可选）：值的最小大小，作为没有编码的原始字节
+- `maxLength`（整数，可选）：值的最大大小，作为没有编码的原始字节
 
-In the JSON format, these fields are encoded as `{"$bytes":<base64-string>}`. In the CBOR format, these fields use the native bytes type.
+在 JSON 格式中，这些字段被编码为 `{"$bytes":<base64-string>}`。在 CBOR 格式中，这些字段使用本机字节类型。
 
 ### `cid-link`
 
-No type-specific fields.
+没有特定于类型的字段。
 
-See [Data Model spec](/specs/data-model) for CID restrictions.
+有关 CID 限制，请参阅[数据模型规范](/specs/data-model)。
 
-### `array`
+### `数组`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `items` (object, required): describes the schema elements of this array
-- `minLength` (integer, optional): minimum count of elements in array
-- `maxLength` (integer, optional): maximum count of elements in array
+- `items`（对象，必需）：描述此数组的模式元素
+- `minLength`（整数，可选）：数组中元素的最小数量
+- `maxLength`（整数，可选）：数组中元素的最大数量
 
-In theory arrays have homogeneous types (meaning every element as the same type). However, with union types this restriction is meaningless, so implementations can not assume that all the elements have the same type.
+理论上，数组具有同质类型（意味着每个元素都是相同的类型）。但是，对于联合类型，此限制毫无意义，因此实现不能假设所有元素都具有相同的类型。
 
-### `object`
+### `对象`
 
-A generic object schema which can be nested inside other definitions by reference.
+通用对象模式，可以通过引用嵌套在其他定义中。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `properties` (map of strings-to-objects, required): defines the properties (fields) by name, each with their own schema
-- `required` (array of strings, optional): indicates which properties are required
-- `nullable` (array of strings, optional): indicates which properties can have `null` as a value
+- `properties`（字符串到对象的映射，必需）：按名称定义属性（字段），每个属性都有自己的模式
+- `required`（字符串数组，可选）：指示哪些属性是必需的
+- `nullable` （字符串数组，可选）：指示哪些属性可以将 `null` 作为值
 
-As described in the data model specification, there is a semantic difference in data between omitting a field; including the field with the value `null`; and including the field with a "false-y" value (`false`, `0`, empty array, etc).
+正如数据模型规范中所描述的，省略字段和省略字段之间存在数据语义差异；包括值为“null”的字段；并包含具有“false-y”值的字段（“false”、“0”、空数组等）。
 
-### `blob`
+### `斑点`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `accept` (array of strings, optional): list of acceptable MIME types. Each may end in `*` as a glob pattern (eg, `image/*`). Use `*/*` to indicate that any MIME type is accepted. Partial globs (`text/ht*`) or stand-alone wildcard (`*`) are not supported.
-- `maxSize` (integer, optional): maximum size in bytes
+- `accept`（字符串数组，可选）：可接受的 MIME 类型列表。每个都可以以“*”作为全局模式结束（例如，“image/*”）。使用“*/*”表示接受任何 MIME 类型。不支持部分通配符（`text/ht*`）或独立通配符（`*`）。
+- `maxSize`（整数，可选）：最大大小（以字节为单位）
 
-### `params`
+### `参数`
 
-This is a limited-scope type which is only ever used for the `parameters` field on `query`, `procedure`, and `subscription` primary types. `params` map to HTTP query parameters. They can not appear in other contexts.
+这是一种范围有限的类型，仅用于“query”、“procedure”和“subscription”主要类型上的“parameters”字段。 `params` 映射到 HTTP 查询参数。它们不能出现在其他上下文中。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `required` (array of strings, optional): same semantics as field on `object`
-- `properties`: similar to properties under `object`, but can only include the types `boolean`, `integer`, `string`; or an `array` of one of these types
+- `required` （字符串数组，可选）：与 `object` 上的字段具有相同的语义
+- `properties`：与`object`下的属性类似，但只能包含`boolean`、`integer`、`string`类型；或这些类型之一的“数组”
 
-Note that unlike `object`, there is no `nullable` field on `params`.
+请注意，与“object”不同，“params”上没有“可为空”字段。
 
-`params` can not be declared as a top-level named type in a schema `defs` array. This means that they can not be referenced by a `ref` or `union`.
+无法将“params”声明为架构“defs”数组中的顶级命名类型。这意味着它们不能被“ref”或“union”引用。
 
-### `permission`
+### `权限`
 
-This is a limited-scope type which is only ever used for the `permissions` field of the `permission-set` primary type, and should not appear in other schema contexts. They map to [auth permissions](/specs/permission).
+这是一种范围有限的类型，仅用于“permission-set”主要类型的“permissions”字段，并且不应出现在其他架构上下文中。它们映射到[auth 权限](/specs/permission)。
 
-Type-specific fields:
+特定于类型的字段：
 
-- `resource` (string, required): indicates the resource type which access is being granted to
+- `resource`（字符串，必需）：指示被授予访问权限的资源类型
 
-Additional `permission` fields depend on the resource type being declared. The set of resources and fields may expand over time, but currently includes:
+其他“权限”字段取决于所声明的资源类型。资源和领域集可能会随着时间的推移而扩展，但目前包括：
 
-- `repo`: public repository write permissions
-    - `collection` (array of unique strings, required): indicates record types. Must include at least one element (not empty array). Does not support wildcard (`*`) in Lexicon schema context.
-    - `action` (array of unique strings, optional): limits set of record operations. Values must be one or `create`, `update`, `delete`, case-sensitive.
-- `rpc`: remote API calls via proxying or service token generation
-    - `lxm` (array of strings, required): allowed XRPC endpoints, as NSIDs. Must include at least one element (not empty array). Wildcard (`*`) is not supported in Lexicon schema context.
-    - `aud` (string, semi-required): remote service ("audience"). In the context of permission sets, can not have fixed DID service references. Supports wildcard (`*`), though `aud` and `lxm` can not both be wildcard. Required unless `inheritAud` is true. Effectively must be either wildcard, or undefined with `inheritAud` set to true.
-    - `inheritAud` (boolean, optional): if true, `aud` does not need to be defined.
+- `repo`：公共存储库写入权限
+    - `collection`（唯一字符串数组，必需）：指示记录类型。必须包含至少一个元素（非空数组）。在 Lexicon 架构上下文中不支持通配符 (`*`)。
+    - `action`（唯一字符串数组，可选）：限制记录操作集。值必须为 1 或“create”、“update”、“delete”，区分大小写。
+- `rpc`：通过代理或服务令牌生成进行远程 API 调用
+    - `lxm` （字符串数组，必需）：允许的 XRPC 端点，作为 NSID。必须包含至少一个元素（非空数组）。 Lexicon 架构上下文不支持通配符 (`*`)。
+    - `aud`（字符串，半必需）：远程服务（“观众”）。在权限集的上下文中，不能有固定的DID服务引用。支持通配符 (`*`)，但 `aud` 和 `lxm` 不能同时为通配符。除非 `inheritAud` 为 true，否则为必需。实际上必须是通配符，或者未定义且“inheritAud”设置为 true。
+    - `inheritAud` （布尔值，可选）：如果为 true，则不需要定义 `aud`。
 
-Note that the `blob`, `account`, and `identity` resources types are not supported in Lexicon schema context, and should be ignored if included.
+请注意，Lexicon 架构上下文中不支持“blob”、“account”和“identity”资源类型，如果包含，则应忽略它们。
 
-Permission declarations with unsupported resource types or parameters (fields) must be ignored by services implementing access control. This is because the set of permissions is expected to evolve over time, and additional fields might attenuate the permission granted. It is unsafe to ignore unknown fields when parsing permissions for access control.
+实现访问控制的服务必须忽略具有不受支持的资源类型或参数（字段）的权限声明。这是因为权限集预计会随着时间的推移而演变，并且其他字段可能会削弱授予的权限。在解析访问控制的权限时忽略未知字段是不安全的。
 
-See [Permission specification](/specs/permission) for more details. Note that it is possible to construct a valid lexicon `permission` type which is invalid or has undefined behavior as an auth permission.
+更多详情请参见[权限规范](/specs/permission)。请注意，可以构造一个有效的词典“权限”类型，该类型作为身份验证权限无效或具有未定义的行为。
 
-### `token`
+### `令牌`
 
-Tokens are empty data values which exist only to be referenced by name. They are used to define a set of values with specific meanings. The `description` field should clarify the meaning of the token. They have no type-specific fields.
+令牌是空数据值，其存在仅用于通过名称引用。它们用于定义一组具有特定含义的值。 “描述”字段应阐明令牌的含义。它们没有特定于类型的字段。
 
-Tokens do not themselves have a data representation. They can only be declared as named definitions. For example, they can not be referenced via `ref` or `union`, or included as a field in an `object`.
+令牌本身没有数据表示。它们只能声明为命名定义。例如，它们不能通过“ref”或“union”引用，也不能作为“object”中的字段包含。
 
-One place token references might appear in other Lexicon definitions is as strings in the `knownValues` or `enum` fields of a `string` definition. Tokens should always be fully-qualified references (an NSID followed by an optional fragment), not local references within a schema file..
+标记引用可能出现在其他 Lexicon 定义中的一个地方是作为“string”定义的“knownValues”或“enum”字段中的字符串。令牌应始终是完全限定的引用（NSID 后跟可选片段），而不是架构文件中的本地引用。
 
-Tokens are similar to the concept of a "symbol" in some programming languages, distinct from strings, variables, built-in keywords, or other identifiers. For example, tokens could be defined to represent the state of an entity (in a state machine), or to enumerate a list of categories.
+令牌类似于某些编程语言中的“符号”概念，与字符串、变量、内置关键字或其他标识符不同。例如，可以定义令牌来表示实体的状态（在状态机中），或枚举类别列表。
 
-### `ref`
+### `参考`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `ref` (string, required): reference to another schema definition
+- `ref`（字符串，必需）：对另一个模式定义的引用
 
-Refs are a mechanism for re-using a schema definition in multiple places. The intended use is to reduce duplication of definitions for types like `object` or a `string` with specific restrictions.
+引用是一种在多个地方重用模式定义的机制。预期用途是减少具有特定限制的“对象”或“字符串”等类型的重复定义。
 
-The `ref` string can be a global reference to a Lexicon type definition (an NSID, optionally with a `#`-delimited name indicating a definition other than `main`), or can indicate a local definition within the same Lexicon file (a `#` followed by a name).
+`ref` 字符串可以是对 Lexicon 类型定义的全局引用（一个 NSID，可以选择使用 `#` 分隔的名称来指示除 `main` 之外的定义），也可以指示同一 Lexicon 文件中的本地定义（`#` 后跟一个名称）。
 
-When a `ref` points to an `object` type, the type of the encoded data is unambiguous. This means that the `$type` field should not be included in encoded data as a discriminator. This does not apply to references to `record` types, which always include the `$type` discriminator.
+当“ref”指向“object”类型时，编码数据的类型是明确的。这意味着“$type”字段不应作为鉴别器包含在编码数据中。这不适用于对“record”类型的引用，它始终包含“$type”鉴别符。
 
-A `ref` can not point to a `token` type.
+“ref”不能指向“token”类型。
 
-Refs can not be declared as top-level named types in a schema `defs` array. This means that a `ref` can not point to another `ref`, nor a `union`. They can reference container types that *contain* nested `ref` types, for example an `object`.
+Refs 不能在模式“defs”数组中声明为顶级命名类型。这意味着“ref”不能指向另一个“ref”，也不能指向“union”。它们可以引用“包含”嵌套“ref”类型的容器类型，例如“object”。
 
-### `union`
+### `联盟`
 
-Type-specific fields:
+特定于类型的字段：
 
-- `refs` (array of strings, required): references to schema definitions
-- `closed` (boolean, optional): indicates if a union is "open" or "closed". defaults to `false` (open union)
+- `refs`（字符串数组，必需）：对模式定义的引用
+- `close` （布尔值，可选）：指示联合是“开放”还是“封闭”。默认为“false”（开放联合）
 
-Unions represent that multiple possible types could be present at this location in the schema. The references follow the same syntax as `ref`, allowing references to both global or local schema definitions. Actual data will validate against a single specific type: the union does not *combine* fields from multiple schemas, or define a new *hybrid* data type. The different types are referred to as **variants** .
+联合表示模式中的此位置可能存在多种可能的类型。这些引用遵循与“ref”相同的语法，允许引用全局或本地模式定义。实际数据将针对单个特定类型进行验证：联合不会“组合”来自多个模式的字段，或定义新的“混合”数据类型。不同的类型被称为 **变体** 。
 
-By default unions are "open", meaning that future revisions of the schema could add more types to the list of refs (though can not remove types). This means that implementations should be permissive when validating, in case they do not have the most recent version of the Lexicon. The `closed` flag (boolean) can indicate that the set of types is fixed and can not be extended in the future.
+默认情况下，联合是“开放的”，这意味着架构的未来修订可以将更多类型添加到引用列表中（尽管不能删除类型）。这意味着验证时应该允许实现，以防它们没有最新版本的词典。 “close”标志（布尔值）可以指示类型集是固定的并且将来不能扩展。
 
-A `union` schema definition with no `refs` is allowed and similar to `unknown`, as long as the `closed` flag is false (the default). The main difference is that the data is required to include the `$type` field.
+允许没有“refs”的“union”模式定义，并且类似于“unknown”，只要“close”标志为 false（默认）。主要区别在于数据需要包含“$type”字段。
 
-A closed union with only a single type referenced is similar to `ref`. The main difference is that the data is required to include the `$type` field.
+仅引用单一类型的封闭联合类似于“ref”。主要区别在于数据需要包含“$type”字段。
 
-An empty closed union (a union with an empty refs list and the `closed` flag set to true) is an invalid schema.
+空的封闭联合（具有空引用列表且“关闭”标志设置为 true 的联合）是无效模式。
 
-The schema definitions pointed to by a `union` must have type `object` or `record`. All the variants must be represented by a CBOR map (or JSON Object) and must include a `$type` field indicating the variant type. A `union` can not point to types `query`, `procedure`, `subscription`, `unknown`, `blob`, `cid-link`, `array`, `params`, `token`, `ref`, `union`, or any other currently defined types.
+“union”指向的模式定义必须具有“object”或“record”类型。所有变体必须由 CBOR 映射（或 JSON 对象）表示，并且必须包含指示变体类型的“$type”字段。 “union”不能指向类型“query”、“procedure”、“subscription”、“unknown”、“blob”、“cid-link”、“array”、“params”、“token”、“ref”、“union”或任何其他当前定义的类型。
 
-Unions can not be declared as top-level named types in a schema file `defs` map. This means that a `union` can not reference another `union`, nor a `ref`.
+不能将联合声明为架构文件“defs”映射中的顶级命名类型。这意味着“union”不能引用另一个“union”，也不能引用“ref”。
 
-### `unknown`
+### `未知`
 
-An `unknown` type indicates that any data object could appear at this location, with no specific validation. The top-level data must be an object (not a string, boolean, etc). `unknown` definitions have no type-specific fields.
+“未知”类型表示任何数据对象都可能出现在该位置，无需特定验证。顶级数据必须是一个对象（不是字符串、布尔值等）。 “未知”定义没有特定于类型的字段。
 
-As with all other data types, the value `null` is not allowed unless the field is specifically marked as `nullable`.
+与所有其他数据类型一样，不允许使用值“null”，除非该字段被明确标记为“可为空”。
 
-The data object *may* contain a `$type` field indicating the schema of the data, but it is not required. The top-level data object must not have the structure of a compound data type, like blob (`$type: blob`) or CID link (`$link`).
+数据对象*可能*包含指示数据模式的“$type”字段，但这不是必需的。顶级数据对象不得具有复合数据类型的结构，例如 blob (`$type: blob`) 或 CID link (`$link`)。
 
-The (nested) contents of the data object must still be valid under the atproto data model. For example, it should not contain floats. Nested compound types like blobs and CID links should be validated and transformed as expected.
+数据对象的（嵌套）内容在 atproto 数据模型下必须仍然有效。例如，它不应包含浮动。嵌套复合类型（例如 blob 和 CID 链接）应按预期进行验证和转换。
 
-Lexicon designers are strongly recommended to not use `unknown` fields in `record` objects for now.
+强烈建议 Lexicon 设计者暂时不要在“record”对象中使用“unknown”字段。
 
-`unknown` types can not be declared as top-level named types in a schema `defs` array.
+“unknown”类型不能在模式“defs”数组中声明为顶级命名类型。
 
-## String Formats
+## 字符串格式
 
-Strings can optionally be constrained to one of the following `format` types:
+字符串可以选择限制为以下“格式”类型之一：
 
-- `at-identifier`: either a [Handle](/specs/handle) or a [DID](/specs/did), details described below
+- `at-identifier`：[Handle](/specs/handle) 或 [DID](/specs/did)，详细信息如下所述
 - `at-uri`: [AT-URI](/specs/at-uri-scheme)
-- `cid`: CID in string format, details specified in [Data Model](/specs/data-model)
-- `datetime`: timestamp, details specified below
-- `did`: generic [DID Identifier](/specs/did)
-- `handle`: [Handle Identifier](/specs/handle)
-- `nsid`: [Namespaced Identifier](/specs/nsid)
-- `tid`: [Timestamp Identifier (TID)](/specs/tid)
-- `record-key`: [record key](/specs/record-key), matching the general syntax ("any")
-- `uri`: generic URI, details specified below
-- `language`: language code, details specified below
+- `cid`：字符串格式的CID，详细信息在[数据模型](/specs/data-model)中指定
+- `datetime`：时间戳，详细信息如下
+- `did`：通用 [DID 标识符](/specs/did)
+- `handle`: [句柄标识符](/specs/handle)
+- `nsid`: [命名空间标识符](/specs/nsid)
+- `tid`: [时间戳标识符 (TID)](/specs/tid)
+- `record-key`: [记录键](/specs/record-key)，匹配通用语法（“any”）
+- `uri`：通用 URI，详细信息如下
+- `language`：语言代码，详细信息如下
 
-For the various identifier formats, when doing Lexicon schema validation the most expansive identifier syntax format should be permitted. Problems with identifiers which do pass basic syntax validation should be reported as application errors, not lexicon data validation errors. For example, data with any kind of DID in a `did` format string field should pass Lexicon validation, with unsupported DID methods being raised separately as an application error.
+对于各种标识符格式，在进行 Lexicon 模式验证时，应允许使用最广泛的标识符语法格式。通过基本语法验证的标识符的问题应报告为应用程序错误，而不是词典数据验证错误。例如，“did”格式字符串字段中具有任何类型 DID 的数据都应通过 Lexicon 验证，不支持的 DID 方法将作为应用程序错误单独引发。
 
 ### `at-identifier`
 
-A string type which is either a DID (type: did) or a handle (handle). Mostly used in XRPC query parameters. It is unambiguous whether an at-identifier is a handle or a DID because a DID always starts with did:, and the colon character (:) is not allowed in handles.
+字符串类型，它可以是 DID（类型：did）或句柄（handle）。主要用于XRPC查询参数。 at 标识符是句柄还是 DID 是明确的，因为 DID 始终以 did: 开头，并且句柄中不允许使用冒号字符 (:)。
 
-### `datetime`
+### `日期时间`
 
-Full-precision date and time, with timezone information.
+全精度日期和时间，带有时区信息。
 
-This format is intended for use with computer-generated timestamps in the modern computing era (eg, after the UNIX epoch). If you need to represent historical or ancient events, ambiguity, or far-future times, a different format is probably more appropriate. Datetimes before year zero (in astronomical time) are specifically disallowed.
+此格式旨在与现代计算时代（例如，UNIX 纪元之后）的计算机生成的时间戳一起使用。如果您需要表示历史或古代事件、模糊性或遥远的未来时间，则不同的格式可能更合适。特别不允许使用零年之前的日期时间（天文时间）。
 
-Datetime format standards are notoriously flexible and overlapping. Datetime strings in atproto should meet the [intersecting](https://ijmacd.github.io/rfc3339-iso8601/) requirements of the [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339), [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), and [WHATWG HTML](https://html.spec.whatwg.org/#dates-and-times) datetime standards.
+众所周知，日期时间格式标准非常灵活且重叠。 atproto 中的日期时间字符串应满足 [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339)、[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) 和 [WHATWG] 的[相交](https://ijmacd.github.io/rfc3339-iso8601/) 要求HTML](https://html.spec.whatwg.org/#dates-and-times) 日期时间标准。
 
-The character separating "date" and "time" parts must be an upper-case `T`.
+分隔“日期”和“时间”部分的字符必须是大写“T”。
 
-Timezone specification is required. It is *strongly* preferred to use the UTC timezone, and to represent the timezone with a simple capital `Z` suffix (lower-case is not allowed). While hour/minute suffix syntax (like `+01:00` or `-10:30`) is supported, "negative zero" (`-00:00`) is specifically disallowed (by ISO 8601).
+需要指定时区。 *强烈*首选使用 UTC 时区，并用简单的大写“Z”后缀（不允许使用小写字母）表示时区。虽然支持小时/分钟后缀语法（如“+01:00”或“-10:30”），但明确不允许“负零”（“-00:00”）（ISO 8601）。
 
-Whole seconds precision is required, and arbitrary fractional precision digits are allowed. Best practice is to use at least millisecond precision, and to pad with zeros to the generated precision (eg, trailing `:12.340Z` instead of `:12.34Z`). Not all datetime formatting libraries support trailing zero formatting. Both millisecond and microsecond precision have reasonable cross-language support; nanosecond precision does not.
+需要整秒精度，并且允许任意小数精度数字。最佳实践是至少使用毫秒精度，并用零填充生成的精度（例如，尾随“:12.340Z”而不是“:12.34Z”）。并非所有日期时间格式化库都支持尾随零格式化。毫秒和微秒精度都有合理的跨语言支持；纳秒精度则不然。
 
-Implementations should be aware when round-tripping records containing datetimes of two ambiguities: loss-of-precision, and ambiguity with trailing fractional second zeros. If de-serializing Lexicon records into native types, and then re-serializing, the string representation may not be the same, which could result in broken hash references, sanity check failures, or repository update churn. A safer thing to do is to deserialize the datetime as a simple string, which ensures round-trip re-serialization.
+当往返记录包含两个不明确的日期时间时，实现应该注意：精度损失和尾随小数秒零的不明确。如果将 Lexicon 记录反序列化为本机类型，然后重新序列化，则字符串表示形式可能不相同，这可能会导致哈希引用损坏、健全性检查失败或存储库更新混乱。更安全的做法是将日期时间反序列化为简单字符串，这可确保往返重新序列化。
 
-Implementations "should" validate that the semantics of the datetime are valid. For example, a month or day `00` is invalid.
+实现“应该”验证日期时间的语义是否有效。例如，月份或日期“00”无​​效。
 
-Valid examples:
+有效示例：
 
 ```text
 # preferred
@@ -360,15 +360,15 @@ Valid examples:
 0001-01-01T00:00:00.000Z
 0000-01-01T00:00:00.000Z
 
-# supported
+# 支持
 1985-04-12T23:20:50.12345678912345Z
 1985-04-12T23:20:50Z
 1985-04-12T23:20:50.0Z
 1985-04-12T23:20:50.123+00:00
 1985-04-12T23:20:50.123-07:00
-```
+````
 
-Invalid examples:
+无效示例：
 
 ```text
 1985-04-12
@@ -383,132 +383,132 @@ Invalid examples:
 1985-04-12T23:20:50.123+00
 1985-04-12T23:20:50.123+0000
 
-# ISO-8601 strict capitalization
+# ISO-8601 严格大小写
 1985-04-12t23:20:50.123Z
 1985-04-12T23:20:50.123z
 
-# RFC-3339, but not ISO-8601
+# RFC-3339，但不是 ISO-8601
 1985-04-12T23:20:50.123-00:00
 1985-04-12 23:20:50.123Z
 
-# timezone is required
+# 需要时区
 1985-04-12T23:20:50.123
 
-# syntax looks ok, but datetime is not valid
+# 语法看起来没问题，但日期时间无效
 1985-04-12T23:99:50.123Z
 1985-00-12T23:20:50.123Z
 
-# ISO-8601, but normalizes to a negative time
+# ISO-8601，但标准化为负时间
 0000-01-01T00:00:00+01:00
-```
+````
 
 ### `uri`
 
-Flexible to any URI schema, following the generic RFC-3986 on URIs. This includes, but isn’t limited to: `did`, `https`, `wss`, `ipfs` (for CIDs), `dns`, and of course `at`.
-Maximum length in Lexicons is 8 KBytes.
+灵活适用于任何 URI 模式，遵循 URI 上的通用 RFC-3986。这包括但不限于：“did”、“https”、“wss”、“ipfs”（用于 CID）、“dns”，当然还有“at”。
+词典中的最大长度为 8 KB。
 
-### `language`
+### `语言`
 
-An [IETF Language Tag](https://en.wikipedia.org/wiki/IETF_language_tag) string, compliant with [BCP 47](https://www.rfc-editor.org/info/bcp47), defined in [RFC 5646](https://www.rfc-editor.org/rfc/rfc5646.txt) ("Tags for Identifying Languages"). This is the same standard used to identify languages in HTTP, HTML, and other web standards. The Lexicon string must validate as a "well-formed" language tag, as defined in the RFC. Clients should ignore language strings which are "well-formed" but not "valid" according to the RFC.
+[IETF 语言标签](https://en.wikipedia.org/wiki/IETF_language_tag) 字符串，符合 [BCP 47](https://www.rfc-editor.org/info/bcp47)，在 [RFC 5646](https://www.rfc-editor.org/rfc/rfc5646.txt) 中定义（“用于识别语言的标签”）。这与 HTTP、HTML 和其他 Web 标准中用于识别语言的标准相同。 Lexicon 字符串必须验证为“格式良好”的语言标记，如 RFC 中所定义。根据 RFC，客户端应忽略“格式良好”但不“有效”的语言字符串。
 
-As specified in the RFC, ISO 639 two-character and three-character language codes can be used on their own, lower-cased, such as `ja` (Japanese) or `ban` (Balinese). Regional sub-tags can be added, like `pt-BR` (Brazilian Portuguese). Additional subtags can also be added, such as `hy-Latn-IT-arevela`.
+根据 RFC 中的规定，ISO 639 两字符和三字符语言代码可以单独使用小写字母，例如“ja”（日语）或“ban”（巴厘岛语）。可以添加区域子标签，例如“pt-BR”（巴西葡萄牙语）。还可以添加其他子标签，例如“hy-Latn-IT-arevela”。
 
-Language codes generally need to be parsed, normalized, and matched semantically, not simply string-compared. For example, a search engine might simplify language tags to ISO 639 codes for indexing and filtering, while a client application (user agent) would retain the full language code for presentation (text rendering) locally.
+语言代码通常需要进行解析、规范化和语义匹配，而不是简单的字符串比较。例如，搜索引擎可能会将语言标签简化为 ISO 639 代码以进行索引和过滤，而客户端应用程序（用户代理）将保留完整的语言代码以在本地呈现（文本呈现）。
 
-## When to use `$type`
+## 何时使用 `$type`
 
-Data objects sometimes include a `$type` field which indicates their Lexicon type. The general principle is that this field needs to be included any time there could be ambiguity about the content type when validating data.
+数据对象有时包含一个“$type”字段来指示它们的词典类型。一般原则是，在验证数据时，只要内容类型可能存在歧义，就需要包含此字段。
 
-The specific rules are:
+具体规则是：
 
-- `record` objects must always include `$type`. While the type is often known from context (eg, the collection part of the path for records stored in a repository), record objects can also be passed around outside of repositories and need to be self-describing
-- `union` variants must always include `$type`, except at the top level of `subscription` messages
+- `record` 对象必须始终包含 `$type`。虽然类型通常从上下文中得知（例如，存储在存储库中的记录的路径的集合部分），但记录对象也可以在存储库外部传递，并且需要自描述
+- “union”变体必须始终包含“$type”，除了“订阅”消息的顶层
 
-Note that `blob` objects always include `$type`, which allows generic processing.
+请注意，“blob”对象始终包含“$type”，它允许通用处理。
 
-As a reminder, `main` types must be referenced in `$type` fields as just the NSID, not including a `#main` suffix.
+提醒一下，“main”类型必须在“$type”字段中引用为 NSID，不包括“#main”后缀。
 
-## Validation Options
+## 验证选项
 
-A PDS has three Lexicon validation options when creating or updating records:
+创建或更新记录时，PDS 具有三个词典验证选项：
 
-- Explicit validation required: the record must be validated against a Lexicon schema. If the PDS does not know of the Lexicon, and/or can not resolve it on demand, the record creation fails.
-- Explicit **no** validation: the record is not validated against any Lexicon, even if the PDS knows the Lexicon locally. The record still has to pass data validation rules (eg, no malformed blob objects at any nested depth).
-- Optimistic validation (default if no explicit argument): if the PDS knows the record Lexicon, it validates. If the PDS does not know it, and can't resolve it (or does not do live validation), the record is allowed to be created. This is also referred to as "Fail-Open".
+- 需要显式验证：记录必须根据 Lexicon 模式进行验证。如果 PDS 不知道词典，和/或无法按需解析它，则记录创建失败。
+- 显式**无** 验证：记录不会针对任何词典进行验证，即使 PDS 知道本地词典。该记录仍然必须通过数据验证规则（例如，在任何嵌套深度都没有格式错误的 blob 对象）。
+- 乐观验证（如果没有显式参数则默认）：如果 PDS 知道记录 Lexicon，则它会验证。如果 PDS 不知道并且无法解析它（或不进行实时验证），则允许创建记录。这也称为“故障打开”。
 
-In Go, this is implemented by setting `Validate` to `true` or `false` on the `CreateRecord` or `UpdateRecord` options struct, or leaving it unset (`nil`) for optimistic validation.
+在 Go 中，这是通过在“CreateRecord”或“UpdateRecord”选项结构上将“Validate”设置为“true”或“false”来实现的，或者将其保留为未设置（“nil”）以进行乐观验证。
 
-In TypeScript, this is implemented by setting `validate` to `true` or `false` on the `createRecord` or `updateRecord` options object, or leaving it unset (`undefined`) for optimistic validation.
+在 TypeScript 中，这是通过在“createRecord”或“updateRecord”选项对象上将“validate”设置为“true”或“false”来实现的，或者将其保留为未设置（“undefined”）以进行乐观验证。
 
-A flag in the success response from the PDS will indicate whether Lexicon validation happened.
+PDS 的成功响应中的标志将指示 Lexicon 验证是否发生。
 
-## Lexicon Evolution
+## 词典演变
 
-Lexicons are allowed to change over time, within some bounds to ensure both forwards and backwards compatibility. The basic principle is that all old data must still be valid under the updated Lexicon, and new data must be valid under the old Lexicon.
+词典允许在一定范围内随时间变化，以确保向前和向后兼容性。基本原则是所有旧数据在更新后的词典中必须仍然有效，并且新数据必须在旧词典中有效。
 
-- Any new fields must be optional
-- Non-optional fields can not be removed. A best practice is to retain all fields in the Lexicon and mark them as deprecated if they are no longer used.
-- Types can not change
-- Fields can not be renamed
+- 任何新字段都必须是可选的
+- 非可选字段无法删除。最佳实践是保留词典中的所有字段，并在不再使用时将其标记为已弃用。
+- 类型不能改变
+- 字段不能重命名
 
-If larger breaking changes are necessary, a new Lexicon name must be used.
+如果需要进行较大的重大更改，则必须使用新的词典名称。
 
-It can be ambiguous when a Lexicon has been published and becomes "set in stone". At a minimum, public adoption and implementation by a third party, even without explicit permission, indicates that the Lexicon has been released and should not break compatibility. A best practice is to clearly indicate in the Lexicon type name any experimental or development status. Eg, `com.corp.experimental.newRecord`.
+当词典出版并成为“一成不变”时，它可能会含糊不清。至少，即使没有明确许可，第三方的公开采用和实施也表明词典已经发布并且不应破坏兼容性。最佳实践是在词典类型名称中明确指示任何实验或开发状态。例如，“com.corp.experimental.newRecord”。
 
-## Authority and Control
+## 权限和控制
 
-The authority for a Lexicon is determined by the NSID, and rooted in DNS control of the domain authority. That authority has ultimate control over the Lexicon definition, and responsibility for maintenance and distribution of Lexicon schema definitions.
+词典的权限由 NSID 确定，并植根于域权限的 DNS 控制。该机构对 Lexicon 定义拥有最终控制权，并负责维护和分发 Lexicon 模式定义。
 
-In a crisis, such as unintentional loss of DNS control to a bad actor, the protocol ecosystem could decide to disregard this chain of authority. This should only be done in exceptional circumstances, and not as a mechanism to subvert an active authority. The primary mechanism for resolving protocol disputes is to fork Lexicons in to a new namespace.
+在危机中，例如不良行为者无意中失去了 DNS 控制权，协议生态系统可能会决定忽视这一权力链。这只应在特殊情况下进行，而不是作为颠覆活跃权威的机制。解决协议争议的主要机制是将 Lexicons 分叉到新的命名空间中。
 
-Protocol implementations should generally consider data which fails to validate against the Lexicon to be entirely invalid, and should not try to repair or do partial processing on the individual piece of data.
+协议实现通常应将未能根据词典进行验证的数据视为完全无效，并且不应尝试修复或对单个数据进行部分处理。
 
-Unexpected fields in data which otherwise conforms to the Lexicon should be ignored. When doing schema validation, they should be treated at worst as warnings. This is necessary to allow evolution of the schema by the controlling authority, and to be robust in the case of out-of-date Lexicons.
+数据中符合词典的意外字段应被忽略。在进行模式验证时，最坏的情况应该将它们视为警告。这是必要的，以允许控制机构对模式进行演变，并且在词典过时的情况下保持稳健。
 
-Third parties can technically insert any additional fields they want into data. This is not the recommended way to extend applications, but it is not specifically disallowed. One danger with this is that the Lexicon may be updated to include fields with the same field names but different types, which would make existing data invalid.
+从技术上讲，第三方可以将他们想要的任何附加字段插入到数据中。这不是扩展应用程序的推荐方法，但也没有明确禁止。这样做的一个危险是词典可能会更新以包含具有相同字段名称但不同类型的字段，这将使现有数据无效。
 
-## Lexicon Publication and Resolution
+## 词典发布和解决
 
-Lexicon schemas are published publicly as records in atproto repositories, using the `com.atproto.lexicon.schema` type. The domain name authority for [NSIDs](/specs/nsid) to specific atproto repositories (identified by [DID](/specs/did) is linked by a DNS TXT record (`_lexicon`), similar to but distinct from the [handle resolution](/specs/handle) system.
+词典模式使用“com.atproto.lexicon.schema”类型作为 atproto 存储库中的记录公开发布。 [NSID](/specs/nsid) 到特定 atproto 存储库（由 [DID](/specs/did）标识）的域名权限通过 DNS TXT 记录 (`_lexicon`) 链接，类似于但不同于 [句柄解析](/specs/handle) 系统。
 
-The `com.atproto.lexicon.schema` Lexicon itself is very minimal: it only requires the `lexicon` integer field, which must be `1` for this version of the Lexicon language. In practice, same fields as [Lexicon Files](#lexicon-files) should be included, along with `$type`. The record key is the NSID of the schema.
+`com.atproto.lexicon.schema` Lexicon 本身非常小：它只需要 `lexicon` 整数字段，对于这个版本的 Lexicon 语言来说，该字段必须为 `1`。实际上，应包含与 [Lexicon Files](#lexicon-files) 相同的字段以及 `$type`。记录键是模式的 NSID。
 
-A summary of record fields:
+记录字段汇总：
 
-- `$type`: must be `com.atproto.lexicon.schema` (as with all atproto records)
-- `lexicon`: integer, indicates the overall version of the Lexicon (currently `1`)
-- `id`: the NSID of this Lexicon. Must be a simple NSID (no fragment), and must match the record key
-- `defs`: the schema definitions themselves, as a map-of-objects. Names should not include a `#` prefix.
-- `description`: optional description of the overall schema; though descriptions are best included on individual defs, not the overall schema.
+- `$type`：必须是 `com.atproto.lexicon.schema` （与所有 atproto 记录一样）
+- `lexicon`：整数，表示 Lexicon 的整体版本（当前为 `1`）
+- `id`：该词典的 NSID。必须是一个简单的NSID（无片段），并且必须与记录键匹配
+- `defs`：模式定义本身，作为对象映射。名称不应包含“#”前缀。
+- `description`：整体模式的可选描述；尽管描述最好包含在单个定义中，而不是整体架构中。
 
-The `com.atproto.lexicon.schema` meta-schema is somewhat unlike other Lexicons, in that it is defined and governed as part of the protocol. Future versions of the language and protocol might not follow the evolution rules. It is an intentional decision to not express the Lexicon schema language itself recursively, using the schema language.
+“com.atproto.lexicon.schema”元模式与其他词典有些不同，因为它是作为协议的一部分进行定义和管理的。未来版本的语言和协议可能不遵循演化规则。不使用模式语言递归地表达 Lexicon 模式语言本身是有意的决定。
 
-Authority for NSID namespaces is done at the "group" level, meaning that all NSIDs which differ only by the final "name" part are all published in the same repository. Lexicon resolution of NSIDs is not hierarchical: DNS TXT records must be created for each authority section, and resolvers should not recurse up or down the DNS hierarchy looking for TXT records.
+NSID 命名空间的权限是在“组”级别完成的，这意味着所有仅最终“名称”部分不同的 NSID 都发布在同一个存储库中。 NSID 的词典解析不是分层的：必须为每个权限部分创建 DNS TXT 记录，并且解析器不应在 DNS 层次结构中上下递归查找 TXT 记录。
 
-For example, an NSID `app.toy.record` would resolve via `_lexicon.toy.app`.
+例如，NSID“app.toy.record”将通过“_lexicon.toy.app”解析。
 
-As a more complex example, the NSID `edu.university.dept.lab.blogging.getBlogPost` has a "name" `getBlogPost`. Removing the name and reversing the rest of the NSID gives an "authority domain name" of `blogging.lab.dept.university.edu`. To link the authority to a specific DID (say `did:plc:ewvi7nxzyoun6zhxrhs64oiz`), a DNS TXT record with the name `_lexicon.blogging.lab.dept.university.edu` and value `did=did:plc:ewvi7nxzyoun6zhxrhs64oiz` (note the `did=` prefix)  would be created. Then a record with collection `com.atproto.lexicon.schema` and record-key `edu.university.dept.lab.blogging.getBlogPost` would be created in that account's repository.
+作为一个更复杂的示例，NSID `edu.university.dept.lab.blogging.getBlogPost` 有一个“名称”“getBlogPost”。删除名称并反转 NSID 的其余部分会得到“blogging.lab.dept.university.edu”的“权威域名”。要将权限链接到特定的 DID（例如“did:plc:ewvi7nxzyoun6zhxrhs64oiz”），将创建一个名为“_lexicon.blogging.lab.dept.university.edu”和值“did=did:plc:ewvi7nxzyoun6zhxrhs64oiz”（注意“did=”前缀）的 DNS TXT 记录。然后，将在该帐户的存储库中创建包含集合“com.atproto.lexicon.schema”和记录键“edu.university.dept.lab.blogging.getBlogPost”的记录。
 
-A resolving service would start with the NSID (`edu.university.dept.lab.blogging.getBlogPost`) and do a DNS TXT resolution for `_lexicon.blogging.lab.dept.university.edu`. Finding the DID, it would proceed with atproto DID resolution, look for a PDS, and then fetch the relevant record. The overall AT-URI for the record would be `at://did:plc:ewvi7nxzyoun6zhxrhs64oiz/com.atproto.lexicon.schema/edu.university.dept.lab.blogging.getBlogPost`.
+解析服务将从 NSID（“edu.university.dept.lab.blogging.getBlogPost”）开始，并为“_lexicon.blogging.lab.dept.university.edu”执行 DNS TXT 解析。找到DID，就会进行atproto DID解析，寻找PDS，然后获取相关记录。记录的总体 AT-URI 为“at://did:plc:ewvi7nxzyoun6zhxrhs64oiz/com.atproto.lexicon.schema/edu.university.dept.lab.blogging.getBlogPost”。
 
-If the DNS TXT resolution for `_lexicon.blogging.lab.dept.university.edu` failed, the resolving service would *NOT* try `_lexicon.lab.dept.university.edu` or `_lexicon.getBlogPost.blogging.lab.dept.university.edu` or `_lexicon.university.edu`, or any other domain name. The Lexicon resolution would simply fail.
+如果“_lexicon.blogging.lab.dept.university.edu”的 DNS TXT 解析失败，解析服务将*不会*尝试“_lexicon.lab.dept.university.edu”或“_lexicon.getBlogPost.blogging.lab.dept.university.edu”或“_lexicon.university.edu”或任何其他域名。词典决议根本就不会成功。
 
-If another NSID `edu.university.dept.lab.blogging.getBlogComments` was created, it would have the same authority name, and must be published in the same atproto repository (with a different record key). If a Lexicon for `edu.university.dept.lab.gallery.photo` was published, a new DNS TXT record would be required (`_lexicon.gallery.lab.dept.university.edu`; it could point at the same repository (DID), or a different repository.
+如果创建了另一个 NSID `edu.university.dept.lab.blogging.getBlogComments`，它将具有相同的权限名称，并且必须在同一个 atproto 存储库中发布（使用不同的记录密钥）。如果发布了“edu.university.dept.lab.gallery.photo”的词典，则需要新的 DNS TXT 记录（“_lexicon.gallery.lab.dept.university.edu”；它可以指向同一存储库 (DID) 或不同的存储库。
 
-A single repository can host Lexicons for multiple authority domains, possibly across multiple registered domains and TLDs. Resolution DNS records can change over time, moving schema resolution to different repositories, though it may take time for DNS and cache changes to propagate.
+单个存储库可以托管多个权威域的词典，可能跨多个注册域和 TLD。解析 DNS 记录可能会随着时间的推移而发生变化，从而将架构解析移动到不同的存储库，尽管 DNS 和缓存更改可能需要一些时间才能传播。
 
-Note that Lexicon record operations are broadcast over repository event streams ("firehose"), but that DNS resolution changes do not (unlike handle changes). Resolving services should not cache DNS resolution results for long time periods.
+请注意，Lexicon 记录操作通过存储库事件流（“firehose”）进行广播，但 DNS 解析更改不会（与句柄更改不同）。解析服务不应长时间缓存 DNS 解析结果。
 
-## Usage and Implementation Guidelines
+## 使用和实施指南
 
-It should be possible to translate Lexicon schemas to JSON Schema or OpenAPI and use tools and libraries from those ecosystems to work with atproto data in JSON format.
+应该可以将 Lexicon 模式转换为 JSON 模式或 OpenAPI，并使用这些生态系统中的工具和库来处理 JSON 格式的 atproto 数据。
 
-Implementations which serialize and deserialize data from JSON or CBOR into structures derived from specific Lexicons should be aware of the risk of "clobbering" unexpected fields. For example, if a Lexicon is updated to add a new (optional) field, old implementations would not be aware of that field, and might accidentally strip the data when de-serializing and then re-serializing. Depending on the context, one way to avoid this problem is to retain any "extra" fields, or to pass-through the original data object instead of re-serializing it.
+将 JSON 或 CBOR 中的数据序列化和反序列化为从特定词典派生的结构的实现应该意识到“破坏”意外字段的风险。例如，如果更新 Lexicon 以添加新的（可选）字段，旧的实现将不会意识到该字段，并且可能在反序列化然后重新序列化时意外地剥离数据。根据上下文，避免此问题的一种方法是保留任何“额外”字段，或者传递原始数据对象而不是重新序列化它。
 
-## Possible Future Changes
+## 未来可能的变化
 
-The validation rules for unexpected additional fields may change. For example, a mechanism for Lexicons to indicate that the schema is "closed" and unexpected fields are not allowed, or a convention around field name prefixes (`x-`) to indicate unofficial extension.
+意外附加字段的验证规则可能会更改。例如，词典的一种机制表明模式是“封闭的”并且不允许意外的字段，或者围绕字段名称前缀（“x-”）的约定来指示非官方扩展。
 
-## Lexicon Style Guide
+## 词典风格指南
 
-For an in-depth style guide for designing Lexicons, see the [Lexicon Style Guide](/guides/lexicon-style-guide).
+有关设计词典的深入风格指南，请参阅[词典风格指南](/guides/lexicon-style-guide)。
