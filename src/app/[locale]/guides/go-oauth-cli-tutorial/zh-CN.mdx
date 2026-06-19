@@ -9,99 +9,99 @@ import S08 from './_snippets/08-run-command.mdx'
 import S09 from './_snippets/09-output-example.mdx'
 
 export const header = {
-  title: 'OAuth with Go Tutorial',
-  description: 'Authenticate with atproto OAuth from a Go app',
+  title: 'Go 教程中的 OAuth',
+  description: '从 Go 应用程序使用 atproto OAuth 进行身份验证',
 }
 
-In this tutorial, you'll build a minimal Go tool that authenticates a user with [atproto OAuth](/guides/auth) and fetches their session info. The entire app fits in a single file.
+在本教程中，您将构建一个最小的 Go 工具，用于使用 [atproto OAuth](/guides/auth) 对用户进行身份验证并获取其会话信息。整个应用程序适合一个文件。
 
-This is a good starting point for understanding how OAuth works in AT Protocol. For a TypeScript version, see the [OAuth with Node Tutorial](/guides/oauth-cli-tutorial). For building production web apps, see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
+这是了解 OAuth 在 AT 协议中如何工作的一个很好的起点。对于 TypeScript 版本，请参阅 [OAuth with Node 教程](/guides/oauth-cli-tutorial)。要构建生产 Web 应用程序，请参阅 [OAuth with NextJS 教程](/guides/oauth-tutorial)。
 
-## Prerequisites
+## 先决条件
 
-You should have a working understanding of Go.
+您应该对 Go 有一个有效的理解。
 
-You should have installed:
-- Go 1.24+
+您应该已经安装：
+- 去 1.24+
 
-On platforms supported by [homebrew](https://brew.sh/), you can install it with:
+在 [homebrew](https://brew.sh/) 支持的平台上，您可以使用以下命令安装它：
 
 <S01 />
 
-You should also have an atproto handle to test with.
+您还应该有一个 atproto 句柄来进行测试。
 
-## Part 1: Project Setup
+## 第 1 部分：项目设置
 
-Create a new Go module and install the [Go SDK](https://github.com/bluesky-social/indigo):
+创建一个新的Go模块并安装[Go SDK](https://github.com/bluesky-social/indigo)：
 
 <S02 />
 
-That's it — the Go SDK includes everything you need for OAuth, including an in-memory session store for development.
+就是这样 - Go SDK 包含 OAuth 所需的一切，包括用于开发的内存中会话存储。
 
-## Part 2: Build the OAuth Client
+## 第 2 部分：构建 OAuth 客户端
 
-Create `main.go`. Start with the imports and the OAuth client setup:
+创建“main.go”。从导入和 OAuth 客户端设置开始：
 
 <S03 />
 
-Now add the `run` function. First, set up a callback server on a random port, then configure the OAuth client:
+现在添加“run”函数。首先，在随机端口上设置回调服务器，然后配置 OAuth 客户端：
 
 <S04 />
 
-`NewLocalhostConfig` sets up a loopback client.
+`NewLocalhostConfig` 设置一个环回客户端。
 
 <Note>
-OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:PORT/callback`) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+OAuth 环回的工作原理是使用特殊的重定向 URI（例如“http://127.0.0.1:PORT/callback”）将授权代码直接发送回应用程序，该应用程序侦听本地端口，避免基于浏览器的回调并为令牌交换启用安全、直接的通信。应用程序打开一个本地侦听器，而不是 Web 重定向，您可以在浏览器中进行身份验证，服务器重定向回应用程序的本地 URI，让应用程序获取代码并将其交换为令牌。它对于开发场景特别有用。
 </Note>
 
-`NewMemStore` provides in-memory session storage for development.
+`NewMemStore` 为开发提供内存会话存储。
 
-## Part 3: Login Flow
+## 第 3 部分：登录流程
 
-Continue the `run` function with the login flow. This resolves the handle, opens the browser, and waits for the callback:
+继续使用登录流程的“run”函数。这将解析句柄，打开浏览器，并等待回调：
 
 <S05 />
 
-The flow works like this:
+流程如下：
 
-1. `StartAuthFlow` resolves the user's handle, discovers their PDS, sends a [Pushed Authorization Request (PAR)](/guides/permission-sets#requesting-permissions), and returns an authorization URL.
-2. The user's browser opens to a consent screen.
+1. `StartAuthFlow` 解析用户的句柄，发现其 PDS，发送 [推送授权请求 (PAR)](/guides/permission-sets#requesting-permissions)，并返回授权 URL。
+2. 用户的浏览器将打开一个同意屏幕。
 3. After the user approves, their PDS redirects back to `http://127.0.0.1:<port>/callback` with an authorization code.
 
-## Part 4: Use the Session
+## 第 4 部分：使用会话
 
-Complete the `run` function by exchanging the callback for a session and making an authenticated API call:
+通过将回调交换为会话并进行经过身份验证的 API 调用来完成“run”函数：
 
 <S06 />
 
-`ProcessCallback` exchanges the authorization code for tokens. `ResumeSession` wraps those tokens in a session that handles DPoP signing and token refresh automatically. `APIClient()` returns an HTTP client pre-configured with the user's credentials — you can use it to make any [XRPC](/specs/xrpc) call.
+`ProcessCallback` 将授权代码交换为令牌。 `ResumeSession` 将这些令牌包装在自动处理 DPoP 签名和令牌刷新的会话中。 `APIClient()` 返回一个预先配置了用户凭据的 HTTP 客户端 - 您可以使用它来进行任何 [XRPC](/specs/xrpc) 调用。
 
-## Part 5: Helper Functions
+## 第 5 部分：辅助函数
 
-Add the callback server and browser-opening helpers:
+添加回调服务器和浏览器打开助手：
 
 <S07 />
 
-The callback server listens on `127.0.0.1:0`, which tells the OS to assign any available port. When the callback arrives, it sends the query parameters through a channel back to the main flow and shuts itself down.
+回调服务器监听“127.0.0.1:0”，告诉操作系统分配任何可用端口。当回调到达时，它通过通道将查询参数发送回主流程，然后自行关闭。
 
-## Part 6: Run It
+## 第 6 部分：运行它
 
-Run your CLI tool, passing your handle as an argument:
+运行 CLI 工具，将句柄作为参数传递：
 
 <S08 />
 
-Your browser should open to a consent screen. After you approve, the CLI will print your session info:
+您的浏览器应该打开一个同意屏幕。批准后，CLI 将打印您的会话信息：
 
 <S09 />
 
-## Conclusion
+＃＃ 结论
 
-You've built a minimal OAuth CLI tool in Go that authenticates with the AT Protocol. The full source is about 120 lines of code.
+您已经在 Go 中构建了一个最小的 OAuth CLI 工具，可以使用 AT 协议进行身份验证。完整源代码大约有 120 行代码。
 
-A few things to keep in mind:
+需要记住以下几点：
 
-- **This is for local development.** The localhost client won't work in production. For a production-ready Go example with SQLite persistence and multiple commands, see the [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app) in the Cookbook.
-- **Sessions are in-memory.** Every run requires re-authorization. The Cookbook example shows how to persist sessions with SQLite.
-- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/permission-sets).
+- **这适用于本地开发。** 本地主机客户端无法在生产环境中工作。有关具有 SQLite 持久性和多个命令的生产就绪型 Go 示例，请参阅 Cookbook 中的 [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app)。
+- **会话位于内存中。** 每次运行都需要重新授权。 Cookbook 示例展示了如何使用 SQLite 保留会话。
+- **范围。** 本教程仅请求基本“atproto”范围。要代表用户读取或写入数据，您需要额外的[范围](/guides/permission-sets)。
 
-You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
+您可以在我们的 [Docs](/guides) 中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

@@ -4,13 +4,13 @@ import LoginWithPasswordGo from './_snippets/login-with-password-go.mdx'
 import ClientSessionTs from './_snippets/client-session-ts.mdx'
 
 export const header = {
-  title: 'SDK authentication',
-  description: 'Authenticating with the SDKs',
+  title: 'SDK认证',
+  description: '使用 SDK 进行身份验证',
 }
 
-## Password Authentication
+## 密码认证
 
-If you are using password auth, you should generate an [app password](/specs/xrpc#app-passwords) for your account rather than using your main account password. If you are using Bluesky, you can generate an app password in your [account settings](https://bsky.app/settings/app-passwords).
+如果您使用密码身份验证，则应该为您的帐户生成[应用程序密码](/specs/xrpc#app-passwords)，而不是使用主帐户密码。如果您使用 Bluesky，您可以在[帐户设置](https://bsky.app/settings/app-passwords) 中生成应用程序密码。
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -37,7 +37,7 @@ If you are using password auth, you should generate an [app password](/specs/xrp
   </TabPanels>
 </TabGroup>
 
-## Client Sessions
+## 客户会议
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -56,22 +56,16 @@ If you are using password auth, you should generate an [app password](/specs/xrp
   </TabPanels>
 </TabGroup>
 
-From here, you can go directly to [making API requests](/guides/reads-and-writes).
+从这里，您可以直接转到[发出 API 请求](/guides/reads-and-writes)。
 
-## API Tokens
+## API令牌
 
-Rate limits for logging in are generally lower than for other API operations. Calling the login method multiple times in a short period may trigger rate limits. You only need to call the login method once per session to authenticate.
+登录的速率限制通常低于其他 API 操作的速率限制。短时间内多次调用登录方法可能会触发限速。您只需在每个会话中调用一次登录方法即可进行身份验证。
 
-The `com.atproto.server.createSession` API endpoint called by login methods returns a session object containing two API tokens:
-* `accessJwt`: an access token which is used to authenticate requests but expires after a few minutes
-* `refreshJwt`: a refresh token which lasts longer and is used only to update the session with a new access token
+登录方法调用的“com.atproto.server.createSession” API 端点返回一个包含两个 API 令牌的会话对象：
+* `accessJwt`：用于验证请求的访问令牌，但几分钟后就会过期
+* `refreshJwt`：刷新令牌，持续时间更长，仅用于使用新的访问令牌更新会话
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-- [Auth](/guides/auth)
-- [About OAuth](/guides/about-oauth)
-- [Permission Requests](/guides/permission-requests)
-- [Permission Sets](/guides/permission-sets)
-- [OAuth Patterns](/guides/oauth-patterns)
-- [OAuth spec](/specs/oauth)
-- [Permissions spec](/specs/permission)
+- [授权](/guides/auth)

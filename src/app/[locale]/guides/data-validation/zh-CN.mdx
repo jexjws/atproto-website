@@ -1,53 +1,47 @@
 export const metadata = {
-  title: 'Data Validation',
+  title: '数据验证',
   description:
     'Expectations around recommended data limits and validation',
 }
 
-# Data Validation
+# 数据验证
 
-Some software does not need to worry much about Bluesky or atproto schema validation. For example, client apps and bots can generally assume that data they receive from the Bluesky API is valid, and when they try to create records the PDS is responsible for double-checking schema validation.
+有些软件不需要太担心 Bluesky 或 atproto 模式验证。例如，客户端应用程序和机器人通常可以假设他们从 Bluesky API 接收的数据是有效的，并且当他们尝试创建记录时，PDS 负责双重检查架构验证。
 
-Software which consumes directly from the event stream (firehose) should be more careful. And developers designing new tools or clever hacks should be aware of some expectations and hard limits around data validation.
+直接从事件流（firehose）消费的软件应该更加小心。设计新工具或巧妙破解的开发人员应该意识到有关数据验证的一些期望和硬性限制。
 
-If an individual record fails to validate for any reason, the entire record should be ignored, but other records from the same repository should be processed. If there is a problem with the repository commit data or repository structure ("MST"), the repository should be marked as invalid, but old content does not need to be de-indexed or purged. As soon as a new valid commit is received, the repository should be marked valid again. This logic is mostly relevant to feed generators, AppViews, and moderation services, all of which may be consuming from the firehose.
-
-
-## Recommended Data Limits
-
-The following are informal guidelines, mostly to communicate order-of-magnitude expectations, and are likely to evolve over time. They are not part of the atproto specification, but if you are pushing the limits here, you may encounter interoperability issues now or in the future.
-
-**CBOR Record Size:** try to keep individual records to a few dozen KBytes. If you need to store more data, even text data, consider using a blob instead. A reasonable maximum record size limit (`MAX_CBOR_RECORD_SIZE`) is 1 MiByte (1 mebibyte, or 1,048,576 bytes). Note that as of August 2025, the `subscribeRepos` Lexicon limits `#commit` message block size to 2,000,000 bytes (not mebibytes), so only a single 1 MiByte record can be created or updated per commit.
-
-Note that event stream (firehose) "frames" may consist of multiple records, and larger limits are recommended for CBOR parsing in general, on the order of 4-5 MBytes.
-
-**JSON Record Size:** the CBOR encoding is "canonical" for records, so focusing only on that encoding would make sense. But sometimes it is good to also have a limit on JSON encoding size. A reasonable limit (`MAX_JSON_RECORD_SIZE`) is 2 MiByte (2,097,152 bytes).
-
-**General string length:** an overall length limit on strings within a record, including both those with and without Lexicon-specified string lengths. Measured as bytes (UTF-8 encoded). Should try to keep these to tens of KBytes at most. For an upper-bound limit (`MAX_RECORD_STRING_LEN`), reasonable to just rely on the overall CBOR record size limit. Notably, some early implementations had a 8 KByte (8192 bytes) limit.
-
-**General `bytes` length:** same as the string limit, but for binary data (`MAX_RECORD_BYTES_LEN`). Recommend relying on the overall CBOR record size limit. As with record size overall, if more than a few dozen KBytes are needed, recommendation is to use blobs.
-
-**CID binary encoding size:** recommend an overall limit (`MAX_CID_BYTES`) of 100 bytes.
-
-**Container nesting depth:** for example, how many layers of map inside an array inside an array, etc. If your CBOR or JSON parsing library supports a limit, the default is probably fine. A reasonable limit (`MAX_CBOR_NESTED_LEVELS`) is 32 levels of nesting.
-
-**Container element count:** for example, how many keys in a map, or elements in an array. If your CBOR or JSON parsing library supports a limit, the default is probably fine. A reasonable limit (`MAX_CBOR_CONTAINER_LEN`) is 128 x 1024 = 131,072 elements.
-
-**Object key string length:** for example, how many bytes (UTF-8 encoded) are allowed in any key of an object. If your CBOR or JSON parsing library supports a limit, the default is probably fine. A reasonable limit (`MAX_CBOR_OBJECT_KEY_LEN`) is 8 KByte (8192).
-
-**Integers:** as mentioned [in the atproto specification](https://atproto.com/specs/data-model#data-types), it is a strongly recommended best practice to keep integer values "64-bit float safe", meaning restricting them to 53 bits of precision. This ensures compatibility with JavaScript without loss of numeric precision. The specific values are `MAX_SAFE_INTEGER: 9007199254740991` and `MIN_SAFE_INTEGER: -9007199254740991`.
+如果单个记录由于任何原因未能验证，则应忽略整个记录，但应处理同一存储库中的其他记录。如果存储库提交数据或存储库结构（“MST”）存在问题，则应将存储库标记为无效，但旧内容不需要取消索引或清除。一旦收到新的有效提交，存储库就应再次标记为有效。此逻辑主要与 feed 生成器、AppView 和审核服务相关，所有这些都可能从 Firehose 中消耗。
 
 
-## Validation Without Schema
+## 建议的数据限制
 
-The [atproto Lexicon system](https://atproto.com/specs/lexicon) describes a data model and schema language for validating data against a known schema. But what if you are processing data where the schema isn't known or present?
+以下是非正式的指导方针，主要是为了传达数量级的期望，并且可能会随着时间的推移而演变。它们不是 atproto 规范的一部分，但如果您在这里突破限制，您现在或将来可能会遇到互操作性问题。
 
-Here are some guidelines, by data type:
+**CBOR 记录大小：** 尝试将单个记录保持在几十 KB。如果您需要存储更多数据，甚至是文本数据，请考虑使用 blob。合理的最大记录大小限制（MAX_CBOR_RECORD_SIZE）为 1 MiByte（1 mebibyte，或 1,048,576 字节）。请注意，截至 2025 年 8 月，“subscribeRepos”词典将“#commit”消息块大小限制为 2,000,000 字节（不是兆字节），因此每次提交只能创建或更新一条 1 MiByte 记录。
 
-- `integer`: should have values within safe limits (discussed in limits section)
-- `string`: must be valid UTF-8 encoding. No particular Unicode normalization is expected or required. Empty strings are allowed, but it is preferred to take advantage of nullable or optional fields if possible.
-- `bytes`: may be empty (length 0)
-- `cid-link`: as discussed in the protocol specification: must be CIDv1; multibase should be raw in CBOR encoding (type `0x00`); multicodec should be `dag-cbor` (`0x71`) or `raw` (`0x55`); and multihash type SHA-256 is encouraged (but not strictly required)
-- `array`: may have elements of heterogeneous type, because of the flexibility Lexicon unions provide.
-- `object`: key must all be strings, and follow similar data requirements to `string` fields. Empty key strings are not allowed. Key names starting with `$` are reserved for protocol use (for example, `$bytes` and `$type`)
-- `blob`: the `ref` must be a valid `cid-link`, and have `raw` multicodec (not `dag-cbor`). `size` may not be negative. `mimeType` can not be an empty string. The "legacy" blob format should be supported for reading, but new records created must be the regular blob format. Note that supprting additional reference types (eg, alternative multicodecs or hash types) are a likely evolution and extension point for the protocol in the future, but the current version of the repository and data model is narrowly defined.
+请注意，事件流（消防水带）“帧”可能由多个记录组成，一般建议对 CBOR 解析设置更大的限制，大约为 4-5 MB。
+
+**JSON 记录大小：** CBOR 编码对于记录来说是“规范的”，因此仅关注该编码是有意义的。但有时对 JSON 编码大小也有限制是件好事。合理的限制（“MAX_JSON_RECORD_SIZE”）是 2 MiByte（2,097,152 字节）。
+
+**一般字符串长度：** 记录中字符串的总长度限制，包括具有和不具有 Lexicon 指定的字符串长度的字符串。以字节为单位（UTF-8 编码）。应尽量将这些大小控制在最多数十 KB。对于上限 (MAX_RECORD_STRING_LEN)，仅依赖整体 CBOR 记录大小限制是合理的。值得注意的是，一些早期的实现有 8 KB（8192 字节）的限制。
+
+**一般“字节”长度：** 与字符串限制相同，但适用于二进制数据（“MAX_RECORD_BYTES_LEN”）。建议依赖整体 CBOR 记录大小限制。与总体记录大小一样，如果需要超过几十 KB，建议使用 blob。
+
+**CID 二进制编码大小：** 建议总体限制 (`MAX_CID_BYTES`) 为 100 字节。
+
+**容器嵌套深度：** 例如，一个数组内部有多少层map等。如果你的CBOR或JSON解析库支持限制，默认的可能就可以了。合理的限制（MAX_CBOR_NESTED_LEVELS）是 32 层嵌套。
+
+**容器元素计数：** 例如，映射中有多少个键，或数组中有多少个元素。如果您的 CBOR 或 JSON 解析库支持限制，则默认值可能就可以了。合理的限制 (MAX_CBOR_CONTAINER_LEN) 是 128 x 1024 = 131,072 个元素。
+
+**对象密钥字符串长度：** 例如，对象的任何密钥中允许有多少个字节（UTF-8编码）。如果您的 CBOR 或 JSON 解析库支持限制，则默认值可能就可以了。合理的限制 (MAX_CBOR_OBJECT_KEY_LEN) 是 8 KB (8192)。
+
+**整数：** 正如 [atproto 规范](https://atproto.com/specs/data-model#data-types) 中提到的，强烈建议保持整数值“64 位浮点安全”的最佳实践，这意味着将它们限制为 53 位精度。这确保了与 JavaScript 的兼容性，而不会损失数字精度。具体值为“MAX_SAFE_INTEGER：9007199254740991”和“MIN_SAFE_INTEGER：-9007199254740991”。
+
+
+## 无模式验证
+
+[atproto Lexicon 系统](https://atproto.com/specs/lexicon) 描述了一种数据模型和模式语言，用于根据已知模式验证数据。但是，如果您正在处理架构未知或不存在的数据怎么办？
+
+以下是按数据类型划分的一些准则：
+
+- `integer`：应该具有安全限制内的值（在限制部分讨论）

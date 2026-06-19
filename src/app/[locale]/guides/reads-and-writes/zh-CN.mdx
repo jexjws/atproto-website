@@ -4,23 +4,23 @@ import GoImports from './_snippets/go-imports.mdx'
 import GoBlankImports from './_snippets/go-blank-imports.mdx'
 
 export const header = {
-  title: 'Reads and Writes',
-  description: 'Read and Write from the Atmosphere',
+  title: '读写操作',
+  description: '从大气中读取和写入',
 }
 
-## AT Records
+## AT记录
 
-The AT Protocol distributes user data across different nodes of your network, using the core building blocks of the web. The AT Protocol interconnects applications so that their backends share state, including user accounts and content, in individual data repositories. Many operations you'll perform when working with atproto apps involve reading and writing these data repositories.
+AT 协议使用网络的核心构建块在网络的不同节点上分发用户数据。 AT 协议将应用程序互连，以便其后端共享各个数据存储库中的状态，包括用户帐户和内容。使用 atproto 应用程序时要执行的许多操作都涉及读取和写入这些数据存储库。
 
-For more context, see [Atproto for distributed systems engineers](/articles/atproto-for-distsys-engineers) and [The Atproto Ethos](/articles/atproto-ethos).
+有关更多背景信息，请参阅[面向分布式系统工程师的 Atproto](/articles/atproto-for-distsys-engineers) 和 [Atproto Ethos](/articles/atproto-ethos)。
 
-## Prerequisites
+## 先决条件
 
-Reading and writing AT data repositories requires an authenticated client. You can authenticate with [password authentication](/guides/sdk-auth) or [OAuth](/guides/about-oauth). The guides in this section assume you have already set up an authenticated client.
+读取和写入 AT 数据存储库需要经过身份验证的客户端。您可以使用[密码身份验证](/guides/sdk-auth) 或[OAuth](/guides/about-oauth) 进行身份验证。本节中的指南假设您已经设置了经过身份验证的客户端。
 
-## API Methods
+## API方法
 
-After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to make other API requests.
+[身份验证](/guides/sdk-auth#creating-a-client)后，您将能够发出其他 API 请求。
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -56,11 +56,6 @@ After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to ma
   </TabPanels>
 </TabGroup>
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-- [Reading data](/guides/reading-data)
-- [Writing data](/guides/writing-data)
-- [Accounts and deletions](/guides/account-lifecycle)
-- [Social graph](/guides/social-graph)
-- [Record Key spec](/specs/record-key)
-- [URI scheme](/specs/at-uri-scheme)
+- [读取数据](/guides/reading-data)

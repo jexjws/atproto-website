@@ -11,13 +11,13 @@ import DeletePostTs from './_snippets/delete-post-ts.mdx'
 import DeletePostGo from './_snippets/delete-post-go.mdx'
 
 export const header = {
-  title: 'Writing Data',
-  description: 'Write AT Protocol Records',
+  title: '写入数据',
+  description: '写入AT协议记录',
 }
 
-## Writing Data
+## 写入数据
 
-Writing data — for example, by posting to a Bluesky feed — works similarly to [reading data](/guides/reading-data), but with different methods.
+写入数据（例如，通过发布到 Bluesky feed）与[读取数据](/guides/reading-data) 类似，但方法不同。
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -26,32 +26,32 @@ Writing data — for example, by posting to a Bluesky feed — works similarly t
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-To create a new record, call `client.create()` with an imported Lexicon, along with any required fields:
+要创建新记录，请使用导入的 Lexicon 以及任何必需字段调用“client.create()”：
 
 <CreatePostTs />
 
-`text` and `createdAt` are required values under the [`app.bsky.feed.post` Lexicon](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html).
+`text` 和 `createdAt` 是 [`app.bsky.feed.post` 词典](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html) 下的必需值。
 
 <Note>
-This will post using the currently-authenticated user session. If you want to post as another user, reuse [`agent.login()`](/guides/reads-and-writes#creating-a-client) to get a new user session.
+这将使用当前经过身份验证的用户会话进行发布。如果您想以其他用户身份发布，请重用 [`agent.login()`](/guides/reads-and-writes#creating-a-client) 来获取新的用户会话。
 </Note>
 
-The API will respond with the `at://` URI of the post and a content hash of the post as the `cid`:
+API 将使用帖子的“at://” URI 和帖子的内容哈希作为“cid”进行响应：
 
 <CreatePostResultTs />
     </TabPanel>
     <TabPanel value="go">
-To create a new record, call `RepoCreateRecord()` with your target Lexicon and any required fields:
+要创建新记录，请使用您的目标词典和任何必填字段调用“RepoCreateRecord()”：
 
 <CreatePostGo />
 
-`Text` and `CreatedAt` are required values under the [`app.bsky.feed.post` Lexicon](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html).
+`Text` 和 `CreatedAt` 是 [`app.bsky.feed.post` 词典](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html) 下的必需值。
 
 <Note>
-This will post using the currently-authenticated user session. If you want to post as another user, reuse [`ServerCreateSession()`](/guides/sdk-auth#creating-a-client) to get a new user session.
+这将使用当前经过身份验证的用户会话进行发布。如果您想以其他用户身份发布，请重用 [`ServerCreateSession()`](/guides/sdk-auth#creating-a-client) 来获取新的用户会话。
 </Note>
 
-The API will respond with the `at://` URI of the post and a content hash of the post as the `cid`:
+API 将使用帖子的“at://” URI 和帖子的内容哈希作为“cid”进行响应：
 
 <CreatePostResultGo />
     </TabPanel>
@@ -60,21 +60,21 @@ The API will respond with the `at://` URI of the post and a content hash of the 
 
 <CreateResponse />
 
-If you are building a client or another interface that both reads and writes data, it is important to ensure that you read your own writes using this response.
+如果您正在构建一个客户端或另一个读取和写入数据的接口，那么确保您使用此响应读取您自己的写入非常重要。
 
-## Read-after-Write
+## 先写后读
 
-Depending on how an AT app frontend is designed, a user may take some action (such as updating their profile), rapidly refresh the view, and find that their recent change is not immediately reflected in the updated response.
+根据 AT 应用程序前端的设计方式，用户可能会采取一些操作（例如更新其个人资料），快速刷新视图，并发现他们最近的更改并未立即反映在更新的响应中。
 
-This is because services such as the App View do not have transactional writes from a user's PDS. Therefore the views that they calculate are eventually consistent. In other words, a user may have created a record on their PDS that is not yet reflected in the API responses provided by the App View.
+这是因为应用程序视图等服务没有来自用户 PDS 的事务写入。因此他们计算出的观点最终是一致的。换句话说，用户可能已在其 PDS 上创建了一条记录，但该记录尚未反映在应用程序视图提供的 API 响应中。
 
-Because all requests from the application are sent to the user's PDS, the PDS is in a position to smooth over this behavior. [Our PDS distribution](https://github.com/bluesky-social/pds) provides some basic read-after-write behaviors by looking at response headers from the App View, determining if there are any new records that are not in the response, and modifying the response to reflect those new records.
+由于来自应用程序的所有请求都会发送到用户的 PDS，因此 PDS 能够平滑这种行为。 [我们的 PDS 发行版](https://github.com/bluesky-social/pds) 通过查看应用程序视图中的响应标头、确定响应中是否有任何新记录以及修改响应以反映这些新记录，提供了一些基本的先写后读行为。
 
-The App View communicates the current state of its indices by setting the `Atproto-Repo-Rev` response header. This is set by the `rev` of the most recent commit that's been indexed from the requesting user's repository. If the PDS sees this header on a response, it will search for all records that it has locally that are more recent than the provided rev and determine if they affect the App View's response.
+应用程序视图通过设置“Atproto-Repo-Rev”响应标头来传达其索引的当前状态。这是由从请求用户的存储库中索引的最近提交的“rev”设置的。如果 PDS 在响应中看到此标头，它将搜索本地拥有的比提供的版本更新的所有记录，并确定它们是否影响应用程序视图的响应。
 
-This read-after-write behavior *only* applies to records from the user making the request. Records from other users that happen to be on the same PDS will not affect the requesting user's response.
+这种先写后读行为*仅*适用于发出请求的用户的记录。来自恰好位于同一 PDS 上的其他用户的记录不会影响请求用户的响应。
 
-## Updating Records
+## 更新记录
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -83,23 +83,23 @@ This read-after-write behavior *only* applies to records from the user making th
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-To update an existing record, like a user's profile, use `client.put()`:
+要更新现有记录（例如用户的个人资料），请使用“client.put()”：
 
 <InstallProfileLexicon />
 
 <UpdateProfileTs />
     </TabPanel>
     <TabPanel value="go">
-To update an existing record, like a user's profile, use `RepoPutRecord()`:
+要更新现有记录（例如用户的个人资料），请使用“RepoPutRecord()”：
 
 <UpdateProfileGo />
 
-`RepoPutRecord` is idempotent — it'll create the record if it doesn't exist, or overwrite it if it does.
+`RepoPutRecord` 是幂等的 - 如果记录不存在，它将创建它，如果存在，它将覆盖它。
     </TabPanel>
   </TabPanels>
 </TabGroup>
 
-## Deleting Records
+## 删除记录
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -108,25 +108,20 @@ To update an existing record, like a user's profile, use `RepoPutRecord()`:
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-To delete a record, like an individual post, use `client.delete()`:
+要删除记录（例如单个帖子），请使用“client.delete()”：
 
 <InstallPostLexicon />
 
 <DeletePostTs />
     </TabPanel>
     <TabPanel value="go">
-    To delete a record, like an individual post, use `RepoDeleteRecord():`
+要删除记录（例如单个帖子），请使用“RepoDeleteRecord():”
 
 <DeletePostGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-- [Reads and Writes](/guides/reads-and-writes)
-- [Reading data](/guides/reading-data)
-- [Accounts and deletions](/guides/account-lifecycle)
-- [Social graph](/guides/social-graph)
-- [Record Key spec](/specs/record-key)
-- [URI scheme](/specs/at-uri-scheme)
+- [读取和写入](/guides/reads-and-writes)

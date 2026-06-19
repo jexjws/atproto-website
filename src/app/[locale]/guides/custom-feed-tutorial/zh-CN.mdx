@@ -16,23 +16,23 @@ import S13 from './_snippets/13-terminal-output.mdx'
 import S14 from './_snippets/14-tap-signal-collection.mdx'
 
 export const header = {
-  title: 'Write a Custom Feed',
-  description: 'Host an algorithm that\'s accessible from apps like Bluesky.',
+  title: '编写自定义提要',
+  description: '托管一个算法\'s accessible from apps like Bluesky.',
 }
 
-Custom feeds, or feed generators, are services that provide algorithms to users. This gives you lots of freedom: to choose your own timeline view, or to [create a embeddable feed for other users](https://graze.leaflet.pub/3m4yjmbnyec2c).
+自定义提要或提要生成器是向用户提供算法的服务。这为您提供了很大的自由：选择您自己的时间轴视图，或[为其他用户创建可嵌入的提要](https://graze.leaflet.pub/3m4yjmbnyec2c)。
 
-In this tutorial, you'll create a custom feed server by consuming posts from the [firehose](/guides/streaming-data), algorithmically sorting them, and [broadcasting them as an XRPC feed](/guides/feeds).
+在本教程中，您将通过使用来自 [firehose](/guides/streaming-data) 的帖子、通过算法对它们进行排序以及[将它们作为 XRPC feed 进行广播](/guides/feeds) 来创建自定义 feed 服务器。
 
-## Prerequisites
+## 先决条件
 
-This tutorial involves building a TypeScript application from scratch. You should have a working understanding of TypeScript and Node.js.
+本教程涉及从头开始构建 TypeScript 应用程序。您应该对 TypeScript 和 Node.js 有一定的了解。
 
-You should have installed:
+您应该已经安装：
 - Node.js 18+
-- Go 1.25+
+- 去 1.25+
 
-On platforms supported by [homebrew](https://brew.sh/), you can install them with:
+在 [homebrew](https://brew.sh/) 支持的平台上，您可以使用以下命令安装它们：
 
 <S01 />
 
@@ -122,11 +122,11 @@ This cursor is treated as an opaque value and fully at the Feed Generator's disc
 `1683654690921::bafyreia3tbsfxe3cc75xrxyyn6qc42oupi73fxiox76prlyi5bpx7hr72u`
 </Note>
 
-Finally, you'll add the runtime logic to start the server.
+最后，您将添加运行时逻辑来启动服务器。
 
-## Part 5: Running the Server
+## 第 5 部分：运行服务器
 
-You'll connect to tap with `channel.start()` then initiate your server. Add the runtime logic to `src/index.ts`:
+您将使用“channel.start()”连接到 Tap，然后启动您的服务器。将运行时逻辑添加到`src/index.ts`：
 
 <S12 />
 
@@ -142,16 +142,16 @@ Remember that this example fetches only a single user's data repository. To fetc
 <S14 />
 </Note>
 
-## Conclusion
+## 结论
 
-You've now built a custom atproto feed that retrieves posts from the network, indexes them based on your own algorithm, and serves them via XRPC to clients like Bluesky.
+您现在已经构建了一个自定义 atproto feed，它可以从网络检索帖子，根据您自己的算法对它们进行索引，并通过 XRPC 将它们提供给 Bluesky 等客户端。
 
-Now that your feed server is running, you can customize it further, then publish it for others to use. To do that, you'll want to deploy it to a public server (e.g., AWS, DigitalOcean, etc.) and ensure it's accessible over HTTPS.
+现在您的源服务器正在运行，您可以进一步自定义它，然后将其发布以供其他人使用。为此，您需要将其部署到公共服务器（例如 AWS、DigitalOcean 等）并确保可通过 HTTPS 访问它。
 
-After that, you can clone down our original [feed-generator repo](https://github.com/bluesky-social/feed-generator) and run the [publishFeedGen.ts](https://github.com/bluesky-social/feed-generator/blob/main/scripts/publishFeedGen.ts) script interactively. This creates the necessary atproto records to point to your feed server, and allow it to be discovered:
+之后，您可以克隆我们原来的 [feed-generator repo](https://github.com/bluesky-social/feed-generator) 并以交互方式运行 [publishFeedGen.ts](https://github.com/bluesky-social/feed-generator/blob/main/scripts/publishFeedGen.ts) 脚本。这将创建必要的 atproto 记录来指向您的 feed 服务器，并允许它被发现：
 
 <Container>
   <Image src={bsky} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-You can find more guides and tutorials in our [Guides](/guides) section, and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
+您可以在我们的 [指南](/guides) 部分中找到更多指南和教程，并在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库中找到更多示例应用程序。快乐建设！

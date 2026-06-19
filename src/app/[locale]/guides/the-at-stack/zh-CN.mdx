@@ -9,145 +9,145 @@ export const header = {
     'Components of the AT Protocol Stack',
 }
 
-## 认证传输协议
+## The Authenticated Transfer Protocol
 
-AT 协议（身份验证传输协议）是公共对话的标准，也是构建社交应用程序的开源框架。
+The AT Protocol (Authenticated Transfer Protocol) is a standard for public conversation and an open-source framework for building social apps.
 
-它为社交应用程序上的用户身份、关注和数据创建了标准格式，允许应用程序进行互操作，并允许用户在它们之间自由移动。它是一个具有帐户可移植性的联合网络。
+It creates a standard format for user identity, follows, and data on social apps, allowing apps to interoperate and users to move across them freely. It is a federated network with account portability.
 
-## 去中心化架构
+## Decentralized Architecture
 
-AT 在联合网络模型中同步存储库。联合确保网络使用方便且可靠可用。存储库数据通过标准 Web 技术（HTTP 和 WebSockets）在服务器之间同步。
+AT syncs repositories in a federated networking model. Federation ensures the network is convenient to use and reliably available. Repository data is synchronized between servers over standard web technologies (HTTP and WebSockets).
 
-[**个人数据服务器** ，或 PDS](/guides/the-at-stack#pds)，是你在云中的家。他们托管你的数据、分发数据、管理你的身份，并协调对其他服务的请求以向你提供视图。
+[**Personal data servers**, or PDSes](/guides/the-at-stack#pds), are your home in the cloud. They host your data, distribute it, manage your identity, and orchestrate requests to other services to give you your views.
 
-**中继** 处理你的所有事件，例如检索大规模指标（点赞、转发、关注者）、内容发现（算法）和用户搜索。
+**Relays** handle all of your events, like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
 
 <Container>
   <Image src={crawling} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-AT 协议以“大世界与小世界后备”的方式构建，以开放网络本身为模型。通过网络，各个计算机将内容上传到网络，然后所有这些内容都被广播回其他计算机。同样，通过 AT 协议，我们将消息发送到数量少得多的大型聚合器，然后这些聚合器将数据广播到网络上的个人数据服务器。
+The AT Protocol is architected in a “big world with small world fallbacks” way, modeled after the open web itself. With the web, individual computers upload content to the network, and then all of that content is then broadcasted back to other computers. Similarly, with the AT Protocol, we're sending messages to a much smaller number of big aggregators, which then broadcast that data to personal data servers across the network.
 
-从技术上讲，你可以仅使用单个 PDS 来实现 AT 应用程序 — 继电器不是规范的必要部分。它们使生态系统能够扩展到大世界的社交网络。
+Technically, you can implement an AT application with just a single PDS — Relays are not a necessary part of the specification. They enable the ecosystem to scale for big-world social networks.
 
 ## PDS
 
-PDS 实例为用户托管帐户，这需要类似于任何网络服务器的帐户管理和生命周期控制。虽然 AT 身份（DID 和句柄）理论上可以与 PDS 完全分离，但实际上 PDS 有望帮助管理用户的身份。
+PDS instances host accounts for users, which require account management and lifecycle controls similar to any network server. While AT identities (DIDs and handles) can in theory be entirely separate from the PDS, in practice the PDS is expected to help manage the user's identity.
 
-你可以[托管你自己的 PDS](/guides/self-hosting)。
+You can [host your own PDS](/guides/self-hosting).
 
-用户数据存储在签名数据存储库中并由 DID 进行验证。签名数据存储库类似于 Git 存储库，但用于数据库记录，而 DID 本质上是用户证书的注册表，在某些方面类似于 TLS 证书系统。它们应安全、可靠且独立于用户的 PDS。
+User data is stored in signed data repositories and verified by DIDs. Signed data repositories are like Git repos but for database records, and DIDs are essentially registries of user certificates, similar in some ways to the TLS certificate system. They are expected to be secure, reliable, and independent of the user's PDS.
 
 <Container>
   <Image src={did} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-PDS 处理：
+The PDS handles:
 
-- 账户生命周期：注册、删除、迁移
-- 帐户安全：电子邮件验证、密码重置流程、更改电子邮件流程
-- AT 身份解析：DID、句柄。 [阅读更多](https://fusectore.dev/2025/01/04/atproto-identity.html)了解如何进行身份解析。
-- 偏好和私有状态的存储
-- 能够删除或暂停帐户，并处理审核联系人
-- 密钥管理：AT签名密钥和PLC轮换密钥
-- [PLC](https://web.plc.directory/) 身份操作和端点：更改句柄；验证、签署和提交 PLC 操作
-- 电子邮件传送：用于重置流程以及转发审核邮件
-- 使用存储库事件流进行数据同步
-- 在存储库事件流上输出`#identity`和`#account`（即将推出）事件
-- 通常能够管理默认句柄命名空间（基域）
-- OAuth 客户端流程，包括 Web 登录页面和可选的 MFA
+- account lifecycle: signup, deletion, migration
+- account security: email verification, password reset flow, change email flow
+- AT identity resolution: DIDs, handles. [Read more](https://fusectore.dev/2025/01/04/atproto-identity.html) about how identity resolution.
+- storage of preferences and private state
+- ability to takedown or suspend accounts, and handle moderation contacts
+- secret key management: AT signing key, and PLC rotation key
+- [PLC](https://web.plc.directory/) identity operations and endpoints: change handle; validate, sign, and submit PLC ops
+- email delivery: for reset flows, as well as forwarding moderation mail
+- data synchronisation using repository event streams
+- output `#identity` and `#account` (coming soon) events on repo event stream
+- usually the ability to manage a default handle namespace (base domain)
+- OAuth client flows, including web sign-in pages, and optional MFA
 
-你可以将个人帐户的数据存储库从一个 PDS 自由迁移到另一个 PDS。这涉及将存储库导入和导出为 CAR 文件。有一些社区工具可以使这变得更容易：
+You can migrate an individual account's data repository freely from one PDS to another. This involves the import and export of repositories as CAR files. There are some community tools that make this easier:
 
-- https://atproto.at/，它允许你浏览存储在你自己的存储库中的所有数据（以及当前托管在哪个 PDS 上）
-- https://pdsmoover.com/，PDS 迁移工具集合
-- https://boat.kelinci.net/，一组用于存储库导入和导出的接口
-- https://github.com/bluesky-social/goat，我们的 Go AT 命令行工具。
+- https://atproto.at/, which lets you browse all the data stored in your own repository (and what PDS it's currently hosted on)
+- https://pdsmoover.com/, a collection of tools for PDS migration
+- https://boat.kelinci.net/, a set of interfaces for repository import and export
+- https://github.com/bluesky-social/goat, our Go AT command-line tool.
 
-PDS 实现许多 AT 端点，默认情况下会将请求代理到其他服务。缓存、CDN 等通常在 [App View](#app-views) 层实现。 AT 堆栈的大多数其他组件都设计为直接从 PDS“远离”加载，因此托管用户数据仍然经济实惠。
+PDSs implement many AT endpoints, and by default will proxy requests to other services. Caching, CDNs, and so on are typically implemented at the [App View](#app-views) layer. Most other components of the AT stack are designed to direct load *away* from a PDS, so that hosting user data remains economical.
 
-## 继电器
+## Relays
 
-**中继** 实时处理你的所有事件。中继还处理各个 PDS 的速率限制和网络滥用，以确保整个网络的可用性。重要的是，中继本身并不解释存储库中的记录。他们只是暂时存储它们并将其转发给消费者。中继生成事件的 [**firehose** ](/guides/streaming-data)，它结合了来自多个存储库和 PDS 的 [事件流](/specs/event-stream)。
+**Relays** handle all of your events in real-time. The Relay also handles rate limiting and network abuse of individual PDSes to ensure that availability from across the network. Importantly, relays themselves do not interpret records in repositories; they simply store them temporarily and forward them to consumers. Relays produce a [**firehose**](/guides/streaming-data) of events, which combines the [event streams](/specs/event-stream) from multiple repositories and PDSes.
 
-继电器可以在不同的规模下运行。全网络中继跟踪整个网络上的所有存储库，提供完整的覆盖范围。部分网络中继可能专注于特定社区、应用程序或区域，从而减少资源需求。专用继电器可以服务于特定的用例，例如学术研究、品牌监控或档案保存。
+Relays can be operated at different scales. Full-network relays track all repositories across the entire network, providing complete coverage. Partial-network relays might focus on specific communities, applications, or regions, reducing resource requirements. Specialized relays could serve particular use cases, such as academic research, brand monitoring, or archive preservation.
 
-完整的网络中继的运行成本并不是特别昂贵，并且不需要专门的硬件，尽管它确实需要大量的入口和出口网络带宽，这是运行中继的主要成本。
+A full network relay isn't particularly expensive to operate, and doesn't require specialized hardware, though it does require significant ingress and egress network bandwidth, which is the main cost in operating a relay.
 
-有多个可用的中继，每个中继可能有自己的速率限制和网络策略。一些可用的继电器是：
-- 来自 [microcosm](https://www.microcosm.blue/) 的 `relay.fire.hose.cam` 和 `relay3.fr.hose.cam`。
-- 来自 [Blacksky](https://blackskyweb.xyz/) 的 `atproto.africa`
-- 来自 [Upcloud](https://upcloud.com/) 的 `relay.upcloud.world`
-- 来自 [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose) 的两个。
-- 来自 [firehose.network](https://firehose.network) 的三个
+There are several relays available, each may have their own rate limits and network policies. Some of the available relays are:
+- `relay.fire.hose.cam` and `relay3.fr.hose.cam` from [microcosm](https://www.microcosm.blue/).
+- `atproto.africa` from [Blacksky](https://blackskyweb.xyz/)
+- `relay.upcloud.world` from [Upcloud](https://upcloud.com/)
+- The two from [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose).
+- The three from [firehose.network](https://firehose.network)
 
-由 [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose) 操作的中继可能是最常用的，因为这是许多 PDS 主机使用的参考 PDS 服务器实现的默认中继。他们在其网站上记录了他们的[速率限制](https://docs.bsky.app/docs/advanced-guides/rate-limits)。
+The relays operated by [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose) are probably the most commonly used since this is the default relay for the reference PDS server implementation which many PDS hosts use. They have documented their [rate limits](https://docs.bsky.app/docs/advanced-guides/rate-limits) on their website.
 
-## 轻敲
+## Tap
 
-Tap 用于从 PDS 存储库同步 AT 网络的现有记录，然后通过中继继续从 firehose 接收新记录。
+Tap is used for syncing existing records from the AT network from PDS repositories and then continuing to receive new records from the firehose via a relay.
 
-Tap 通过处理消防连接、验证、回填和过滤来简化 AT 同步。你的应用程序连接到 Tap 并仅接收你关心的存储库和集合的简单 JSON 事件，无需担心用于验证加密签名的二进制格式。水龙头特点：
+Tap simplifies AT sync by handling the firehose connection, verification, backfill, and filtering. Your application connects to a Tap and receives simple JSON events for only the repos and collections you care about, no need to worry about binary formats for validating cryptographic signatures. Tap features:
 
-- 验证存储库结构、MST 完整性和身份签名
-- 自动回填：添加新存储库时从 PDS 获取完整的存储库历史记录
-- 过滤输出：按 DID 列表、按集合或全网络模式
-- 订购保证：现场活动等待历史回填完成
-- 交付模式：带有 ack、即发即弃或 webhook 的 WebSocket
-- 单个 Go 二进制文件
-- SQLite 或 Postgres 后端
-- 专为中等规模（数百万个存储库，30k+ 事件/秒）而设计
+- verifies repo structure, MST integrity, and identity signatures
+- automatic backfill: fetches full repo history from PDS when adding new repos
+- filtered output: by DID list, by collection, or full network mode
+- ordering guarantees: live events wait for historical backfill to complete
+- delivery modes: WebSocket with acks, fire-and-forget, or webhook
+- single Go binary
+- SQLite or Postgres backend
+- designed for moderate scale (millions of repos, 30k+ events/sec)
 
-[@atproto/tap](https://www.npmjs.com/package/@atproto/tap) 有一个用于使用 Tap 的 TypeScript 库。
+There is a TypeScript library for working with Tap at [@atproto/tap](https://www.npmjs.com/package/@atproto/tap).
 
-## 应用程序视图
+## App Views
 
-**应用程序视图** 处理应用程序特定的逻辑，例如检索大规模指标（点赞、转发、关注者）、内容发现（算法）和用户搜索。
+**App Views** handle application specific logic like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
 
-应用程序视图是实际组装你的提要和你在应用程序中看到的所有其他数据的部分，并且位于中继数据流的下游。这是一种语义感知服务，可在网络上生成聚合并在网络的某些子集上生成视图。例如，Relay 可能会抓取数据，例如某个帖子的点赞和转发，并且应用程序视图将输出这些指标的计数。
+An App View is the piece that actually assembles your feed and all the other data you see in the app, and is downstream from a Relay's firehose of data. This is a semantically-aware service that produces aggregations across the network and views over some subset of the network. For example, the Relay might crawl to grab data such as a certain post's likes and reposts, and the app view will output the count of those metrics.
 
-网络上部署的每个词典都可以有一个应用程序视图生态系统。例如，*Bluesky* 目前支持微博模式：`app.bsky` Lexicon。创建新词典的开发人员可以部署相应的应用程序视图来理解其词典来为用户提供服务。其他词典可能包括[视频](https://stream.place/)、[长篇博客](https://leaflet.pub/) 或[协作编码](https://tangled.org/)。通过引导现有的中继，这些新应用程序的数据整理已经得到处理。他们可以从已经在 Bluesky 上发帖并用其他词典填充他们的存储库的大量用户中受益；他们只需要提供其应用程序所需的索引行为。
+There can be an ecosystem of App Views for each lexicon deployed on the network. For example, *Bluesky* currently supports a micro-blogging mode: the `app.bsky` Lexicon. Developers who create new lexicons could deploy a corresponding App View that understands their Lexicon to service their users. Other lexicons could include [video](https://stream.place/), or [long-form blogging](https://leaflet.pub/), or [collaborative coding](https://tangled.org/). By bootstrapping off of an existing Relay, data collation will already be taken care of for these new applications. They can benefit from the critical mass of users already posting on Bluesky and populating their repositories with other Lexicons; they only need to provide the indexing behaviors necessary for their application.
 
-应用程序视图是应用程序级工具，而不是 AT 协议的固有部分。应用程序视图通过 HTTP 响应 [XRPC](/specs/xrpc) 调用。
+App Views are application-level tooling, rather than inherent parts of the AT protocol. App Views respond to [XRPC](/specs/xrpc) calls over HTTP.
 
-你可以在 [The Blacksky Architecture](https://blackskyweb.xyz/overview/#blacksky-architecture) 中找到其他 App View 实现的详细文档示例。不同的Atmosphere应用程序可能会做出不同的实现选择。
+You can find a well-documented example of other App View implementations in [The Blacksky Architecture](https://blackskyweb.xyz/overview/#blacksky-architecture). Different Atmosphere applications may make different implementation choices.
 
 ## DID PLC
 
-默认情况下，新的 atproto 身份是使用 `did:plc` 文档创建的。
+By default, new atproto identities are created with as `did:plc` documents.
 
-[did:plc](https://web.plc.directory/) 是一个自我验证的[去中心化标识符](https://en.wikipedia.org/wiki/Decentralized_identifier)，它具有强一致性、可恢复性，并允许密钥轮换。每个身份都由一系列签名操作组成，每个操作都引用链中的前一个操作回到创世操作。任何观察者都可以验证操作链，以验证身份的当前状态。
+[did:plc](https://web.plc.directory/) is a self-authenticating [Decentralized Identifier](https://en.wikipedia.org/wiki/Decentralized_identifier) which is strongly-consistent, recoverable, and allows for key rotation. Each identity is made up of a series of signed operations that each reference the preceding operation in a chain back to the genesis operation. Any observer can verify the chain of operations in order to verify the current state of the identity.
 
-PLC 操作存储在一个目录中（当前在 [plc.directory](http://plc.directory) 上运行），该目录是一个集中式服务，用于验证操作、存储操作并为这些操作以及从操作派生的身份的计算视图提供服务。目录的信任模型相当有限，因为如果没有代表身份的签名操作，它就无法修改身份。
+PLC operations are stored in a directory (currently run at [plc.directory](http://plc.directory)) which is a centralized service that validates operations, stores them, and serves those operations as well as computed views of the identities derived from the operations. The trust model for the directory is fairly limited as it is unable to modify identities without a signed operation on their behalf.
 
-有关 PLC 镜像的指南，请参阅[此开发人员博客](https://dholms.leaflet.pub/3m6zswymcqk2p)。
+For guidance on PLC mirroring, refer to [this developer blog](https://dholms.leaflet.pub/3m6zswymcqk2p).
 
-## 提要
+## Feeds
 
-与网络搜索引擎一样，用户可以自由选择他们的聚合器。提要、搜索索引和整个应用程序视图可由独立第三方提供，PDS 根据用户配置路由请求。
+As with Web search engines, users are free to select their aggregators. Feeds, search indices, and entire app views can be provided by independent third parties, with requests routed by the PDS based on user configuration.
 
 <Container>
   <Image src={feeds} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-自定义提要或提要生成器是通过 AT 协议向用户提供自定义算法的服务。这允许用户选择自己的时间线，无论是算法“为你”页面还是完全猫照片的提要。
+Custom feeds, or feed generators, are services that provide custom algorithms to users through the AT Protocol. This allows users to choose their own timelines, whether it's an algorithmic For You page or a feed of entirely cat photos.
 
-自定义提要的工作方式非常简单：服务器接收来自用户服务器的请求，并返回带有一些可选元数据的帖子 URI 列表。然后，请求服务器将这些帖子合并为完整视图并发送回客户端。
+Custom feeds work straightforwardly: the server receives a request from a user's server and returns a list of post URIs with some optional metadata attached. Those posts are then hydrated into full views by the requesting server and sent back to the client.
 
-Feed 生成器服务可以托管一种或多种算法。服务本身由 DID 标识，而它托管的每个算法则由创建它的帐户的存储库中的记录声明。例如，Bluesky 提供的提要可能会在“@bsky.app”的存储库中声明。因此，给定的算法由声明记录的 at-uri 来标识。该声明记录包括指向服务 DID 的指针以及提要的一些配置文件信息。
+A Feed Generator service can host one or more algorithms. The service itself is identified by DID, while each algorithm that it hosts is declared by a record in the repo of the account that created it. For instance, feeds offered by Bluesky will likely be declared in `@bsky.app`'s repo. Therefore, a given algorithm is identified by the at-uri of the declaration record. This declaration record includes a pointer to the service's DID along with some profile information for the feed.
 
-[浏览](https://blueskydirectory.com/feeds/all) 自定义提要。
+[Browse](https://blueskydirectory.com/feeds/all) custom feeds.
 
-## 鱼鹰和臭氧
+## Osprey and Ozone
 
-审核由我们堆栈的两个部分处理：[*Osprey*](https://github.com/roostorg/osprey)，一个事件流决策引擎和分析 UI，旨在调查和采取自动操作；和 [*Ozone*](/guides/using-ozone)，一种用于做出审核决策的标签服务和网络前端。
+Moderation is handled by two parts of our stack: [*Osprey*](https://github.com/roostorg/osprey), an event stream decisions engine and analysis UI designed to investigate and take automatic action; and [*Ozone*](/guides/using-ozone), a labeling service and web frontend for making moderation decisions.
 
-## 工具和 SDK
+## Tools and SDKs
 
-大多数 AT 工具都是用 Go 和 TypeScript 实现的。
+Most AT tooling is implemented in Go and TypeScript.
 
-- [indigo](https://github.com/bluesky-social/indigo) 存储库包含我们的大部分 Go 工具，包括 [Relay](https://github.com/bluesky-social/indigo/blob/main/cmd/relay/README.md) 和 Go SDK 的代码。
-- 还有 https://github.com/bluesky-social/goat，我们的 Go AT 命令行工具。
-- https://github.com/bluesky-social/atproto 存储库包含我们的大部分 TypeScript 工具，包括 [PDS](https://github.com/bluesky-social/atproto/tree/main/packages/pds) 和 TypeScript SDK 的代码。 [atcute](https://github.com/mary-ext/atcute) 社区项目提供了替代的 TypeScript 包。
-- 我们每天都使用许多其他社区工具。例如，用 Rust 编写的 [Microcosm](https://www.microcosm.blue/) 工具提供了一组 API 来帮助构建查询层，而无需专用的 AppView！详情请参阅 https://constellation.microcosm.blue/。
+- The [indigo](https://github.com/bluesky-social/indigo) repository contains most of our Go tooling, including the code for the [Relay](https://github.com/bluesky-social/indigo/blob/main/cmd/relay/README.md) and the Go SDK.
+- There's also https://github.com/bluesky-social/goat, our Go AT command-line tool.
+- The https://github.com/bluesky-social/atproto repository contains most of our TypeScript tooling, including the code for the [PDS](https://github.com/bluesky-social/atproto/tree/main/packages/pds) and the TypeScript SDK. The [atcute](https://github.com/mary-ext/atcute) community project provides alternative TypeScript packages.
+- There are many other community tools that we use every day. For example, the [Microcosm](https://www.microcosm.blue/) tooling, written in Rust, provides a set of APIs to help build query layers without requiring dedicated AppViews! Refer to https://constellation.microcosm.blue/ for details.

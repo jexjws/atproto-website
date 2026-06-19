@@ -1,41 +1,36 @@
 export const metadata = {
-  title: 'Permissions',
+  title: '权限 (Permissions)',
   description:
     'Auth Permissions for Account Resources.',
 }
 
-# Permissions
+# 权限
 
-Control over atproto resources is described and granted using "permissions". A group of a permissions related to a specific Lexicon namespace (record types and API endpoints) can be bundled together as a "permission set". Both are used in the context of [OAuth](/specs/oauth) to grant client software access to account resources on a PDS. For example, the ability to write records of specific types to the user's public repository, or make authenticated API requests to remote services. Developers declare the permissions their app requires to function, and end users are shown the permissions when granting access to the app.
+对 atproto 资源的控制是使用“权限”来描述和授予的。与特定 Lexicon 命名空间（记录类型和 API 端点）相关的一组权限可以捆绑在一起作为“权限集”。两者都在 [OAuth](/specs/oauth) 上下文中使用，以授予客户端软件对 PDS 上帐户资源的访问权限。例如，能够将特定类型的记录写入用户的公共存储库，或者向远程服务发出经过身份验证的 API 请求。开发人员声明其应用程序运行所需的权限，最终用户在授予应用程序访问权限时会看到这些权限。
 
-Each resource type has a defined set of parameters that can attenuate the permission. A permission can be represented in a string format (for direct use as an OAuth scope), or as a JSON object (for use in permission sets). Permission sets are published as public lexicon schemas, and are constrained in scope to named resources under the same NSID hierarchy as the NSID of the permission set itself.
+每种资源类型都有一组已定义的参数，可以减弱权限。权限可以以字符串格式表示（用于直接用作 OAuth 范围），也可以表示为 JSON 对象（用于在权限集中使用）。权限集作为公共词典模式发布，并且范围仅限于与权限集本身的 NSID 相同的 NSID 层次结构下的命名资源。
 
-## Resource Types
+## 资源类型
 
-Permissions relate to user owned resources on PDS instances:
+权限与 PDS 实例上用户拥有的资源相关：
 
-- `repo`: Public Repository (records and collections)
-- `rpc`: Service Authentication (API calls to external services)
-- `blob`: uploaded media files
-- `identity`: DID and handle
-- `account`: hosting status, email address
+- `repo`：公共存储库（记录和集合）
 
-There is an additional "meta" resource, `include`, which is used to reference a permission set (see Permission Sets section below).
+还有一个附加的“元”资源“include”，用于引用权限集（请参阅下面的“权限集”部分）。
 
-This section describes these resources in more depth, including all the parameters that can constrain the permission. For each resource, one parameter may be marked as "positional", which impacts the string representation syntax (described in a later section).
+本节更深入地描述这些资源，包括所有可以限制权限的参数。对于每个资源，一个参数可以被标记为“位置”，这会影响字符串表示语法（在后面的部分中描述）。
 
-Resources and permissions are described in the abstract, not tied to specific PDS API endpoints. For example, `rpc` permissions describe the ability to make remote service API calls using inter-service authentication. This includes both proxied PDS requests (using the `Atproto-Proxy` HTTP header) and fetching service auth tokens using `com.atproto.server.getServiceAuth`.
+资源和权限以抽象方式描述，不依赖于特定的 PDS API 端点。例如，“rpc”权限描述了使用服务间身份验证进行远程服务 API 调用的能力。这包括代理 PDS 请求（使用“Atproto-Proxy”HTTP 标头）和使用“com.atproto.server.getServiceAuth”获取服务身份验证令牌。
 
-### `repo`
+### `回购协议`
 
-Write access to records in the account's public repository. Can be limited to specific record types (collections) or actions (eg update vs delete).
+对帐户公共存储库中记录的写入权限。可以限制为特定的记录类型（集合）或操作（例如更新与删除）。
 
-Parameters:
+参数：
 
-- `collection` (array of strings, required, positional): NSID of record types. Wildcard (`*`) is allowed in scope string syntax, and grants access to all records. Partial wildcards are not supported (eg, can not use `com.example.*`). Wildcards are *not* supported in permissions within a permission set.
-- `action` (array of unique strings, optional): defines the set of record operations allowed. Allowed values are `create`, `update`, `delete`. If not defined, all operations are allowed
+- `collection` （字符串数组，必需，位置）：记录类型的 NSID。范围字符串语法中允许使用通配符 (`*`)，并授予对所有记录的访问权限。不支持部分通配符（例如，不能使用“com.example.*”）。权限集中的权限*不*支持通配符。
 
-Examples:
+示例：
 
 ```
 # full permission (create, update, delete) on a single record type
@@ -75,21 +70,19 @@ repo:*?action=delete
 
 ### `rpc`
 
-The ability to make authenticated API requests to remote services. This includes both requesting service auth tokens (JWTs) using the `com.atproto.server.getServiceAuth` endpoint on the PDS, and requests proxied via the PDS.
+能够向远程服务发出经过身份验证的 API 请求。这包括使用 PDS 上的“com.atproto.server.getServiceAuth”端点请求服务身份验证令牌 (JWT)，以及通过 PDS 代理的请求。
 
-The permission is parameterized by the remote endpoint (`lxm`, short for "Lexicon Method") and the identity of the remote service (the audience, `aud`). Permissions must be restricted by at least one of these parameter. In other words, the ability to call any API endpoint on any service can not be declared with a single permission.
+权限由远程端点（“lxm”，“Lexicon Method”的缩写）和远程服务的身份（受众，“aud”）参数化。权限必须至少受到这些参数之一的限制。换句话说，调用任何服务上的任何 API 端点的能力不能用单个权限来声明。
 
-When included in a permission set, the audience parameter may be inherited from the overall set.
+当包括在权限集中时，受众参数可以从整个集合继承。
 
-Parameters:
+参数：
 
-- `lxm` (array of strings, required, positional): NSID of API endpoints. Wildcard (`*`) is allowed in scope string syntax, and gives access to all endpoints. Partial wildcards are not supported (eg, can not use `com.example.*`). Wildcards are *not* supported in permissions within a permission set.
-- `aud` (string, semi-required): audience of API requests, as a DID service reference: DID followed by required service type fragment, eg `did:web:api.example.com#srvtype`). Supports wildcard (`*`), though as noted above `aud` and `lxm` can not both be wildcard. DID references are not allowed in permission set context. Always required in granular string representation; contingent on `inheritAud` in permission sets.
-- `inheritAud` (boolean, optional): only used inside permission sets. If true, an `aud` value will be inherited from the `include:` invocation, and the `aud` field is not required on the permission.
+- `lxm` （字符串数组，必需，位置）：API 端点的 NSID。范围字符串语法中允许使用通配符 (`*`)，并提供对所有端点的访问。不支持部分通配符（例如，不能使用“com.example.*”）。权限集中的权限*不*支持通配符。
 
-If `inheritAud` is true and the permission also defines `aud`, then the permission is invalid (and should be ignored). If `inheritAud` is true and no `aud` is defined on the invoking `include:`, then the `rpc` permission is invalid (and should be ignored).
+如果“inheritAud”为 true 并且权限还定义了“aud”，则该权限无效（应被忽略）。如果“inheritAud”为 true 并且在调用“include:”时未定义“aud”，则“rpc”权限无效（应被忽略）。
 
-Examples:
+示例：
 
 ```
 # Submit moderation reports to any service
@@ -106,17 +99,17 @@ rpc:app.example.moderation.createReport?aud=*
 rpc?lxm=*&aud=did:web:api.example.com%23svc_appview
 ```
 
-### `blob`
+### `斑点`
 
-Ability to upload media files (blobs) to PDS.
+能够将媒体文件（blob）上传到 PDS。
 
-Permissions of this type can not be included in permission sets, and must be requested directly by client apps.
+这种类型的权限不能包含在权限集中，必须由客户端应用程序直接请求。
 
-Parameters:
+参数：
 
-- `accept` (array of strings, required, positional): MIME types or partial MIME type glob patterns (`*/*` or `text/*` for example). Same syntax as the `accept` field in the `blob` lexicon type.
+- `accept` （字符串数组，必需，位置）：MIME 类型或部分 MIME 类型全局模式（例如 `*/*` 或 `text/*`）。与“blob”词典类型中的“accept”字段的语法相同。
 
-Examples:
+示例：
 
 ```
 # Upload any type of blob
@@ -126,23 +119,21 @@ blob:*/*
 blob?accept=video/*&accept=text/html
 ```
 
-### `account`
+### `帐户`
 
-Control of PDS account hosting details, such as (private) account email.
+控制 PDS 帐户托管详细信息，例如（私人）帐户电子邮件。
 
-Permissions of this type can not be included in permission sets, and must be requested directly by client apps.
+这种类型的权限不能包含在权限集中，必须由客户端应用程序直接请求。
 
-Parameters:
+参数：
 
-- `attr` (string, required, positional): a component of account configuration. Wildcard is not supported.
-- `action` (string, optional): degree of control. Currently supports `read` or `manage`. If not specified, default is `read`.
+- `attr`（字符串，必需，位置）：帐户配置的组成部分。不支持通配符。
 
-Attributes:
+属性：
 
-- `email`: account email address. The `read` action makes the email and verification status visible. The `manage` action includes `read`, and also allows changing the email address.
-- `repo`: ability to update entire public repository using a CAR file. The `manage` action allows importing entire CAR files, for example during account migration. The `read` action does nothing.
+- `email`：帐户电子邮件地址。 “读取”操作使电子邮件和验证状态可见。 “管理”操作包括“读取”，还允许更改电子邮件地址。
 
-Examples:
+示例：
 
 ```
 # read account email
@@ -152,22 +143,21 @@ account:email
 account:repo?action=manage
 ```
 
-### `identity`
+### ‘身份’
 
-Control over network identity, meaning the account DID document and handle. Note that the PDS might not be able to facilitate identity changes if it does not have control over the DID document (for example, when the account uses `did:web`).
+控制网络身份，即帐户 DID 记录和处理。请注意，如果 PDS 无法控制 DID 文档（例如，当帐户使用 `did:web` 时），它可能无法促进身份更改。
 
-Permissions of this type can not be included in permission sets, and must be requested directly by client apps.
+这种类型的权限不能包含在权限集中，必须由客户端应用程序直接请求。
 
-Parameters:
+参数：
 
-- `attr` (string, required, positional): an aspect or component of account. May be be wildcard (`*`), indicating full control of DID document and handle.
+- `attr`（字符串，必需，位置）：帐户的一个方面或组件。可以是通配符(`*`)，表示完全控制DID文档和句柄。
 
-Attributes:
+属性：
 
-- `handle`: ability to update handle. This includes the registration of the handle in the DID document, as well as any domain names controlled by the PDS.
-- `*` (wildcard): full control over DID document and handle.
+- `handle`：更新句柄的能力。这包括 DID 文档中句柄的注册，以及 PDS 控制的任何域名。
 
-Examples:
+示例：
 
 ```
 # Update account handle
@@ -175,17 +165,17 @@ identity:handle
 ```
 
 
-## Scope String Syntax
+## 范围字符串语法
 
-Permissions need to be represented as simple strings when they are requested directly as [OAuth](/specs/oauth) scopes. This section describes the syntax for permission scope strings.
+当权限直接作为 [OAuth](/specs/oauth) 范围请求时，需要将权限表示为简单字符串。本节介绍权限范围字符串的语法。
 
-The strings are case-sensitive and use a subset of printable non-whitespace ASCII characters. There is a resource name part, followed by an optional "positional" part separated by a colon (`:`), followed by optional parameters starting with a question mark (`?`). The positional part can contain any characters except for a question mark, including additional colon characters, hash (`#`), period, etc. and support being percent encoded. Parameters are separated by ampersands (`&`), have name and value parts separated by equals (`=`), and support percent-encoding of reserved characters. Array values can be represented by repeated parameters with the same name part.
+这些字符串区分大小写，并使用可打印的非空白 ASCII 字符的子集。有一个资源名称部分，后跟一个由冒号 (`:`) 分隔的可选“位置”部分，后跟以问号 (`?`) 开头的可选参数。位置部分可以包含除问号之外的任何字符，包括额外的冒号字符、散列（`#`）、句点等，并支持百分比编码。参数由与号 (`&`) 分隔，名称和值部分由等号 (`=`) 分隔，并支持保留字符的百分比编码。数组值可以由具有相同名称部分的重复参数来表示。
 
-For example, the scope string `account:repo?action=manage` has a resource name `account`, a "positional" part with the value `repo`, and a key/value pair `action=manage`. Knowing that the positional parameter for `account` is `attr`, the same permission could be represented as `account?action=manage&attr=repo`.
+例如，作用域字符串“account:repo?action=manage”具有资源名称“account”、值为“repo”的“位置”部分以及键/值对“action=manage”。知道“account”的位置参数是“attr”，相同的权限可以表示为“account?action=manage&attr=repo”。
 
-If a parameter is specified in the positional position, it can not also be described in the key/value parameters. Eg, `repo:com.example.record?collection=com.example.other` is not allowed.
+如果某个参数在位置位置中指定，则不能同时在键/值参数中描述。例如，不允许使用`repo:com.example.record?collection=com.example.other`。
 
-Examples of syntactically and semantically valid scope strings:
+语法和语义上有效的范围字符串的示例：
 
 ```
 identity:*
@@ -196,7 +186,7 @@ repo:app.example.profile?action=create&action=update&action=delete
 include:app.example.authFull?aud=did:web:api.example.com%23svc_chat
 ```
 
-Scope strings that match the general syntax, but do not have valid semantics under the current resource definitions:
+与通用语法匹配但在当前资源定义下不具有有效语义的范围字符串：
 
 ```
 resource
@@ -209,22 +199,22 @@ resource:&
 resource?
 ```
 
-Examples which do not match the general syntax:
+与一般语法不匹配的示例：
 
 ```
 resource:positional?key=québec
 emoji:☺️
 ```
 
-## Permission Sets
+## 权限集
 
-Full-featured client apps require a large number of granular permissions to function: dozens or even hundreds of individual permissions. This presents a user experience and security challenge, as long lists of permissions are unlikely to be reviewed carefully, and a developer experience issue, as defining and maintaining these lists is toilsome.
+全功能的客户端应用程序需要大量细化权限才能运行：数十甚至数百个单独的权限。这带来了用户体验和安全挑战，因为不太可能仔细审查长的权限列表，并且带来了开发人员体验问题，因为定义和维护这些列表非常繁琐。
 
-To simplify permission management, Lexicon designers can define "sets" of permissions as part of the schemas they publish. These permission sets are themselves Lexicon schemas and are referred to by NSID, such as `com.example.authBasicFeatures`.
+为了简化权限管理，Lexicon 设计者可以将权限“集”定义为他们发布的架构的一部分。这些权限集本身就是 Lexicon 模式，并通过 NSID 引用，例如“com.example.authBasicFeatures”。
 
-Authorization Servers resolve, authenticate, and process permission-sets dynamically. Sets include user-meaningful titles and summaries that are displayed to end users during the authorization request flow, with support for internationalization. These summaries improve consent comprehension and ultimately account security (the user interface should also make it possible to expand the specific granular permissions being granted). Permission sets are published publicly and can be used by any client developer. (Caching and fallback behaviors for dynamic resolution are discussed below.)
+授权服务器动态解析、验证和处理权限集。集合包括在授权请求流程中向最终用户显示的对用户有意义的标题和摘要，并支持国际化。这些摘要提高了同意理解并最终提高了帐户安全性（用户界面还应该能够扩展所授予的特定细粒度权限）。权限集是公开发布的，任何客户端开发人员都可以使用。 （动态解析的缓存和回退行为将在下面讨论。）
 
-The below is an example permission set Lexicon. The full syntax is described in the [Lexicon specification](/specs/lexicon).
+以下是权限集 Lexicon 的示例。完整的语法在 [Lexicon 规范](/specs/lexicon) 中描述。
 
 ```
 {
@@ -278,53 +268,52 @@ The below is an example permission set Lexicon. The full syntax is described in 
 }
 ```
 
-This entire set of permissions could be requested with an auth scope string like:
+可以使用身份验证范围字符串来请求整套权限，例如：
 
 ```
 include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview
 ```
 
-Because some of the `rpc` permissions have the `inheritAud` flag set to true, the `aud` parameter on the `include` will be passed down to those specific `rpc` permissions. If the `aud` had not been part of the `include`, the default value (no audience) would have been used instead.
+由于某些“rpc”权限将“inheritAud”标志设置为 true，因此“include”上的“aud”参数将向下传递给那些特定的“rpc”权限。如果“aud”不是“include”的一部分，则将使用默认值（无受众）。
 
-Permission sets are Lexicon schemas and are published and fetched using the Lexicon resolution system, which includes cryptographic authentication. Permission sets can be updated over time as new schemas are added to a namespace (eg, new record types or API endpoints). Authorization Servers are expected to maintain a cache of resolved sets, but to re-resolve them periodically. The permissions associated with an Access Token should remain fixed, but when a client refreshes their tokens (obtaining a new access token), the computed permissions for the session may be updated to reflect changes to sets requested by the client.
+权限集是 Lexicon 模式，并使用 Lexicon 解析系统发布和获取，其中包括加密身份验证。当新模式添加到命名空间（例如，新记录类型或 API 端点）时，权限集可以随着时间的推移而更新。授权服务器应该维护已解析集的缓存，但会定期重新解析它们。与访问令牌关联的权限应保持固定，但当客户端刷新其令牌（获取新的访问令牌）时，计算出的会话权限可能会更新以反映客户端请求的集的更改。
 
-This adds an intentional degree of temporal dynamism to OAuth sessions involving permission sets. Lexicon designers can define new resources (eg, record types) and update published sets to include permissions to those resources. Client software can then be updated to take advantage of those new lexicons, without requiring users to re-authenticate their sessions. OAuth session are strictly limited to the auth scopes in the initial grant; it is the indirection of permission sets which enables this flexibility.
+这为涉及权限集的 OAuth 会话添加了一定程度的时间动态性。词典设计者可以定义新资源（例如，记录类型）并更新已发布的集以包括对这些资源的权限。然后可以更新客户端软件以利用这些新词典，而无需用户重新验证其会话。 OAuth会话严格限制在初始授权的授权范围内；正是权限集的间接性实现了这种灵活性。
 
-Authorization Servers and Resource Servers must ignore any individual permission declarations within a permission set that describe an unknown resource, or include unexpected parameter names or values. The reason for this behavior is that the permission system is expected to evolve over time, and new client permission requests should not be rejected in whole. At the same time, new parameters (fields) might attentuate permissions further, and it would be unsafe to grant partially-understood permissions.
-
-
-### Namespace Authority
-
-Permission sets are limited to expressing permissions that reference resources under the same NSID namespace as the set itself.
-
-Authority is based on the relative structure of NSIDs, without "siblings" or special namespaces. Broadly, this ensures that sets can not request permissions across namespaces. Specifically:
-
-- Permission sets can address resources in the same NSID "group"; or "children" (sub-domains), recursively deep
-- can not address "sibling groups" or "parents" in the NSID hierarchy
-
-For example, the set `app.example.feed.authOnlyPost` could include permissions to `app.example.feed.post` records and making `app.example.feed.getPostThread` API endpoint requests to remote services. But it could not grant permissions to `app.example.actor.profile`. A permission set `app.example.authFull`, which is a level up in the hierarchy, could include permissions to all these resources, or even further down the hierarchy.
-
-### Resolution and Caching
-
-Permission set Lexicons need to be resolved by Authorization Servers (eg, PDS instances). The existing [Lexicon publication and resolution system](/specs/lexicon) describes how schemas are published and verified.
-
-To reduce network traffic and increase resiliency to outages, Authorization Servers are expected to cache permission set resolution. Caches may be shared across all accounts and sessions on an Authorization Server.
-
-Permission set schemas should be cached with long "expiration" times but shorter "stale" times. Stale Lexicons should get updated (aka, attempt resolution refresh), but if resolution fails, the previously existing stale values can be used. The recommended "stale" lifetime is 24 hours, and this is intended as a firm upper bound on cache lifetime. The firm lower bound on cache lifetime is that of access token lifetimes, meaning 15-30 minutes. The recommended "expiration" lifetime for referencing a permission set for a new auth session is 90 days, but this is not a firm bound. Existing auth sessions should not be impacted by the "expiration" of permission sets from any cache.
-
-At the start of a session, if a permission set can not be resolved (and is not already in a local cache), the auth request will fail.
+授权服务器和资源服务器必须忽略权限集中描述未知资源或包含意外参数名称或值的任何单独权限声明。出现此行为的原因是，权限系统预计会随着时间的推移而发展，并且新的客户端权限请求不应被完全拒绝。同时，新的参数（字段）可能会进一步削弱权限，并且授予部分理解的权限是不安全的。
 
 
-## Usage and Implementation Guidelines
+### 命名空间权威
 
-The currently defined resources and parameters do not make use of all of the syntax flexibility. Implementations might decide to focus on currently used syntax instead of the general syntax.
+权限集仅限于表达引用与集本身相同的 NSID 命名空间下的资源的权限。
 
-Authorization Servers may chose to use a "Lexicon Aggregator" service to offload lexicon resolution of permission sets. Such services would monitor a full-network firehose to detect updated permission sets. They could contain security logic to protect against NSID domain hijacking or adversarial changes to permission set scope.
+权限基于 NSID 的相对结构，没有“兄弟姐妹”或特殊的命名空间。从广义上讲，这确保集无法跨命名空间请求权限。具体来说：
 
-## Possible Future Changes
+- 权限集可以寻址同一个NSID“组”中的资源；或“子域”（子域），递归深度
 
-The set of resources is expected to expand over time as new functionality is added to the protocol.
+例如，设置“app.example.feed.authOnlyPost”可以包括对“app.example.feed.post”记录的权限以及向远程服务发出“app.example.feed.getPostThread”API端点请求的权限。但它无法向“app.example.actor.profile”授予权限。权限集“app.example.authFull”是层次结构中的上一级，可以包括对所有这些资源的权限，甚至是层次结构中更底层的权限。
 
-Additional attributes are expected to be added to the `account` and `identity` resources.
+### 分辨率和缓存
 
-An earlier proposal described a mechanism for purging permission set resolution caches. This would allow synchronized release of updated lexicon resources and updated client software, without concern that permissions would not be available to the client software due to cached resolution. This mechanism has not yet been implemented and is not included in the current specification.
+权限集词典需要由授权服务器（例如，PDS 实例）解析。现有的[Lexicon发布和解析系统](/specs/lexicon)描述了如何发布和验证模式。
+
+为了减少网络流量并提高中断恢复能力，授权服务器应缓存权限集解析。缓存可以在授权服务器上的所有帐户和会话之间共享。
+
+权限集架构应该以较长的“过期”时间和较短的“过时”时间进行缓存。过时的词典应该更新（也称为尝试解析刷新），但如果解析失败，则可以使用以前存在的过时值。建议的“过时”生命周期为 24 小时，这旨在作为缓存生命周期的严格上限。缓存生命周期的固定下限是访问令牌生命周期，即 15-30 分钟。引用新身份验证会话的权限集的建议“到期”生命周期是 90 天，但这不是一个严格的限制。现有的身份验证会话不应受到任何缓存中的权限集“过期”的影响。
+
+在会话开始时，如果无法解析权限集（并且尚未在本地缓存中），则身份验证请求将失败。
+
+
+## 使用和实施指南
+
+当前定义的资源和参数没有利用所有语法灵活性。实现可能决定关注当前使用的语法而不是通用语法。
+
+授权服务器可以选择使用“词典聚合器”服务来卸载权限集的词典解析。此类服务将监视全网络消防水带以检测更新的权限集。它们可以包含安全逻辑，以防止 NSID 域劫持或对权限集范围的对抗性更改。
+
+## 未来可能发生的变化
+
+随着新功能添加到协议中，该资源集预计会随着时间的推移而扩展。
+
+预计将向“account”和“identity”资源添加其他属性。
+
+早期的提案描述了一种清除权限集解析缓存的机制。这将允许同步发布更新的词典资源和更新的客户端软件，而不必担心由于缓存的解析而导致客户端软件无法获得权限。该机制尚未实现，并且未包含在当前规范中。

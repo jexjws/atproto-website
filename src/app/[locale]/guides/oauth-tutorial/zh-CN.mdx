@@ -31,25 +31,25 @@ import S26 from './_snippets/26-env-vars.mdx'
 import S27 from './_snippets/27-scope-constant.mdx'
 
 export const header = {
-  title: 'OAuth with NextJS Tutorial',
-  description: 'Build a Next.js app supporting OAuth with atproto identity.',
+  title: 'OAuth 与 NextJS 教程',
+  description: '使用 atproto 身份构建支持 OAuth 的 Next.js 应用程序。',
 }
 
-In this tutorial, you'll build a Next.js app where users can log in with their AT Protocol identity using OAuth. If you [host your own PDS](/guides/self-hosting), that means you can provide your own auth source for any apps in the Atmosphere.
+在本教程中，您将构建一个 Next.js 应用程序，用户可以使用 OAuth 以 AT 协议身份登录。如果您[托管自己的 PDS](/guides/self-hosting)，这意味着您可以为 Atmosphere 中的任何应用程序提供自己的身份验证源。
 
-You can find the source code for this tutorial, along with other example projects, in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository, under `nextjs-oauth`.
+您可以在 [Cookbook](https://github.com/bluesky-social/cookbook/) 存储库的“nextjs-oauth”下找到本教程的源代码以及其他示例项目。
 
-See a demo version running at: [https://nextjs-oauth-tutorial.up.railway.app/](https://nextjs-oauth-tutorial.up.railway.app/).
+请参阅运行的演示版本：[https://nextjs-oauth-tutorial.up.railway.app/](https://nextjs-oauth-tutorial.up.railway.app/)。
 
-## Prerequisites
+## 先决条件
 
-This OAuth tutorial does not use many atproto concepts or dependencies. You should have a working understanding of Next.js and TypeScript.
+本 OAuth 教程没有使用很多 atproto 概念或依赖项。您应该对 Next.js 和 TypeScript 有一定的了解。
 
-You should have installed:
+您应该已经安装：
 - Node.js 20+
-- The pnpm package manager
+- pnpm 包管理器
 
-On platforms supported by [homebrew](https://brew.sh/), you can install these with:
+在 [homebrew](https://brew.sh/) 支持的平台上，您可以使用以下命令安装它们：
 
 <S01 />
 
@@ -73,23 +73,23 @@ Navigate to your app in a browser at [http://127.0.0.1:3000](http://127.0.0.1:30
 In general, when working with OAuth, you should use `127.0.0.1` URLs instead of `localhost`. This will be important for the OAuth redirect flow to work correctly.
 </Note>
 
-You should receive the Next.js starter page:
+您应该会收到 Next.js 起始页：
 
 <Container>
   <Image src={starter} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-Next, you'll implement baseline OAuth functionality.
+接下来，您将实现基线 OAuth 功能。
 
-## Part 2: Implementing OAuth
+## 第 2 部分：实施 OAuth
 
-You'll start out implementing OAuth using a local *loopback* client with in-memory storage.
+您将开始使用具有内存存储的本地 *loopback* 客户端来实现 OAuth。
 
-OAuth loopback works by using a special redirect URI (like http://127.0.0.1:PORT/callback) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+OAuth 环回的工作原理是使用特殊的重定向 URI（例如 http://127.0.0.1:PORT/callback）将授权代码直接发送回应用程序，该应用程序侦听本地端口，避免基于浏览器的回调并为令牌交换启用安全、直接的通信。应用程序打开一个本地侦听器，而不是 Web 重定向，您可以在浏览器中进行身份验证，服务器重定向回应用程序的本地 URI，让应用程序获取代码并将其交换为令牌。它对于开发场景特别有用。
 
-To do this, you'll implement a [confidential client](/specs/oauth#types-of-clients). Your Next.js server will hold credentials for talking to a user's PDS. The server will verify incoming requests from the browser using cookies for session auth.
+为此，您将实现一个[机密客户端](/specs/oauth#types-of-clients)。您的 Next.js 服务器将保存用于与用户的 PDS 通信的凭据。服务器将使用 cookie 来验证来自浏览器的传入请求以进行会话身份验证。
 
-First, create `lib/auth/client.ts`:
+首先，创建“lib/auth/client.ts”：
 
 <S05 />
 
@@ -101,7 +101,7 @@ AT Protocol OAuth has a special carveout for local development. The `client_id` 
 There's no way around it — this section of the tutorial is pretty dry! You'll be implementing standard OAuth flows, which are inherently boilerplate-heavy. But once you have this baseline working, you'll be able to build on top of it!
 </Note>
 
-Next, create `lib/auth/session.ts` to manage user sessions:
+接下来，创建“lib/auth/session.ts”来管理用户会话：
 
 <S06 />
 
@@ -129,7 +129,7 @@ You can visit http://127.0.0.1:3000/oauth-client-metadata.json to see your clien
   <Image src={metadata} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-Now you just need to add a few forms. Create `components/LoginForm.tsx`:
+现在您只需要添加一些表格即可。创建 `components/LoginForm.tsx`：
 
 <S11 />
 
@@ -157,11 +157,11 @@ Then:
   <Image src={workingauth} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-Congratulations — you've now implemented working OAuth as a baseline, and can move on to more exciting features.
+恭喜您 - 您现在已经实现了工作 OAuth 作为基准，并且可以继续使用更令人兴奋的功能。
 
-## Part 3: Adding Database Persistence
+## 第 3 部分：添加数据库持久性
 
-The in-memory approach used so far works for local development, but for production you'll want a proper database. Let's add SQLite and some other dependencies to manage this:
+到目前为止使用的内存方法适用于本地开发，但对于生产，您需要一个合适的数据库。让我们添加 SQLite 和一些其他依赖项来管理它：
 
 <Note>
 If you're using `pnpm` as a package manager as suggeseted here, you should create a file called `pnpm-workspace.yaml` in the root of your project with the following content to ensure `better-sqlite3` is built correctly in the next step:
@@ -224,7 +224,7 @@ This will serve a [client metadata document](/specs/oauth#client-id-metadata-doc
 The `dpop_bound_access_tokens: true` setting enables [DPoP (Demonstrating Proof of Possession)](/specs/oauth#demonstrating-proof-of-possession-d-po-p), which cryptographically binds access tokens to a specific client. This protects long-lived sessions from token theft. The SDK handles all DPoP operations automatically — generating proofs, managing server-provided nonces, and retrying requests when nonces rotate. If you're implementing OAuth without an SDK (e.g., for a sidecar service), see the [OAuth Patterns guide](/guides/oauth-patterns#understanding-d-po-p) for implementation details.
 </Note>
 
-Finally, you'll need to generate a private key for signing. Create a script for that in `scripts/gen-key.ts`:
+最后，您需要生成用于签名的私钥。在 `scripts/gen-key.ts` 中创建一个脚本：
 
 <S24 />
 

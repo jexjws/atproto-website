@@ -3,11 +3,11 @@ import NpmInstall from './_snippets/npm-install.mdx'
 import GoGet from './_snippets/go-get.mdx'
 
 export const header = {
-  title: 'Auth',
-  description: 'Auth for atproto application developers',
+  title: '认证',
+  description: '面向 atproto 应用程序开发者的认证指南',
 }
 
-## Getting Started
+## 开始使用
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -32,38 +32,32 @@ export const header = {
   </TabPanels>
 </TabGroup>
 
-Next, authenticate with an [SDK](/guides/sdk-auth).
+接下来，使用 [SDK](/guides/sdk-auth) 进行身份验证。
 
-## About authorization
+## 关于授权
 
-**Auth is the first part of our docs for a reason!** You don't need to be authed to [read records](/guides/reading-data#unauthenticated-reads) or even to [stream data from the firehose](/guides/streaming-data). But if you're building an app that integrates with the Atmosphere, you'll begin with auth.
+**出于某种原因，身份验证是我们文档的第一部分！** 您不需要获得[读取记录](/guides/reading-data#unauthenticated-reads)甚至[来自Firehose的流数据](/guides/streaming-data)的身份验证。但如果您正在构建一个与 Atmosphere 集成的应用程序，您将从 auth 开始。
 
-You might start out by just using atproto identities as an OAuth source — though you'll find that there's lots more you can do by building on top of the atproto [social graph](/guides/social-graph).
+您可能会从使用 atproto 身份作为 OAuth 源开始 - 尽管您会发现通过在 atproto [社交图谱](/guides/social-graph) 之上进行构建还可以做更多事情。
 
-This section is aimed at developers building applications on atproto. Applications with their own end-user login flow should implement [OAuth](#what-is-o-auth) for authentication. Single-purpose applications such as bots or command line tools may use [password authentication](/guides/sdk-auth) instead.
+本节面向在 atproto 上构建应用程序的开发人员。具有自己的最终用户登录流程的应用程序应实现 [OAuth](#what-is-o-auth) 进行身份验证。单一用途的应用程序（例如机器人或命令行工具）可以改用[密码身份验证](/guides/sdk-auth)。
 
 <Note>
 We also support the use of [App Passwords](/specs/xrpc#app-passwords). Accounts can create and revoke app passwords separate from their primary password. This way, you do not need to supply your primary password to applications that use password auth.
 </Note>
 
-To implement OAuth in your application, refer to [About OAuth](/guides/about-oauth) for common use cases, and the [Permission Sets](/guides/permission-sets) guide for understanding permission models. If you're building your own protocol implementation or OAuth Client SDK, refer to the [OAuth spec](/specs/oauth).
+要在应用程序中实现 OAuth，请参阅[关于 OAuth](/guides/about-oauth) 了解常见用例，并参阅[权限集](/guides/permission-sets) 指南了解权限模型。如果您正在构建自己的协议实现或 OAuth 客户端 SDK，请参阅 [OAuth 规范](/specs/oauth)。
 
-## What *is* OAuth?
+## 什么是 OAuth？
 
-OAuth is an authorization framework that lets developers request access to an account without requiring users to hand over their password. Without OAuth, if someone wanted to authorize a 3rd party app to access their account, their only option would be to type their username and password into that app. This is bad for all sorts of reasons, the first being that a 3rd party app gets to see, and likely save, passwords. And once an app has a username and password, the app would have _full_ access to their account.
+OAuth 是一个授权框架，允许开发人员请求访问帐户，而无需用户交出密码。如果没有 OAuth，如果有人想要授权第 3 方应用程序访问其帐户，他们唯一的选择就是在该应用程序中输入用户名和密码。出于各种原因，这都是不好的，首先是第三方应用程序可以查看并可能保存密码。一旦应用程序拥有用户名和密码，该应用程序就可以_完全_访问其帐户。
 
-OAuth aims to solve these problems with a family of open specifications for managing secure authorization without requiring a person's username and password. If you've ever used a "Sign in with..." button or link on the web, you've used OAuth.
+OAuth 旨在通过一系列开放规范来解决这些问题，用于管理安全授权，而不需要个人的用户名和密码。如果您曾经使用过网络上的“使用...登录”按钮或链接，那么您就使用过 OAuth。
 
-As a developer, you can request limited access to a person's account, meaning if you only need to post a message to someone's public timeline, you don't also need to request access to read their private messages. This is great for your app because you don't have to worry about managing data you don't need, and it's great for the person using your app because they don't need to worry about their DMs being compromised.
+作为开发人员，您可以请求对某人的帐户进行有限访问，这意味着如果您只需要向某人的公共时间线发布消息，则不需要请求访问权限来阅读他们的私人消息。这对于您的应用程序来说非常有用，因为您不必担心管理不需要的数据，而且对于使用您的应用程序的人来说也非常有用，因为他们不需要担心他们的 DM 受到损害。
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-Begin by reading [SDK authentication](/guides/sdk-auth). To implement OAuth in your application, refer to [About OAuth](/guides/about-oauth) for common use cases, and the [Permission Sets](/guides/permission-sets) guide for understanding permission models.
+首先阅读[SDK 身份验证](/guides/sdk-auth)。要在应用程序中实现 OAuth，请参阅[关于 OAuth](/guides/about-oauth) 了解常见用例，并参阅[权限集](/guides/permission-sets) 指南了解权限模型。
 
-- [SDK authentication](/guides/sdk-auth)
-- [About OAuth](/guides/about-oauth)
-- [Permission Requests](/guides/permission-requests)
-- [Permission Sets](/guides/permission-sets)
-- [OAuth Patterns](/guides/oauth-patterns)
-- [OAuth spec](/specs/oauth)
-- [Permissions spec](/specs/permission)
+- [SDK认证](/guides/sdk-auth)

@@ -4,68 +4,68 @@ import LexBuild from './_snippets/lex-build.mdx'
 import ClientUsageTs from './_snippets/client-usage-ts.mdx'
 
 export const header = {
-  title: 'Developing with Lexicons',
-  description: 'Using Lexicons in your dev environment',
+  title: '使用词典进行开发',
+  description: '在您的开发环境中使用 Lexicons',
 }
 
-Lexicon schemas drive code generation, request validation, and client typing across the AT Protocol stack.
+词典模式驱动 AT 协议栈中的代码生成、请求验证和客户端输入。
 
-## Installing Lexicons with lex
+## 使用 lex 安装词典
 
-Our SDKs each install a `lex` tool that lets you generate a type-safe client that knows which parameters each AT endpoint expects.
+我们的 SDK 每个都安装了一个“lex”工具，可让您生成类型安全的客户端，该客户端知道每个 AT 端点需要哪些参数。
 
-### TypeScript
+### 打字稿
 
-First, install the `@atproto/lex` package:
+首先，安装`@atproto/lex`包：
 
 <NpmInstall />
 
-This provides the `lex` command, which you can use to install Lexicons into a local project:
+这提供了“lex”命令，您可以使用该命令将 Lexicons 安装到本地项目中：
 
 <LexInstallLexicons />
 
-This creates:
+这将创建：
 
-- `lexicons.json` - manifest tracking installed Lexicons and their versions (CIDs)
-- `lexicons/` - directory containing the Lexicon JSON files
+- `lexicons.json` - 清单跟踪已安装的 Lexicons 及其版本 (CID)
+- `lexicons/` - 包含 Lexicon JSON 文件的目录
 
-Finally, generate TypeScript schemas from the installed Lexicons:
+最后，从安装的 Lexicons 生成 TypeScript 模式：
 
 <LexBuild />
 
-This writes TypeScript files to `./src/lexicons`. Once you've run `lex build`, calling a method is a typed `client.call` against the generated definition:
+这会将 TypeScript 文件写入“./src/lexicons”。运行“lex build”后，调用方法就是针对生成的定义的类型化“client.call”：
 
 <ClientUsageTs />
 
-For more guidance on working with `lex`, refer to the [readme](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex#lexicon-schemas).
+有关使用“lex”的更多指导，请参阅[自述文件](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex#lexicon-schemas)。
 
-## XRPC Methods
+## XRPC 方法
 
-A Lexicon whose `main` definition is a method describes one of three kinds of XRPC call:
+“main”定义是一个方法的 Lexicon 描述了三种 XRPC 调用之一：
 
-- **`query`** — a read, served over HTTP `GET`, parameters in the query string. See [Reading Data](/guides/reading-data) for end-to-end examples.
-- **`procedure`** — a side-effectful call, served over HTTP `POST`, input as a JSON body (or another MIME type if declared). See [Writing Data](/guides/writing-data).
-- **`subscription`** — a server-pushed WebSocket stream with DAG-CBOR frames, used for the firehose.
+- **`query`** — 通过 HTTP `GET` 读取查询字符串中的参数。有关端到端示例，请参阅[读取数据](/guides/reading-data)。
+- **`procedure`** — 一个副作用调用，通过 HTTP `POST` 提供，作为 JSON 正文（或其他 MIME 类型，如果声明）输入。请参阅[写入数据](/guides/writing-data)。
+- **`订阅`** — 服务器推送的带有 DAG-CBOR 帧的 WebSocket 流，用于 Firehose。
 
 Each method is reachable at `/xrpc/<nsid>` on whatever service implements it — `app.bsky.actor.getProfile` lives at `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile`. The NSID *is* the URL path.
 
-Parameters, input body, and output are all type-checked at compile time and validated at runtime against the Lexicon shape.
+参数、输入主体和输出都在编译时进行类型检查，并在运行时根据 Lexicon 形状进行验证。
 
-## Using the .internal TLD
+## 使用 .internal TLD
 
-NSIDs use reverse DNS lookup — `app.bsky.*` resolves under `bsky.app`, `com.atproto.*` under `atproto.com`. But for **service-to-service calls between components of the same operator**, there's no public schema to publish or resolve.
+NSID 使用反向 DNS 查找——“app.bsky.*”在“bsky.app”下解析，“com.atproto.*”在“atproto.com”下解析。但对于同一运营商的组件之间的**服务到服务调用，没有可发布或解析的公共模式。
 
-For those, you can use NSIDs prefixed with `internal.`, taking advantage of [`.internal` being a reserved TLD](https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml) that can never be registered. For example, the reference implementation includes [`internal.bsky.actor.getProfiles`](https://github.com/bluesky-social/atproto/blob/main/lexicons/internal/bsky/actor/getProfiles.json), a variant of `app.bsky.actor.getProfiles`.
+对于这些，您可以使用以“internal.”为前缀的 NSID，利用永远无法注册的 [`.internal` 作为保留 TLD](https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml)。例如，参考实现包括 [`internal.bsky.actor.getProfiles`](https://github.com/bluesky-social/atproto/blob/main/lexicons/internal/bsky/actor/getProfiles.json)，它是 `app.bsky.actor.getProfiles` 的变体。
 
-This gives you:
+这给你：
 
-- **Built-in SDK exclusion.** The codegen filter in `@atproto/lex` treats `*.internal.*` as the canonical exclude pattern, so internal endpoints never appear in your published client SDK.
+- **内置 SDK 排除。** `@atproto/lex` 中的 codegen 过滤器将 `*.internal.*` 视为规范排除模式，因此内部端点永远不会出现在您发布的客户端 SDK 中。
 - **All of the XRPC machinery.** Same codegen, typed handlers, request/response validation, inter-service auth, and `/xrpc/<nsid>` routing, but without committing the endpoint to your public protocol surface.
 
-Use `internal.*` whenever an XRPC method is plumbing for your own infrastructure: optimizations specific to one caller, admin or operational queries, or anything you wouldn't want a third-party implementer to feel obligated to support.
+每当 XRPC 方法为您自己的基础设施进行管道检查时，请使用“internal.*”：特定于一个调用者、管理或操作查询的优化，或者您不希望第三方实现者有义务支持的任何内容。
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-- [Publishing Lexicons](/guides/publishing-lexicons)
-- [Lexicon Style Guide](/guides/lexicon-style-guide)
-- [Lexicon Specs](/specs/lexicon)
+- [出版词典](/guides/publishing-lexicons)
+- [词典风格指南](/guides/lexicon-style-guide)
+- [词典规格](/specs/lexicon)

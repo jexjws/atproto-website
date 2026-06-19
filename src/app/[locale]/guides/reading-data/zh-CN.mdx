@@ -11,11 +11,11 @@ import UnauthenticatedClientGo from './_snippets/unauthenticated-client-go.mdx'
 import GetProfileGo from './_snippets/get-profile-go.mdx'
 
 export const header = {
-  title: 'Reading Data',
-  description: 'Read AT Protocol Records',
+  title: '读取数据',
+  description: '读取AT协议记录',
 }
 
-## Listing Records
+## 挂牌记录
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -24,23 +24,23 @@ export const header = {
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    You can read records from a user's data repository with `client.list()`:
+您可以使用“client.list()”从用户的数据存储库中读取记录：
 
     <ListRecordsTs />
 
-    Each Lexicon will have its own parameters; for `app.bsky.feed.post`, you can specify the `repo` (a user's handle or [DID](#did-resolution)) and a `limit` on the number of posts to return.
+每个词典都有自己的参数；对于“app.bsky.feed.post”，您可以指定“repo”（用户句柄或 [DID](#did-resolution)）以及要返回的帖子数量的“限制”。
     </TabPanel>
     <TabPanel value="go">
-    You can read posts from a user's data repository with `RepoListRecords()`:
+您可以使用“RepoListRecords()”从用户的数据存储库中读取帖子：
 
     <ListRecordsGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
 
-Refer to [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post) for this complete Lexicon.
+有关完整的词典，请参阅 [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post)。
 
-## Getting Records
+## 获取记录
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -49,12 +49,12 @@ Refer to [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lw
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    You can use `client.get()` to read an individual record by its [`rkey`](/specs/record-key):
+您可以使用 client.get() 通过其 [`rkey`](/specs/record-key) 读取单个记录：
 
     <GetRecordTs />
     </TabPanel>
     <TabPanel value="go">
-    You can use `RepoGetRecord()` to read an individual record by its [`rkey`](/specs/record-key):
+您可以使用 `RepoGetRecord()` 通过其 [`rkey`](/specs/record-key) 读取单个记录：
 
     <GetRecordGo />
     </TabPanel>
@@ -62,23 +62,23 @@ Refer to [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lw
 </TabGroup>
 
 
-## DID Resolution
+## DID 分辨率
 
-In atproto, user data is resolved through [DIDs](/guides/sync#data-repositories), also known as [Decentralized Identifiers](https://en.wikipedia.org/wiki/Decentralized_identifier). Most AT Protocol applications use [`did:plc` DIDs](/guides/the-at-stack#did-plc) when registering user accounts.
+在atproto中，用户数据通过[DID](/guides/sync#data-repositories)解析，也称为[去中心化标识符](https://en.wikipedia.org/wiki/Decentralized_identifier)。大多数 AT 协议应用程序在注册用户帐户时使用 [`did:plc` DID](/guides/the-at-stack#did-plc)。
 
-You can resolve a known username to a DID using the `com.atproto.identity.resolveHandle` endpoint. This means that you can just visit this address in a browser with a `handle=` arugment to look up your DID:
+您可以使用“com.atproto.identity.resolveHandle”端点将已知用户名解析为 DID。这意味着您只需在浏览器中使用“handle=”参数访问该地址即可查找您的 DID：
 
 <ResolveHandleUrl />
 
 <ResolveHandleResponse />
 
-The TypeScript SDK also provides the DID of the currently-authenticated as `client.did`:
+TypeScript SDK 还提供当前经过身份验证的 DID 作为“client.did”：
 
 <ClientDidTs />
 
-## Unauthenticated Reads
+## 未经身份验证的读取
 
-Some API endpoints can be accessed without authentication. You can create an unauthenticated client by passing a public API URL to a new `Client`:
+某些 API 端点无需身份验证即可访问。您可以通过将公共 API URL 传递给新的“客户端”来创建未经身份验证的客户端：
 
 <TabGroup defaultValue="ts">
   <TabList>
@@ -89,31 +89,26 @@ Some API endpoints can be accessed without authentication. You can create an una
     <TabPanel value="ts">
     <UnauthenticatedClientTs />
 
-    As with an authenticated client, you can `.get()` any public records, like a user's profile:
+与经过身份验证的客户端一样，您可以“.get()”任何公共记录，例如用户的个人资料：
 
     <GetProfileTs />
 
-    You can make API calls to any Lexicon using the same SDK client pattern. For more examples, refer to [the SDK documentation](https://www.npmjs.com/package/@atproto/lex).
+您可以使用相同的 SDK 客户端模式对任何 Lexicon 进行 API 调用。有关更多示例，请参阅[SDK 文档](https://www.npmjs.com/package/@atproto/lex)。
     </TabPanel>
     <TabPanel value="go">
     <UnauthenticatedClientGo />
 
-    As with an authenticated client, you can `.get()` any public records, like a user's profile:
+与经过身份验证的客户端一样，您可以“.get()”任何公共记录，例如用户的个人资料：
 
     <GetProfileGo />
 
-    You can make API calls to any Lexicon using the same SDK client pattern. For more examples, refer to [the Go SDK libraries](https://pkg.go.dev/github.com/bluesky-social/indigo).
+您可以使用相同的 SDK 客户端模式对任何 Lexicon 进行 API 调用。有关更多示例，请参阅 [Go SDK 库](https://pkg.go.dev/github.com/bluesky-social/indigo)。
     </TabPanel>
   </TabPanels>
 </TabGroup>
 
-Next, you might try [writing](/guides/writing-data) to a user's data repository.
+接下来，您可以尝试[写入](/guides/writing-data) 到用户的数据存储库。
 
-## Further Reading and Resources
+## 进一步阅读和资源
 
-- [Reads and Writes](/guides/reads-and-writes)
-- [Writing data](/guides/writing-data)
-- [Accounts and deletions](/guides/account-lifecycle)
-- [Social graph](/guides/social-graph)
-- [Record Key spec](/specs/record-key)
-- [URI scheme](/specs/at-uri-scheme)
+- [读取和写入](/guides/reads-and-writes)

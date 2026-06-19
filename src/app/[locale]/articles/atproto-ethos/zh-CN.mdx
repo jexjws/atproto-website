@@ -6,141 +6,141 @@ export const header = {
     'A deep dive into the philosophical and aesthetic principles underlying the design of AT Protocol.',
 }
 
-*本文是 Daniel Holmgren 在 AtmosphereConf（2025 年 3 月）上发表的[最近演讲](https://www.youtube.com/watch?v=1A-0k58TfPo) 的博文版本。*
+*This post is a blogpost version of a [recent talk](https://www.youtube.com/watch?v=1A-0k58TfPo) that Daniel Holmgren gave at AtmosphereConf (March 2025).*
 
-AT 协议（或 atproto）是一种用于创建去中心化社交应用程序的协议。 {{className: 'lead'}}
+AT Protocol (or atproto) is a protocol for creating decentralized social applications. {{className: 'lead'}}
 
-这并不是第一个以此为目标的协议。在去中心化社交媒体协议的历史上，atproto 采用了一种独特的方法，这种方法仍然深受之前的技术和运动的影响。 {{className: 'lead'}}
+It's not the first protocol with that aim to exist. In the history of decentralized social media protocols, atproto takes a unique approach which is still deeply influenced by technologies and movements that came before it. {{className: 'lead'}}
 
-在我们的协议设计讨论中经常出现“atproto ethos”这个短语。这是一个模糊的术语，但我们用它来指代网络设计背后的哲学和美学原则。 {{className: 'lead'}}
+The phrase “atproto ethos” often comes up during our protocol design discussions. It's a fuzzy term, but we use it to refer to the philosophical and aesthetic principles that underlie the design of the network. {{className: 'lead'}}
 
-在这篇文章中，我们将提炼这种精神。首先，我们看看对 atproto 最直接影响的技术动向。然后，我们列出 atproto 带来的核心创新。最后，我们强调一些影响设计的固执己见的思维方式。 {{className: 'lead'}}
+In this post, we'll distill that ethos. First, we look at the movements in technology that have most directly influenced atproto.Then, we pull out the core innovations that atproto brought to the table. Finally, we highlight some opinionated ways of thinking that influenced the design. {{className: 'lead'}}
 
-## Atproto 处于三个动作的交叉点
+## Atproto at the intersection of three movements
 
-### 网络
+### The web
 
-对 atproto 的第一个也是最明显的影响是网络本身。
+The first and most obvious influence on atproto is the web itself.
 
-Web 是通过互联网发布和访问文档的信息系统。无需许可即可加入并互动。此保证基于底层互联网中的类似保证。但是，如果互联网运行正常，并且你有一台计算机、互联网连接和 IP 地址，你就可以在网络上托管文档。
+The web is an information system for publishing and accessing documents over the internet. It's permissionless to join and interact with. This guarantee is predicated on similar guarantees in the underlying internet. However, if the internet is functioning properly and you have a computer, an internet connection, and an IP address you can host a document on the web.
 
-网络的无许可性需要内容的分布式权威。也就是说，没有一个中央机构来决定网络中包含哪些内容或某些内容是否“合法”。相反，每台发布和托管文档的计算机都是该文档的权威。该权限是**基于位置的** ，这意味着你可以通过与该站点交谈并接收文档来找出该站点托管的文档是什么。这听起来有点明显，但实际上是一个激进的想法。不需要分发者、文件验证者或文件的中央登记处。
+The permissionlessness of the web requires distributed authority of content. That is, there isn't a central authority that decides what is included in the web or if some content is “legitimate” or not. Rather, each computer that publishes and hosts a document is the authority for that document. This authority is **location-based**, meaning you can find out what the document hosted at a given site is by talking to that site and receiving the document. This sounds a little obvious when spelled out, but it's actually a radical idea. There's no need for distributors, document certifiers or central registries of documents.
 
-虽然这种开放性是网络的定义治理特征，但定义产品的特征是超链接。超链接是文档中的链接，可将你导航到另一个文档。值得注意的是，这些超链接可以在未经其他机构许可的情况下“跨机构”链接。其结果是网络不仅仅是孤立发布的不相关文档的集合。相反，网络上的文档形成了一个巨大的互连数据集成网络。
+While this openness is the defining governance feature of the web, the defining product feature is the hyperlink. A hyperlink is a link in a document that navigates you to another document. Notably, these hyperlinks can link *across authorities* without permission of the other authority. The result of this is that the web is not just a collection of unrelated documents published in isolation. Rather, documents on the web form a vast integrated network of interconnected data.
 
-这里描述的 Web，即基于文档的 Web，通常称为 Web 1.0。但过去 20 年来我们一直使用的 Web 2.0 在形态和功能上却截然不同。
+The web described here, the document-based web, is commonly referred to as Web 1.0. But Web 2.0, the web that we've been living with for the last 20 years, is quite different in its shape and function.
 
-现代网络主要发生在 Facebook 或 Youtube 等一些大型平台上，用户拥有帐户并发布内容或查看其他帐户的内容并与之交互。这些交互和内容通常看起来不像传统意义上的“文档”。所有内容仍然紧密相连，但这些联系通常仅限于创建它们的平台的边界。
+The modern web mostly takes place on a few large platforms like Facebook or Youtube where users have accounts and post content or view and interact with content from other accounts. These interactions and content often don't look like “documents” in the traditional sense. The content is all still deeply interconnected, but those connections are generally restricted to the boundaries of the platform that they are created through.
 
-这个新的网络更容易参与——你不需要知道如何运行服务器或拥有静态 IP 地址就可以在网络上发布内容。你只需创建一个帐户即可。也许最重要的是，现代网络能够支持更丰富、更动态的内容和交互：实时对话、网络中发生的一切的全局视图以及通过这些庞大的数据网络引导用户注意力的算法。
+This new web is significantly easier to participate in — you don't need to know how to run a server or have a static IP address in order to publish content on the web. You can simply create an account. Perhaps most importantly, the modern web is capable of supporting richer and more dynamic content and interactions: real time conversations, global views of everything happening in a network, and algorithms that direct users' attention through these vast networks of data.
 
-基于文档的网络向现代网络的演变不应被视为网络的失败。相反，这是其成功的证明。构建网络的理念、精神和原语足够强大和灵活，足以促进网络第二层的创建。然而，在这个演变过程中，我们也失去了一些东西。
+The evolution of the document-based web into the modern web should not be seen as a failure of the web. Rather, it's a testament to its success. The idea, ethos, and primitives that the web was built on were powerful and flexible enough to facilitate the creation of essentially a second layer to the web. However, in this evolution, we also lost something.
 
-### 点对点
+### Peer-to-peer
 
-点对点 (p2p) 运动在很多方面都是对主宰现代网络的大型平台的出现的反应。理想主义和激进（有时是错误的），p2p 运动询问我们是否可以从混合中完全删除后端应用程序。
+The peer-to-peer (p2p) movement was in many ways a reaction to the emergence of the massive platforms that came to dominate the modern web. Idealistic and radical (sometimes to a fault), the p2p movement asked if we could remove backend applications from the mix entirely.
 
-社交媒体平台的用户不会将内容和交互发送到某些协调后端服务，而是直接将相关数据从他们的设备发送到另一台设备。如果两个用户互相关注并且其中一个用户发帖，则另一个用户将通过与前者的设备的直接连接接收该帖子。当然，这需要双方同时在线才能进行任何数据传输。 P2p 系统试图通过允许数据在多个设备之间复制来解决这个问题。因此，用户可能会收到来自发帖用户的帖子，或者他们可能会收到来自当前在线并拥有该帖子的另一位朋友的帖子。
+Instead of sending content and interactions to some coordinating backend service, users of social media platforms would send relevant data directly from their device to another device. If two users follow one another and one of them posts, the other would receive the post through a direct connection with the former's device. Of course, this requires that both parties are online at the same time for any data transfer to happen. P2p systems sought to get around this by allowing data to be replicated across many devices. Therefore a user may receive a post from the posting user or they could receive it from another friend that's currently online and in possession of the post.
 
-由此，p2p 摆脱了传统的基于位置的网络权威模型，转向“自我认证数据”。数据可能来自最初并未创建该数据的设备，即使内容来自规范设备，该设备也可能没有与该帐户关联的静态 IP。因此p2p协议将数据的权限从数据所在的位置转移到了数据本身。
+With this, p2p moved away from the traditional location-based authority model of the web and towards “self-certifying data”. Data could come from a device that didn't originally create that data, and even if the content is coming from the canonical device, that device probably doesn't have a static IP associated with the account. Therefore p2p protocols moved the authority of data from the location of the data to the data itself.
 
-P2p 数据通常通过数据的哈希值进行寻址，并由发布用户持有的私钥进行签名。这样，内容可以任意重新分发，同时保持发布内容的用户的完全权限。因此，客户端可以简单地访问抽象的“网络”，以找到一些具有已知哈希值的内容。当运行良好时，内容寻址网络具有这种美妙的品质，其中数据似乎“就存在”，位于协作设备网格中的某个地方。与传统的位置寻址网络不同，在传统的位置寻址网络中，你收到的数据取决于你所使用的服务，p2p 系统中的数据具有这种基本特性 - 数据而不是位置才是首要的。
+P2p data is often addressed by the hash of the data and signed by a private key that the posting user holds. With this, content can be arbitrarily redistributed while maintaining full authority that it came from the user that posted it. Therefore a client can simply reach out to “the network” in the abstract to find some content with a known hash. When functioning well, content-addressed networks have this beautiful quality where the data seems to “just exist”, somewhere out there in this mesh of cooperating devices. Unlike the traditional location-addressed web where the data you receive is contingent on the service that you talk to, data in p2p systems has this essential quality to it - the data, not the location, is in primacy.
 
-当然，抽象并不总是完美地工作，这种新的拓扑带来了许多问题 - 最显着的是数据可用性和发现。如前所述，如果某些数据的发布者不在线，你需要从网络中的另一台设备查找该数据。发现哪个设备可以为你提供某些数据是一个难题，特别是当设备经常在不同地址打开和离线时。可能没有任何在线设备可以向你发送你正在寻找的数据！即使一切运行良好，这些系统也必须努力实现最终一致性，因为网络分区更加常见，并且网络中没有任何服务可以声称拥有所有数据的“全局视图”。
+Of course the abstraction doesn't always work perfectly, and this new topology brought with it a host of problems - most notably data availability and discovery. As noted earlier, if the poster of some data is not online, you need to find that data from another device in the network. Discovering which device can serve you some data is a hard problem, especially with devices routinely coming on and offline at different addresses. And it may be the case that there is not a single online device that can send you the data that you're looking for! Even if everything is functioning well, these systems have to lean in hard to eventual consistency since network partitions are much more common and there is no service in the network that can purport to have a “global view” of all data.
 
-这些系统的另一个主要问题是，用户在现代网络中已经习惯的丰富的社交媒体网站依赖于大型计算和存储密集型索引。将服务器从混合中分离出来意味着所有资源使用都转移到用户的设备上。时间线生成、线程构建、聚合交互计数、社交图查询等等都必须在功能相对较弱的最终用户设备上完成。
+The other major issue with these systems is that the rich social media sites that users had become accustomed to in the modern web rely on large compute and storage intensive indices. Getting servers out of the mix meant that all of that resource usage moved onto users' devices. Timeline generation, thread construction, aggregating interaction counts, social graph queries, and more all had to be done on relatively underpowered end user devices.
 
-最终结果是，基于这些 p2p 协议构建的产品常常让人感觉参差不齐 - 缺少帖子和交互，无法创建全局算法，并且运行这些应用程序会对它们所运行的设备的电池寿命和资源使用造成显着影响。简而言之，复制现代网络大型平台的无缝动态感觉似乎并不容易。
+The end result is that products built on these p2p protocols often feel spotty - posts and interactions are missing, global algorithms are impossible to create, and running these applications takes a noticeable hit on the battery life and resource usage of the devices they run on. In short, it doesn't seem tractable to replicate the seamless dynamic feel of the massive platforms of the modern web.
 
-### 数据密集型分布式系统
+### Data-intensive distributed systems
 
-在探索点对点技术的同时，构成现代网络的平台的规模也在不断扩大。随着参与网络的障碍降低，数百万人甚至最终数十亿人开始参与网络并在网络上生成内容。
+While peer-to-peer technology was being explored, the platforms that make up the modern web continued to grow in size. As the barriers to participating in the web lowered, millions and eventually billions of people started participating in and generating content on the web.
 
-这些平台上的内容不仅仅是可以静态提供的文档。相反，这些平台每天处理数十亿次交互。这些交互又被组合成丰富的动态视图来为用户提供服务：个人资料页面、新闻提要、线程、点赞计数等等。
+The content on these platforms isn't just documents that can be served statically. Rather these platforms process billions of interactions every day. These interactions in turn are composed into rich and dynamic views to serve to users: profile pages, news feeds, threads, like counts, and more.
 
-仅仅处理数据是不够的，因为这些平台的读取量很大。对于创建的每一条内容，平台可能必须为其他用户提供数百或数千个请求。随着这些平台变得更加包容，用户对其可用性和延迟的期望也随之增加。停机和服务质量下降变得越来越难以容忍，可能会给公司造成数百万美元的损失。
+Simply processing the data is not enough, as these platforms are very read heavy. For every piece of content that is created, platforms may have to serve hundreds or thousands of requests to other users. As these platforms became more encompassing, user expectations increased as well in regards to their availability and latency. Downtime and degradation of services became less tolerated and could cost companies millions of dollars.
 
-所有这些因素都需要新的工具和架构来构建服务。 Martin Kleppman 的《设计数据密集型应用程序》一书可能最好地概述了这些技术。尽管没有两个平台的构建完全相同，并且存在许多相互竞争的工具和方法，但我们仍然可以总结总体趋势。
+All of these factors required new tools and architectures for building services. An overview of these techniques is maybe best captured in Martin Kleppman's book “Designing Data Intensive Applications”. While no two platforms are built exactly the same and there are many competing tools and methodologies, we can still sum up the general trends.
 
-由于这些平台的读取量很大，因此通常它们会分开读取和写入负载，以便可以单独扩展。一个简单的版本是引入数据库的只读副本。虽然仍然有一个“领导者”数据库，但许多副本可以帮助满足超大的读取负载。
+Because these platforms are so read heavy, generally they split apart read and write load so they can scale separately. A simple version of this is to introduce read replicas of a database. While there is still a single “leader” database, many replicas can help serve the outsized read load.
 
-然而，支持这些平台所需的海量数据和计算无法由单台机器处理。因此，即使在给定平台的部署中，工作也必须分散到许多机器上。一种常见的模式是将应用程序的各个部分剥离成更小的“微服务”，这些“微服务”可以相互调用，然后将这些微服务组合成更大的平台。通过隔离每个子系统的关注点，团队可以根据其特定需求扩展每个子系统。例如，提要生成看起来与视频转码非常不同，并且这些工作负载可以受益于托管在适合其工作负载的机器上。
+However, the sheer volume of data and the compute required to support these platforms cannot be handled by a single machine. Therefore even within a given platform's deployment, work must be split up across many machines. A common pattern is to peel off pieces of the application into smaller “micro-services” that can call into one another and then compose these micro-services into the larger platform. By isolating the concerns of each subsystem, teams can scale each according to its particular needs. For example, feed generation looks very different from video transcoding, and these workloads can benefit from being hosted on machines tailored to their workload.
 
-分布式系统的引入也带来了分布式问题。分解的微服务放弃了保持平台上所有数据的强一致视图的想法。在某些情况下，这意味着使用针对高吞吐量量身定制的最终一致数据库，例如 Scylla（我们在 Bluesky 使用）。像 Scylla 这样的数据库放弃了 ACID 保证和对更传统 SQL 数据库提供的丰富动态查询的支持。相反，它们需要提前知道数据的索引和访问模式。
+The introduction of distributed systems also introduces distributed problems. Decomposed micro-services give up on the idea of maintaining a strongly consistent view of all the data on the platform. In some cases this means the use of eventually consistent databases tailored to high throughput, such as Scylla (which we use at Bluesky). Databases like Scylla give up the ACID guarantees and support for rich dynamic queries that more traditional SQL databases offer. Rather they require the indices and access patterns of the data to be known ahead of time.
 
-新的数据库技术的引入和微服务的大趋势带来了更多的问题。微服务通常需要访问相同的数据。如果一个微服务宕机了一段时间，它需要一种机制来赶上发生的一切。应用程序需要一种方法来创建新的索引，甚至可以针对过去的数据。流处理方法有助于解决其中许多问题。在流处理架构中（最突出的例子是 Kafka），你维护流经系统的所有事件的事件日志。许多消费者都会利用此事件日志。如果消费者离线，当他回来时，它可以从上次中断的地方继续。如果需要创建新索引，则可以简单地重播整个事件日志。这些流处理工具充当规范数据的“主干”，使平台能够围绕单一事实来源进行合并。
+The introduction of new database technologies and the general trend of micro-services brought even more problems. Micro-services often need access to the same data. If a micro-service goes down for a period of time, it needs a mechanism to catch up with everything that happened. And applications need a way to create new indices even over past data. An approach of stream processing helped to answer many of these issues. In a stream processing architecture - most prominently exemplified by Kafka - you maintain an event log of all events that flow through a system. Many consumers tap into this event log. If a consumer goes offline, when it comes back it can pick back up where it left off. And if a new index needs to be created, the entire event log can simply be replayed. These stream processing tools serve as a “backbone” of canonical data that enable the platform to coalesce around a single source of truth.
 
-### 合成
-Atproto 是这三个动作的综合体。
+### Synthesis
+Atproto is situated as the synthesis of these three movements.
 
-1. **来自网络：** 一个开放的、无需许可的、通用的互连内容网络。
+1. **From the web:** an open, permissionless, and universal network of interconnected content.
 
-2. **来自点对点：** 与位置无关的数据、自我认证数据以及对用户体验任何方面的集中控制的怀疑。
+2. **From peer-to-peer:** location-independent data, self-certifying data, and skepticism of centralized control of any aspect of the user’s experience.
 
-3. **来自数据密集型分布式系统：** 读写负载的拆分、应用程序感知的二级索引以促进高吞吐量和低延迟、流式传输规范数据以及将单体分解为微服务。
+3. **From data-intensive distributed systems:** a splitting of read and write load, application-aware secondary indices to facilitate high-throughput and low latency, streaming canonical data, and the decomposition of monoliths into microservices.
 
-## 创新
+## Innovations
 
-在此基础上，atproto 增加了两项核心创新：基于身份的权限以及将数据托管与构建在其之上的丰富应用程序分离。
+From this basis, atproto adds two core innovations: identity-based authority and the separation of data hosting from the rich applications built on top of it.
 
-### 基于身份的权限
+### Identity-based authority
 
-atproto的数据模型与p2p网络非常相似。主要区别在于，不是简单地进行内容寻址，而是添加了一个间接层以使数据进行身份寻址。因此，at-uri 看起来像“at://username/record-type/record-key”。
+The data model of atproto is very similar to that of p2p networks. The major difference is that rather than being simply content-addressed, a layer of indirection is added to make the data identity-addressed. Therefore an at-uri looks like `at://username/record-type/record-key`.
 
-这种数据的身份寻址是基于网络的位置寻址数据模型的反转。在传统网络中，位置（或服务器）是主要对象；在 atproto 中，用户是主要对象。
+This identity-addressing of data is an inversion of the web-based model of location-addressed data. In the traditional web, the location (or the server) is the primary object; in atproto, the user is the primary object.
 
-身份是长期存在的，并且不受其当前所在的任何位置的限制。数据在 p2p 网络中的首要地位已在堆栈中上升到身份。身份独立于任何给定的主机或应用程序而存在，并且可以在它们之间流畅地移动。然后，网络中的数据通过明确定义的机制从这些身份流出，该机制如何将身份解析为某些数据集，并在创建新内容时接收实时更新。
+Identities are long-lived and untethered from any location where they may currently be housed. The primacy that data has in p2p networks is moved up the stack to identity. Identities exist independent of any given host or application and can move between them fluidly. Data in the network then flows from these identities with a well-defined mechanism of how to resolve the identity to some set of data and receive real time updates as new content is created.
 
-身份本身解析为可以验证身份数据真实性的关键材料，以及消费者可以联系以获取身份数据的规范当前状态的特定主机。这些规范的用户数据主机称为个人数据服务器 (PDS)。
+Identities themselves resolve to key material that can verify the authenticity of that identity's data as well as a particular host that consumers can reach out to get the canonical current state of the identity's data. These canonical hosts of user data are known as Personal Data Servers (PDSs).
 
-虽然每个身份都有一个规范主机，但从该主机发出的数据是自我认证和自我描述的。这意味着它可以任意重播到网络中。用户数据的使用者永远不需要接触数据的规范主机。相反，他们可以依赖外部服务来抓取规范数据主机并为某些定义明确的网络集输出更新流。
+While there is a canonical host for every identity, the data that comes out of that host is self-certifying and self-describing. This means that it can be arbitrarily rebroadcast out into the network. Consumers of user data do not ever need to reach out to the canonical host of the data. Instead, they can rely on external services that crawl the canonical data hosts and output a stream of updates for some well-defined set of the network.
 
-身份输出的数据采用“记录”存储库的形式。每条记录都是一段结构化数据 - 帖子、点赞、关注、个人资料等。在网络中，主要对象是文档，文档通过超链接链接在一起。在 atproto 中，主要对象是记录，记录通过 at-uri 引用链接在一起。
+The data that an identity outputs takes the form of a repository of “records”. Each record is a piece of structured data - a post, a like, a follow, a profile, etc. In the web, the primary object is the document and documents are linked together through hyperlinks. In atproto, the primary object is the record, and records are linked together through at-uri references.
 
-### 通用托管，集中产品开发
+### Generic hosting, Centralized product development
 
-PDS 遵循的数据模型（存储库）是通用的。 PDS 作为一个整体实际上有一个非常简单的工作：托管用户数据并管理他们的帐户/身份。这种简单性是有意为之的，对于保持数据层的弹性和锁定开放非常重要。如果 PDS 因特定于应用程序的逻辑或昂贵的索引行为而过载，那么它就会面临使供应商锁定和集中化激励扭曲的风险。
+The data model (the repository) that PDSs adhere to is generic. The PDS as a whole actually has a very simple job: host the users data and manage their account/identity. This simplicity is intentional and important to keeping the data layer resilient and locked open. If a PDS becomes overloaded with application-specific logic or expensive indexing behavior, it runs the risk of warping incentives towards vendor lock-in and centralization.
 
-将特定于应用程序的细节移出 PDS 的另一方面是，它还为应用程序提供了实验和快速迭代应用程序语义的自由。产品开发可以集中进行。这种集中化对于在网络中构建新产品的能力至关重要。在产品开发方面，我们本着“不退一步”的心态。项目应该能够使用现代工具和产品/应用程序开发模式。产品受益于快速迭代的能力，这需要应用程序域的明确所有权。
+The other side of moving application-specific details out of the PDS is that it also gives applications the liberty to experiment and rapidly iterate on application semantics. Product development can occur in a centralized way. This centralization is critical to the ability to build new products in the network. We took a mentality of “no steps backwards” when it came to product development. Projects should be able to use modern tooling and product/application development patterns. Products benefit from the ability to rapidly iterate which requires clear ownership of application domains.
 
-这种所有权反映在 atproto 网络的模式语言中，其中所有权的概念被融入到模式的 ID 中。这些模式的所有者可以自由地迭代和发展应用程序的数据模型。同样，应用程序所有者可以自由地以他们认为合适的方式构建后端。 atproto 网络的“怪异”是有界限的。一旦身份和数据超过该阈值，应用程序将决定如何对其进行索引并将其呈现给用户。
+This ownership is reflected in the schema language for the atproto network where the notion of ownership is baked into the IDs of schemas. The owner of those schemas is free to iterate and evolve the data model for the application. Similarly, application owners are free to build their backends in whichever way they see fit. There is a boundary to the “weirdness” of the atproto network. Once identities and data cross that threshold, it is the application's decision how to index it and present it to the user.
 
-尽管产品开发是集中化的，但由于基于 atproto 构建，底层数据和身份仍然是开放且普遍可访问的。换句话说，对于给定应用程序的发展，所有权是明确的，但由于数据是开放的，因此网络中的任何其他人都可以重用、重新混合或扩展它。
+Even though product development is centralized, the underlying data and identity remain open and universally accessible as a result of building on atproto. Put another way, ownership is clear for the evolution of a given application, but since the data is open, it can be reused, remixed, or extended by anyone else in the network.
 
-## 自以为是
+## Opinionated takes
 
-### 结构赋予自由
+### Structure gives freedom
 
-Atproto 是一个多方、低协调的网络。服务可以无需许可地加入并根据自己的政策运行。虽然协调的痛苦在某种程度上是不可避免的，但 atproto 试图通过成为一个非常结构化的协议来避免最糟糕的情况。你将看到这一点反映在协议中的许多设计决策中：编码为规范 cbor 的记录、无处不在的多格式、存储库中的 unicit（确定性插入顺序独立构造）数据结构、一组受允许的 did/hash 函数，甚至是 OAuth 中要求 DPoP 之类的内容。
+Atproto is a multi-party, low-coordination network. Services can join permissionlessly and operate under their own policies. While coordination pains are to some degree inevitable, atproto tries to head off the worst of it by being a very structured protocol. You'll see this reflected in many design decisions in the protocol: records encoded as canonical cbor, multiformats everywhere, a unicit (deterministic insertion-order-independent construction) data structure in the repository, a constrained set of allowed dids/hash functions, even things like requiring DPoP in OAuth.
 
-虽然能够做“任何事情”的想法具有某种力量，但它也很容易陷入无结构的暴政——协调的崩溃，阻止任何事情真正完成。如果网络中没有结构，可以用于新颖开发的能量就会被重新定向到促进互操作、修复实现之间的边缘情况、建立针对不良行为者或来自其他方的安全问题的防御，以及在没有明确领导者的情况下尝试协调演进。
+While there's something empowering about the idea of being able to do *anything*, it's also easy for this to fall into the tyranny of structurelessness - a collapse in coordination that prevents anything from actually getting done. Without structure in the network, energy that could go into novel development gets redirected into facilitating interoperation, fixing edgecases between implementations, building up defenses to bad actors or security issues from other parties, and trying to coordinate evolution without a clear leader.
 
-这种结构最好的例证可能是 atproto 的模式语言：Lexicon。其他互操作方法尝试创建表达数据属性的通用方式 (RDF) 或在不同域之间转换数据以促进互操作（镜头），而 Lexicon 提供了一种方法来确定两个事物是否使用相同的语言，并提供一种非常结构化的机制来确保数据格式正确。
+This structure is probably best exemplified by the schema language of atproto: Lexicon. Unlike other approaches to interoperation which attempt to create a generalized way of expressing properties on data (RDF) or to translate data between different domains to facilitate interoperation (lenses), Lexicon provides a way to determine if two things are speaking the same language, and to give a very structured mechanism for ensuring that the data is formatted properly.
 
-这样，atproto 就避免了“我们在谈论同一件事，但不是真的”的灰色地带，并迫使应用程序做出离散选择，即如果你在谈论同一件事，那么你正在谈论“完全相同”的同一件事。 atproto 没有尝试假定语义的普遍性，而是促进特定的语义，然后允许这些语义的协作和扩展。
+With this, atproto avoids the gray area of “we're sort of talking about the same thing but not really” and forces applications into the discrete choice that if you're talking about the same thing then you're talking about the *exact* same thing. Instead of trying to posit universality of semantics, atproto facilitates specific semantics and then allows for collaboration and extension of those semantics.
 
-### 懒惰的信任
+### Lazy trust
 
-网络需要对你与之交互的服务有相当程度的信任。虽然传输层是安全的，但你从给定服务器接收的数据仅通过你从该服务器接收的事实来证明。例如，如果你在 Facebook 上加载朋友的帖子，你必须相信 Facebook 会为你提供正确的帖子文本。同样，你必须相信 Facebook 能够很好地保管你的帐户和数据。
+The web requires a fair bit of trust with the services you interact with. While the transport layer is secured, the data that you receive from a given server is attested to solely by the fact that you received it from that server. If you load a post from a friend on Facebook for instance, you have to trust Facebook that they're serving you the correct post text. Similarly you have to trust Facebook to be a good custodian of your account and your data.
 
-P2p 网络采取了一种完全不信任的不同方法。当然，你必须信任你的客户端设备，但仅此而已。由于软件在你的客户端上运行并且信任已融入到数据中，因此不需要信任网络中的任何其他服务或参与者。
+P2p networks took a different approach that was radically trust-less. You have to trust your client device of course, but that's it. Because the software runs on your client and the trust is imbued into the data, no trust in any other service or actor in the network is required.
 
-Atproto 采用中间方法，我们有时将其称为“惰性信任”。与 P2P 网络一样，信任融入到数据中。然而，大多数情况下，在浏览网络时，用户看到的是计算视图而不是规范数据。例如，在查看时间线时，客户可能不会检查每个发布的帖子上的签名。规范数据随时可用，这一事实缓解了这一问题。因此，提供这些计算视图的服务“将其声誉”押在其所服务的每个视图上。如果服务开始提供无效视图，则可以通过验证来证明这一点。由于数据被锁定开放，用户可以迁移到另一个性能更好的服务。
+Atproto takes a middle approach that we sometimes refer to as “lazy trust”. Like p2p networks, trust is imbued into the data. However most often when browsing the network, users are seeing computed views not the canonical data. When viewing a timeline for instance, clients are likely not checking the signatures on every post that comes down. This is mitigated by the fact that the canonical data is always at hand. Therefore the service that offers these computed views is *staking its reputation* on every view that it serves. If a service starts serving invalid views, this can be verifiably proven. And since the data is locked open, users can migrate to another service that is better behaved.
 
-此外，与 p2p 网络不同，用户与托管其数据和身份信息的持久后端（PDS）保持关系。最值得注意的是（虽然 atproto 中不是硬性要求），我们决定将签名密钥移至后端。这可以防止客户端密钥带来的复杂密钥管理用户体验问题。然而，这样做会明显损失用户的控制权。惰性信任再次缓解了这种情况。信任被移至身份系统中的上一层，以便用户可以持有其身份的恢复密钥，从而使他们能够从不良的 PDS 中迁移出来。
+As well, unlike p2p networks, users maintain a relationship with a persistent backend (the PDS) that hosts their data and information about their identity. Most notably (while not a hard requirement in atproto), we made the decision to move signing keys up to the backend. This prevents the complex key management UX issues that come with client-side keys. However, there is an obvious loss in user-control by doing so. This is mitigated once again by lazy trust. Trust is moved a layer up into the identity system such that a user can hold a recovery key for their identity that allows them to migrate away from a bad PDS.
 
-以可信的方式运营本质上比不信任的运营更有效率。一般来说，这体现了 atproto 的理念，即利用以高度信任的方式操作所带来的性能和用户体验收益。然而，在这样做时，始终保持可靠退出的能力和制衡体系，以对冲不良行为者和劣质服务提供商。
+Operating in a trusted manner is by nature more efficient than operating trustlessly. Generally, this speaks to a philosophy of atproto which is to take advantage of the performance and UX gains that come with operating in a high-trust manner. However, when doing so always maintain the ability for credible exit and a system of checks and balances to hedge against bad actors and shoddy service providers.
 
-## 结论
+## Conclusion
 
-考虑到所有这些，我们可以看到协议和网络的一般形状出现。
+Taking all of this into account, we can see a general shape for a protocol and network emerge.
 
-AT协议建立在网络哲学之上，采用点对点协议技术和数据密集型分布式系统的实践。
+AT Protocol builds on the philosophy of the web with the technology of peer-to-peer protocols and the practices of data-intensive distributed systems.
 
-我们将身份放在首位，并将其置于协议设计的中心。规范的用户数据存在于流动且商品化的托管网络中，允许在其上构建丰富的应用程序。
+We hold identity in primacy and center it in the protocol design. Canonical user data exists in a fluid and commoditized hosting network that allows rich applications to be built on it.
 
-我们在设计这个网络时在结构方面犯了错误，希望尽可能利用高信任环境，但如果关系恶化，总是允许可靠的退出。
+And we approach the design of this network erring on the side of structure and hoping to take advantage of high-trust environments where possible, but always allowing for credible exit if that relationship turns sour.
 
-如果这听起来令你兴奋，你可以通过查看 [协议规范](https://atproto.com/specs/atp) 或亲自使用基于协议构建的 [Statusphere](https://github.com/bluesky-social/statusphere-example-app) 示例应用程序来进一步深入了解。
+If this sounds exciting to you, you can dive in further by checking out the [protocol specs](https://atproto.com/specs/atp), or getting hands on with the [Statusphere](https://github.com/bluesky-social/statusphere-example-app) example app built on the protocol.
 
-<FooterCTA href="/" title="准备好了解更多信息了吗？" description="可以在此处找到规格、指南和 SDK。" />
+<FooterCTA href="/" title="Ready to learn more?" description="Specs, guides, and SDKs can be found here." />
